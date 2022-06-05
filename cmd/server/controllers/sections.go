@@ -10,14 +10,14 @@ import (
 
 type request struct {
 	Id                 uint64  `json:"id"`
-	Number             uint64  `json:"number"`
-	CurrentTemperature float32 `json:"currentTemperature"`
-	MinimumTemperature float32 `json:"minimumTemperature"`
-	CurrentCapacity    uint32  `json:"currentCapacity"`
-	MinimumCapacity    uint32  `json:"minimumCapacity"`
-	MaximumCapacity    uint32  `json:"maximumCapacity"`
-	WarehouseId        uint64  `json:"warehouseId"`
-	ProductTypeId      uint64  `json:"productTypeId"`
+	Number             uint64  `json:"number" binding:"required"`
+	CurrentTemperature float32 `json:"current_temperature" binding:"required"`
+	MinimumTemperature float32 `json:"minimum_temperature" binding:"required"`
+	CurrentCapacity    uint32  `json:"current_capacity" binding:"required"`
+	MinimumCapacity    uint32  `json:"minimum_capacity" binding:"required"`
+	MaximumCapacity    uint32  `json:"maximum_capacity" binding:"required"`
+	WarehouseId        uint64  `json:"warehouse_id" binding:"required"`
+	ProductTypeId      uint64  `json:"product_type_id" binding:"required"`
 }
 
 type sectionController struct {
@@ -83,7 +83,7 @@ func (c *sectionController) Create() gin.HandlerFunc {
 			return
 		}
 
-		section, err := c.sectionService.Get(req.Id)
+		sections, err := c.sectionService.GetAll()
 		if err != nil {
 			ctx.JSON(500, gin.H{
 				"error": err.Error(),
@@ -91,11 +91,11 @@ func (c *sectionController) Create() gin.HandlerFunc {
 			return
 		}
 
-		if section.Number == req.Number {
-			ctx.JSON(409, gin.H{
-				"error": err.Error(),
-			})
-			return
+		for _, v := range sections {
+			if v.Number == req.Number {
+				ctx.JSON(409, web.NewResponse(409, nil, "Section number already existis"))
+				return
+			}
 		}
 
 		addedSection, err := c.sectionService.Create(c.sectionService.GetNextId(), req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
@@ -114,9 +114,18 @@ func (c *sectionController) Create() gin.HandlerFunc {
 
 func (c *sectionController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
+
+		if err != nil {
+			ctx.JSON(404, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
 		var req request
 
-		err := ctx.ShouldBindJSON(&req)
+		err = ctx.ShouldBindJSON(&req)
 
 		if err != nil {
 			ctx.JSON(422, gin.H{
@@ -125,7 +134,7 @@ func (c *sectionController) Update() gin.HandlerFunc {
 			return
 		}
 
-		_, err = c.sectionService.Get(req.Id)
+		_, err = c.sectionService.Get(uint64(id))
 		if err != nil {
 			ctx.JSON(404, gin.H{
 				"error": err.Error(),
@@ -133,7 +142,7 @@ func (c *sectionController) Update() gin.HandlerFunc {
 			return
 		}
 
-		updatedSection, err := c.sectionService.Update(req.Id, req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
+		updatedSection, err := c.sectionService.Update(uint64(id), req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
 
 		if err != nil {
 			ctx.JSON(500, gin.H{
