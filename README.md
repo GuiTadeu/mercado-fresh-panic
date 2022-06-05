@@ -1,11 +1,5 @@
 # mercado-fresh-panic
 
-<p align="center">
-  <img align="https://unidoc.io/media/creating-msword-documents-in-golang-using-template.jpg" alt="mouse" src="" height="270px" width="80%" />
-</p>
-
-# mercado-fresh-panic
-
 Neste novo projeto deverá ser possível listar, criar, modificar e deletar os items de acordo com a rota desejada.</br>
 
 ### Todas as API deve conter 5 (cinco) rotas:
