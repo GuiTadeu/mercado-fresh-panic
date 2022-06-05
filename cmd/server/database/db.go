@@ -20,15 +20,15 @@ type Warehouse struct {
 }
 
 type Section struct {
-	Id                 uint64
-	Number             uint64
-	CurrentTemperature float32
-	MinimumTemperature float32
-	CurrentCapacity    uint32
-	MinimumCapacity    uint32
-	MaximumCapacity    uint32
-	WarehouseId        uint64
-	ProductTypeId      uint64
+	Id                 uint64  `json:"id"`
+	Number             uint64  `json:"number" binding:"required"`
+	CurrentTemperature float32 `json:"current_temperature" binding:"required"`
+	MinimumTemperature float32 `json:"minimum_temperature" binding:"required"`
+	CurrentCapacity    uint32  `json:"current_capacity" binding:"required"`
+	MinimumCapacity    uint32  `json:"minimum_capacity" binding:"required"`
+	MaximumCapacity    uint32  `json:"maximum_capacity" binding:"required"`
+	WarehouseId        uint64  `json:"warehouse_id" binding:"required"`
+	ProductTypeId      uint64  `json:"product_type_id" binding:"required"`
 	Products           []Product
 }
 
