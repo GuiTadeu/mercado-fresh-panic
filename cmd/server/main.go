@@ -20,13 +20,13 @@ func main() {
 
 	r := gin.Default()
 
-	sectionRoutes := r.Group("/sections")
+	sectionRoutes := r.Group("/api/v1/sections")
 
 	sectionRoutes.GET("/", cSections.GetAll())
-	sectionRoutes.GET("/id", cSections.Get())
+	sectionRoutes.GET("/:id", cSections.Get())
 	sectionRoutes.POST("/", cSections.Create())
-	sectionRoutes.PUT("/id", cSections.Update())
-	sectionRoutes.DELETE("/id", cSections.Delete())
+	sectionRoutes.PUT("/:id", cSections.Update())
+	sectionRoutes.DELETE("/:id", cSections.Delete())
 
 	r.Run()
 }
