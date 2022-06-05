@@ -21,13 +21,13 @@ type Warehouse struct {
 
 type Section struct {
 	Id                 uint64
-	Number             string
+	Number             uint64
 	CurrentTemperature float32
 	MinimumTemperature float32
 	CurrentCapacity    uint32
 	MinimumCapacity    uint32
 	MaximumCapacity    uint32
-	WarehouseId        int64
+	WarehouseId        uint64
 	ProductTypeId      uint64
 	Products           []Product
 }
