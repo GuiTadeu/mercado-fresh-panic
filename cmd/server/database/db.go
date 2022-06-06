@@ -4,7 +4,7 @@ import "fmt"
 
 type Seller struct {
 	Id          uint64
-	Cid         string
+	Cid         uint64
 	CompanyName string
 	Address     string
 	Telephone   string
