@@ -2,21 +2,45 @@ package employee
 
 import "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 
-type Service interface {
+type EmployeeService interface {
+	GetAll() ([]database.Employee, error)
 	Create(id uint64, cardNumberId uint64, firstName string, lastName string, wareHouseId uint64) (database.Employee, error)
+	Delete(id uint64) error
+	GetNextId() uint64
 }
 
-type service struct {
-	repository Repository
+type employeeService struct {
+	employeeRepository EmployeeRepository
 }
 
-func NewService(r Repository) Service {
-	return &service{
-		repository: r,
+func NewService(r EmployeeRepository) *employeeService {
+	return &employeeService{
+		employeeRepository: r,
 	}
 }
 
-func (s service) Create(id uint64, cardNumberId uint64, firstName string, lastName string, wareHouseId uint64) (database.Employee, error) {
-	employee, _ := s.repository.Create(id, cardNumberId, firstName, lastName, wareHouseId)
+func (s *employeeService) GetAll() ([]database.Employee, error) {
+	return s.employeeRepository.GetAll()
+}
+
+func (s employeeService) Create(id uint64, cardNumberId uint64, firstName string, lastName string, wareHouseId uint64) (database.Employee, error) {
+	employee, _ := s.employeeRepository.Create(id, cardNumberId, firstName, lastName, wareHouseId)
 	return employee, nil
+}
+
+func (s *employeeService) GetNextId() uint64 {
+	employees, err := s.employeeRepository.GetAll()
+	if err != nil {
+		return 1
+	}
+
+	if len(employees) == 0 {
+		return 1
+	}
+
+	return employees[len(employees)-1].Id + 1
+}
+
+func (s *employeeService) Delete(id uint64) error {
+	return s.employeeRepository.Delete(id)
 }
