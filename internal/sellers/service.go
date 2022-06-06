@@ -12,6 +12,7 @@ type Service interface {
 	Create(cid uint64, companyName string, address string, telephone string) ([]database.Seller, int, error)
 	FindOne(id uint64) (database.Seller, int, error)
 	UpdateAddress(id uint64, address string) (database.Seller, int, error)
+	Delete(id uint64) (int, error)
 }
 
 type service struct {

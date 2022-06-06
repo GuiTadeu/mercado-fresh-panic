@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"net/http"
@@ -125,6 +125,35 @@ func (control *SellersController) UpdateAddress() gin.HandlerFunc {
 
 		ctx.JSON(statusCode, gin.H{
 			"data": s,
+		})
+	}
+}
+
+func (control *SellersController) Delete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		idParam := ctx.Param("id")
+
+		id, err := strconv.ParseUint(idParam, 0, 64)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"message": "ID in wrong format",
+			})
+			return
+		}
+
+		statusCode, err := control.service.Delete(id)
+
+		if err != nil {
+			ctx.JSON(statusCode, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(statusCode, gin.H{
+			"message": "success on delete data",
 		})
 	}
 }
