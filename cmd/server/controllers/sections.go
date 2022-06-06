@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type request struct {
+type requestSections struct {
 	Id                 uint64  `json:"id"`
 	Number             uint64  `json:"number" binding:"required"`
 	CurrentTemperature float32 `json:"current_temperature" binding:"required"`
@@ -72,7 +72,7 @@ func (c *sectionController) Get() gin.HandlerFunc {
 
 func (c *sectionController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req requestSections
 
 		err := ctx.ShouldBindJSON(&req)
 
@@ -123,7 +123,7 @@ func (c *sectionController) Update() gin.HandlerFunc {
 			return
 		}
 
-		var req request
+		var req requestSections
 
 		err = ctx.ShouldBindJSON(&req)
 

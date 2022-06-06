@@ -3,6 +3,7 @@ package main
 import (
 	controller "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controllers"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/employee"
 	rp "github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/gin-gonic/gin"
 )
@@ -28,5 +29,12 @@ func main() {
 	sectionRoutes.PUT("/:id", cSections.Update())
 	sectionRoutes.DELETE("/:id", cSections.Delete())
 
+	rEmployee := employee.NewRepository()
+	sEmployee := employee.NewService(rEmployee)
+	pEmployee := controller.NewEmployee(sEmployee)
+	pr := r.Group("/api/v1/employees")
+	pr.POST("/", pEmployee.Create())
+
 	r.Run()
+
 }
