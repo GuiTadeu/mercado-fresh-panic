@@ -7,7 +7,7 @@ Neste novo projeto deverá ser possível listar, criar, modificar e deletar os i
 - [x] - POST - _Create_
 - [x] - GET - _Read_
 - [x] - GET - _Read_ (id)
-- [x] - PUT - _Update_
+- [x] - PATCH - _Update_
 - [x] - DELETE - _Delete_
 
 ## Objetivo do projeto
