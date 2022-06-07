@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
@@ -9,7 +10,6 @@ import (
 )
 
 type request struct {
-	Id                 uint64  `json:"id"`
 	Number             uint64  `json:"number" binding:"required"`
 	CurrentTemperature float32 `json:"current_temperature" binding:"required"`
 	MinimumTemperature float32 `json:"minimum_temperature" binding:"required"`
@@ -36,13 +36,13 @@ func (c *sectionController) GetAll() gin.HandlerFunc {
 		sections, err := c.sectionService.GetAll()
 
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, sections, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, sections, ""))
 	}
 }
 
@@ -51,7 +51,7 @@ func (c *sectionController) Get() gin.HandlerFunc {
 		id, err := strconv.Atoi(ctx.Param("id"))
 
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
@@ -60,13 +60,13 @@ func (c *sectionController) Get() gin.HandlerFunc {
 		section, err := c.sectionService.Get(uint64(id))
 
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, section, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, section, ""))
 	}
 }
 
@@ -77,37 +77,22 @@ func (c *sectionController) Create() gin.HandlerFunc {
 		err := ctx.ShouldBindJSON(&req)
 
 		if err != nil {
-			ctx.JSON(422, gin.H{
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		sections, err := c.sectionService.GetAll()
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		for _, v := range sections {
-			if v.Number == req.Number {
-				ctx.JSON(409, web.NewResponse(409, nil, "Section number already existis"))
-				return
-			}
-		}
-
-		addedSection, err := c.sectionService.Create(c.sectionService.GetNextId(), req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
+		addedSection, err := c.sectionService.Create(req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
 
 		if err != nil {
-			ctx.JSON(500, gin.H{
+			ctx.JSON(err.(*web.CustomError).Status, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, addedSection, ""))
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedSection, ""))
 	}
 
 }
@@ -116,27 +101,12 @@ func (c *sectionController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.Atoi(ctx.Param("id"))
 
-		if err != nil {
-			ctx.JSON(404, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
 		var req request
 
 		err = ctx.ShouldBindJSON(&req)
 
 		if err != nil {
-			ctx.JSON(422, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		_, err = c.sectionService.Get(uint64(id))
-		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"error": err.Error(),
 			})
 			return
@@ -145,13 +115,13 @@ func (c *sectionController) Update() gin.HandlerFunc {
 		updatedSection, err := c.sectionService.Update(uint64(id), req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
 
 		if err != nil {
-			ctx.JSON(500, gin.H{
+			ctx.JSON(err.(*web.CustomError).Status, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, updatedSection, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, updatedSection, ""))
 	}
 
 }
@@ -161,16 +131,7 @@ func (c *sectionController) Delete() gin.HandlerFunc {
 		id, err := strconv.Atoi(ctx.Param("id"))
 
 		if err != nil {
-			ctx.JSON(404, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		_, err = c.sectionService.Get(uint64(id))
-
-		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
@@ -178,12 +139,12 @@ func (c *sectionController) Delete() gin.HandlerFunc {
 
 		err = c.sectionService.Delete(uint64(id))
 		if err != nil {
-			ctx.JSON(500, gin.H{
+			ctx.JSON(err.(*web.CustomError).Status, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(204, web.NewResponse(204, nil, ""))
+		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
 	}
 }
