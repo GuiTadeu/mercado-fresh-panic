@@ -33,11 +33,11 @@ func main() {
 	sellerService := sellers.NewService(sellerRepository)
 	sellerController := controller.NewSeller(sellerService)
 
-	sellerGroup := r.Group("/api/v1/seller")
+	sellerGroup := r.Group("/api/v1/sellers")
 	sellerGroup.GET("/", sellerController.FindAll())
 	sellerGroup.GET("/:id", sellerController.FindOne())
 	sellerGroup.POST("/", sellerController.Create())
-	sellerGroup.PATCH("/:id", sellerController.UpdateAddress())
+	sellerGroup.PATCH("/:id", sellerController.Update())
 	sellerGroup.DELETE("/:id", sellerController.Delete())
 
 	r.Run()

@@ -5,13 +5,14 @@ import (
 	"net/http"
 
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	"github.com/imdario/mergo"
 )
 
 type Service interface {
 	FindAll() ([]database.Seller, int, error)
 	Create(cid uint64, companyName string, address string, telephone string) ([]database.Seller, int, error)
 	FindOne(id uint64) (database.Seller, int, error)
-	UpdateAddress(id uint64, address string) (database.Seller, int, error)
+	Update(id uint64, cid uint64, companyName string, address string, telephone string) (database.Seller, int, error)
 	Delete(id uint64) (int, error)
 }
 
@@ -40,19 +41,13 @@ func (s service) FindOne(id uint64) (database.Seller, int, error) {
 
 func (s service) Create(cid uint64, companyName string, address string, telephone string) ([]database.Seller, int, error) {
 
-	sellersData, err := s.repo.FindAll()
+	isUsedCid := s.repo.FindCid(cid)
 
-	if err != nil {
-		return []database.Seller{}, http.StatusInternalServerError, err
+	if isUsedCid {
+		return []database.Seller{}, http.StatusConflict, fmt.Errorf("seller with this cid already exists")
 	}
 
-	for _, seller := range sellersData {
-		if seller.Cid == cid {
-			return []database.Seller{}, http.StatusConflict, fmt.Errorf("seller with this cid already exists")
-		}
-	}
-
-	sellersData, err = s.repo.Create(cid, companyName, address, telephone)
+	sellersData, err := s.repo.Create(cid, companyName, address, telephone)
 
 	if err != nil {
 		return []database.Seller{}, http.StatusInternalServerError, fmt.Errorf("error on writing data")
@@ -60,13 +55,34 @@ func (s service) Create(cid uint64, companyName string, address string, telephon
 	return sellersData, http.StatusCreated, nil
 }
 
-func (s service) UpdateAddress(id uint64, address string) (database.Seller, int, error) {
-	sellerData, err := s.repo.UpdateAddress(id, address)
+func (s service) Update(id uint64, cid uint64, companyName string, address string, telephone string) (database.Seller, int, error) {
+	foundSeller, err := s.repo.FindOne(id)
+	if err != nil {
+		return database.Seller{}, http.StatusNotFound, fmt.Errorf("error: seller not found")
+	}
+
+	isUsedCid := s.repo.FindCid(cid)
+
+	if isUsedCid {
+		return database.Seller{}, http.StatusConflict, fmt.Errorf("seller with this cid already exists")
+	}
+
+	updatedSeller := database.Seller{
+		Id:          id,
+		Cid:         cid,
+		CompanyName: companyName,
+		Telephone:   telephone,
+		Address:     address,
+	}
+
+	mergo.Merge(&foundSeller, updatedSeller, mergo.WithOverride)
+	newSeller, err := s.repo.Update(foundSeller)
 
 	if err != nil {
-		return sellerData, http.StatusNotFound, err
+		return database.Seller{}, http.StatusInternalServerError, fmt.Errorf("error: internal server error")
 	}
-	return sellerData, http.StatusOK, err
+
+	return newSeller, http.StatusOK, nil
 }
 
 func (s service) Delete(id uint64) (int, error) {

@@ -67,7 +67,7 @@ func (control *SellersController) FindOne() gin.HandlerFunc {
 func (control *SellersController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var req createRequest
+		var req sellerRequest
 
 		if err := ctx.ShouldBindJSON(&req); err != nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -91,10 +91,10 @@ func (control *SellersController) Create() gin.HandlerFunc {
 	}
 }
 
-func (control *SellersController) UpdateAddress() gin.HandlerFunc {
+func (control *SellersController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var req updateAddressRequest
+		var req sellerRequest
 
 		idParam := ctx.Param("id")
 
@@ -114,7 +114,7 @@ func (control *SellersController) UpdateAddress() gin.HandlerFunc {
 			return
 		}
 
-		s, statusCode, err := control.service.UpdateAddress(id, req.Address)
+		s, statusCode, err := control.service.Update(id, req.Cid, req.CompanyName, req.Address, req.Telephone)
 
 		if err != nil {
 			ctx.JSON(statusCode, gin.H{
@@ -153,18 +153,14 @@ func (control *SellersController) Delete() gin.HandlerFunc {
 		}
 
 		ctx.JSON(statusCode, gin.H{
-			"message": "success on delete data",
+			"message": "success on delete",
 		})
 	}
 }
 
-type createRequest struct {
+type sellerRequest struct {
 	Cid         uint64 `json:"cid"`
 	CompanyName string `json:"company_name"`
 	Address     string `json:"address"`
 	Telephone   string `json:"telephone"`
-}
-
-type updateAddressRequest struct {
-	Address string `json:"address"`
 }

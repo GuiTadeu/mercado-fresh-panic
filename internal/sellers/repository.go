@@ -12,8 +12,9 @@ type Repository interface {
 	FindAll() ([]database.Seller, error)
 	Create(cid uint64, companyName string, address string, telephone string) ([]database.Seller, error)
 	FindOne(id uint64) (database.Seller, error)
-	UpdateAddress(id uint64, address string) (database.Seller, error)
+	Update(seller database.Seller) (database.Seller, error)
 	Delete(id uint64) error
+	FindCid(cid uint64) bool
 }
 
 type repository struct {
@@ -40,14 +41,14 @@ func (r *repository) Create(cid uint64, companyName string, address string, tele
 	return r.db, nil
 }
 
-func (r *repository) UpdateAddress(id uint64, address string) (database.Seller, error) {
-	for idx, seller := range r.db {
-		if seller.Id == id {
-			r.db[idx].Address = address
+func (r *repository) Update(seller database.Seller) (database.Seller, error) {
+	for idx, s := range r.db {
+		if s.Id == seller.Id {
+			r.db[idx] = seller
 			return r.db[idx], nil
 		}
 	}
-	return database.Seller{}, fmt.Errorf("error: seller with id %d not found", id)
+	return database.Seller{}, fmt.Errorf("error: seller with id %d not found", seller.Id)
 }
 
 func (r *repository) Delete(id uint64) error {
@@ -58,6 +59,15 @@ func (r *repository) Delete(id uint64) error {
 		}
 	}
 	return fmt.Errorf("error: seller with id %d not found", id)
+}
+
+func (r *repository) FindCid(cid uint64) bool {
+	for _, seller := range r.db {
+		if seller.Cid == cid {
+			return true
+		}
+	}
+	return false
 }
 
 func createSeller(id uint64, cid uint64, companyName string, address string, telephone string) database.Seller {
