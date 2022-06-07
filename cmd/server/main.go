@@ -12,21 +12,19 @@ func main() {
 	// sellers, warehouses, sections, products, employees, buyers
 	var _, _, sections, _, _, _ = db.CreateDatabases()
 
-	rSections := rp.NewRepository(sections)
-
-	sSections := rp.NewService(rSections)
-
-	cSections := controller.NewController(sSections)
+	sectionRepository := rp.NewRepository(sections)
+	sectionService := rp.NewService(sectionRepository)
+	sectionHandler := controller.NewController(sectionService)
 
 	r := gin.Default()
 
 	sectionRoutes := r.Group("/api/v1/sections")
 
-	sectionRoutes.GET("/", cSections.GetAll())
-	sectionRoutes.GET("/:id", cSections.Get())
-	sectionRoutes.POST("/", cSections.Create())
-	sectionRoutes.PUT("/:id", cSections.Update())
-	sectionRoutes.DELETE("/:id", cSections.Delete())
+	sectionRoutes.GET("/", sectionHandler.GetAll())
+	sectionRoutes.GET("/:id", sectionHandler.Get())
+	sectionRoutes.POST("/", sectionHandler.Create())
+	sectionRoutes.PATCH("/:id", sectionHandler.Update())
+	sectionRoutes.DELETE("/:id", sectionHandler.Delete())
 
 	r.Run()
 }

@@ -11,7 +11,7 @@ type SectionRepository interface {
 	GetAll() ([]db.Section, error)
 	Get(id uint64) (db.Section, error)
 	Create(number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32, minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64) (db.Section, error)
-	Update(id uint64, number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32, minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64) (db.Section, error)
+	Update(id uint64, updatedSection db.Section) (db.Section, error)
 	Delete(id uint64) error
 	GetNextId() uint64
 }
@@ -36,7 +36,7 @@ func (r *sectionRepository) Get(id uint64) (db.Section, error) {
 			return section, nil
 		}
 	}
-	return db.Section{}, errors.New("section not found")
+	return db.Section{}, errors.New("Section not found")
 }
 
 func (r *sectionRepository) Create(
@@ -65,28 +65,11 @@ func (r *sectionRepository) Create(
 	return s, nil
 }
 
-func (r *sectionRepository) Update(
-	id uint64,
-	number uint64,
-	currentTemperature float32,
-	minimumTemperature float32,
-	currentCapacity uint32,
-	minimumCapacity uint32,
-	maximumCapacity uint32,
-	warehouseId uint64,
-	productTypeId uint64) (db.Section, error) {
-
-	for i := range r.sections {
-		if r.sections[i].Id == id {
-			r.sections[i].Number = number
-			r.sections[i].CurrentTemperature = currentTemperature
-			r.sections[i].MinimumTemperature = minimumTemperature
-			r.sections[i].CurrentCapacity = currentCapacity
-			r.sections[i].MinimumCapacity = minimumCapacity
-			r.sections[i].MaximumCapacity = maximumCapacity
-			r.sections[i].WarehouseId = warehouseId
-			r.sections[i].ProductTypeId = productTypeId
-			return r.sections[i], nil
+func (r *sectionRepository) Update(id uint64, updatedSection db.Section) (db.Section, error) {
+	for index, section := range r.sections {
+		if section.Id == id {
+			r.sections[index] = updatedSection
+			return updatedSection, nil
 		}
 	}
 	return db.Section{}, fmt.Errorf("Section not found")
