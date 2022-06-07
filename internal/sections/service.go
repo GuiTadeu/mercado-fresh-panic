@@ -44,7 +44,7 @@ func (s *sectionService) Create(number uint64, currentTemperature float32, minim
 
 	for _, v := range sections {
 		if v.Number == number {
-			return db.Section{}, &web.CustomError{Status: http.StatusConflict, Err: errors.New("Section number already exists")}
+			return db.Section{}, &web.CustomError{Status: http.StatusConflict, Err: errors.New("section number already exists")}
 		}
 	}
 
@@ -59,7 +59,7 @@ func (s *sectionService) Update(
 
 	foundSection, err := s.Get(id)
 	if err != nil {
-		return db.Section{}, &web.CustomError{Status: http.StatusNotFound, Err: errors.New("Section not found")}
+		return db.Section{}, &web.CustomError{Status: http.StatusNotFound, Err: errors.New("section not found")}
 	}
 
 	updatedSection := db.Section{

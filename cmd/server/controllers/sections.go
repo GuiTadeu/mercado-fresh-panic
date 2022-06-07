@@ -114,7 +114,7 @@ func (c *sectionController) Update() gin.HandlerFunc {
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
 
-			ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "Section id binding error"))
+			ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "section id binding error"))
 			return
 		}
 

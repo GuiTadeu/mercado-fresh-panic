@@ -36,7 +36,7 @@ func (r *sectionRepository) Get(id uint64) (db.Section, error) {
 			return section, nil
 		}
 	}
-	return db.Section{}, errors.New("Section not found")
+	return db.Section{}, errors.New("section not found")
 }
 
 func (r *sectionRepository) Create(
@@ -72,7 +72,7 @@ func (r *sectionRepository) Update(id uint64, updatedSection db.Section) (db.Sec
 			return updatedSection, nil
 		}
 	}
-	return db.Section{}, fmt.Errorf("Section not found")
+	return db.Section{}, fmt.Errorf("section not found")
 }
 
 func (r *sectionRepository) Delete(id uint64) error {
@@ -82,7 +82,7 @@ func (r *sectionRepository) Delete(id uint64) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Section not found")
+	return fmt.Errorf("section not found")
 }
 
 func (r *sectionRepository) GetNextId() uint64 {
