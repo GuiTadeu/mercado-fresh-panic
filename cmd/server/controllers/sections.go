@@ -32,7 +32,7 @@ type sectionController struct {
 	sectionService sections.SectionService
 }
 
-func NewController(s sections.SectionService) *sectionController {
+func NewSectionController(s sections.SectionService) *sectionController {
 	return &sectionController{
 		sectionService: s,
 	}
