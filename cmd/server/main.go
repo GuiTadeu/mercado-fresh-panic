@@ -11,7 +11,7 @@ import (
 func main() {
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var _, _, sections, _, _, _ = db.CreateDatabases()
+	var _, _, sections, _, employees, _ = db.CreateDatabases()
 
 	rSections := rp.NewRepository(sections)
 
@@ -29,12 +29,14 @@ func main() {
 	sectionRoutes.PUT("/:id", cSections.Update())
 	sectionRoutes.DELETE("/:id", cSections.Delete())
 
-	rEmployee := employee.NewRepository()
-	sEmployee := employee.NewService(rEmployee)
-	pEmployee := controller.NewEmployee(sEmployee)
-	pr := r.Group("/api/v1/employees")
-	pr.POST("/", pEmployee.Create())
+	rEmployee := employee.NewRepository(employees)
+	sEmployee := employee.NewEmployeeService(rEmployee)
+	cEmployee := controller.NewEmployee(sEmployee)
 
+	employeeRoutes := r.Group("/api/v1/employees")
+	employeeRoutes.POST("/", cEmployee.Create())
+	employeeRoutes.GET("/:id", cEmployee.Get())
+	employeeRoutes.PATCH("/:id", cEmployee.Update())
 	r.Run()
 
 }

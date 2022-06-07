@@ -1,11 +1,10 @@
 package controller
 
 import (
-	"strconv"
-
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
 type requestSections struct {

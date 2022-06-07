@@ -49,7 +49,7 @@ type Product struct {
 
 type Employee struct {
 	Id           uint64
-	CardNumberId uint64
+	CardNumberId string
 	FirstName    string
 	LastName     string
 	WarehouseId  uint64
