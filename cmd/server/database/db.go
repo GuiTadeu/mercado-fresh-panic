@@ -57,7 +57,7 @@ type Employee struct {
 
 type Buyer struct {
 	Id           uint64
-	CardNumberId uint64
+	CardNumberId string
 	FirstName    string
 	LastName     string
 }
