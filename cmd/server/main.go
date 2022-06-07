@@ -40,7 +40,7 @@ func main() {
 	buyerRoutes.GET("/", cBuyers.GetAll())
 	buyerRoutes.GET("/:id", cBuyers.Get())
 	buyerRoutes.POST("/", cBuyers.Create())
-	//buyerRoutes.PUT("/:id", cBuyers.Update())
+	buyerRoutes.PATCH("/:id", cBuyers.Update())
 	buyerRoutes.DELETE("/:id", cBuyers.Delete())
 
 	r.Run()

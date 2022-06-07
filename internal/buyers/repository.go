@@ -13,6 +13,7 @@ type BuyerRepository interface {
 	//Update()
 	Delete(id uint64) error
 	getNextId() uint64
+	Update(id uint64, cardNumberId string, firstName string, lastName string) (db.Buyer, error)
 }
 
 func NewBuyerRepository(buyers []db.Buyer) BuyerRepository {
@@ -71,4 +72,15 @@ func (r *buyerRepository) Delete(id uint64) error {
 		}
 	}
 	return fmt.Errorf("Buyer not found")
+}
+
+func (r *buyerRepository) Update(id uint64, cardNumberId string, firstName string, lastName string) (db.Buyer, error) {
+	uBuyer := db.Buyer{id, cardNumberId, firstName, lastName}
+	for index, buyer := range r.buyers {
+		if buyer.Id == id {
+			r.buyers[index] = uBuyer
+			return uBuyer, nil
+		}
+	}
+	return db.Buyer{}, fmt.Errorf("Buyer not found")
 }

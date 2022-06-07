@@ -44,7 +44,7 @@ func (c buyerController) Create() gin.HandlerFunc {
 			})
 			return
 		}
-		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, addedBuyer, ""))
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedBuyer, ""))
 	}
 
 }
@@ -115,3 +115,28 @@ func (c *buyerController) Delete() gin.HandlerFunc {
 	}
 }
 
+func (c *buyerController) Update() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
+
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		var req requestBuyers
+
+		ctx.ShouldBindJSON(&req)
+
+		uBuyer, err := c.buyerService.Update(uint64(id), req.CardNumberId, req.FirstName, req.LastName)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+		}
+
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, uBuyer, ""))
+	}
+}
