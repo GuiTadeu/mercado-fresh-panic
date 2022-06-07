@@ -30,11 +30,15 @@ func main() {
 	sectionRoutes.DELETE("/:id", cSections.Delete())
 
 	rEmployee := employee.NewRepository(employees)
-	sEmployee := employee.NewEmployeeService(rEmployee)
+
+	sEmployee := employee.NewService(rEmployee)
+
 	cEmployee := controller.NewEmployee(sEmployee)
 
 	employeeRoutes := r.Group("/api/v1/employees")
+	employeeRoutes.GET("/", cEmployee.GetAll())
 	employeeRoutes.POST("/", cEmployee.Create())
+	employeeRoutes.DELETE("/:id", cEmployee.Delete())
 	employeeRoutes.GET("/:id", cEmployee.Get())
 	employeeRoutes.PATCH("/:id", cEmployee.Update())
 	r.Run()

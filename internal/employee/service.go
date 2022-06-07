@@ -7,27 +7,29 @@ import (
 
 type EmployeeService interface {
 	Create(cardNumberId string, firstName string, lastName string, wareHouseId uint64) (database.Employee, error)
+	GetAll() ([]database.Employee, error)
 	Get(id uint64) (database.Employee, error)
 	Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (database.Employee, error)
+	Delete(id uint64) error
 }
 
 type employeeService struct {
-	repository Repository
+	employeeRepository EmployeeRepository
 }
 
-func NewEmployeeService(r Repository) EmployeeService {
+func NewService(r EmployeeRepository) *employeeService {
 	return &employeeService{
-		repository: r,
+		employeeRepository: r,
 	}
 }
 
 func (s employeeService) Create(cardNumberId string, firstName string, lastName string, wareHouseId uint64) (database.Employee, error) {
-	employee, _ := s.repository.Create(cardNumberId, firstName, lastName, wareHouseId)
+	employee, _ := s.employeeRepository.Create(cardNumberId, firstName, lastName, wareHouseId)
 	return employee, nil
 }
 
 func (s employeeService) Get(id uint64) (database.Employee, error) {
-	return s.repository.Get(id)
+	return s.employeeRepository.Get(id)
 }
 
 func (s employeeService) Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (database.Employee, error) {
@@ -38,9 +40,17 @@ func (s employeeService) Update(id uint64, cardNumberId string, firstName string
 	}
 	mergo.Merge(&employee, data, mergo.WithOverride)
 
-	e, err := s.repository.Update(employee.Id, employee.CardNumberId, employee.FirstName, employee.LastName, employee.WarehouseId)
+	e, err := s.employeeRepository.Update(employee.Id, employee.CardNumberId, employee.FirstName, employee.LastName, employee.WarehouseId)
 	if err != nil {
 		return database.Employee{}, err
 	}
 	return e, nil
+}
+
+func (s *employeeService) GetAll() ([]database.Employee, error) {
+	return s.employeeRepository.GetAll()
+}
+
+func (s *employeeService) Delete(id uint64) error {
+	return s.employeeRepository.Delete(id)
 }

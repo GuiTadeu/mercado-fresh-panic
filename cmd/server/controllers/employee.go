@@ -9,27 +9,35 @@ import (
 )
 
 type EmployeeController struct {
-	service employee.EmployeeService
+	employeeService employee.EmployeeService
 }
 
 func NewEmployee(s employee.EmployeeService) *EmployeeController {
 	return &EmployeeController{
-		service: s,
+		employeeService: s,
 	}
+}
+
+type request struct {
+	CardNumberId string `json:"card_number_id" binding:"required"`
+	FirstName    string `json:"first_name" binding:"required"`
+	LastName     string `json:"last_name" binding:"required"`
+	WarehouseId  uint64 `json:"warehouse_id" binding:"required"`
 }
 
 func (c *EmployeeController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req request
+
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest,
+			ctx.JSON(http.StatusUnprocessableEntity,
 				gin.H{
-					"error":   "VALIDATEERR-1",
+					"error":   "Unprocessable Entity",
 					"message": "Invalid inputs. Please check your inputs"})
 			return
 		}
-		e, _ := c.service.Create(req.CardNumberId, req.FirstName, req.LastName, req.WarehouseId)
-		ctx.JSON(http.StatusOK, gin.H{"criado": e})
+		e, _ := c.employeeService.Create(req.CardNumberId, req.FirstName, req.LastName, req.WarehouseId)
+		ctx.JSON(http.StatusCreated, gin.H{"data": e})
 	}
 }
 
@@ -44,7 +52,7 @@ func (c *EmployeeController) Get() gin.HandlerFunc {
 			return
 		}
 
-		employee, err := c.service.Get(uint64(id))
+		employee, err := c.employeeService.Get(uint64(id))
 
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{
@@ -71,14 +79,9 @@ func (c *EmployeeController) Update() gin.HandlerFunc {
 		}
 
 		var req request
-		if err := ctx.ShouldBindJSON(&req); err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest,
-				gin.H{
-					"error":   "VALIDATEERR-1",
-					"message": "Invalid inputs. Please check your inputs"})
-			return
-		}
-		e, err := c.service.Update(uint64(id), req.CardNumberId, req.FirstName, req.LastName, req.WarehouseId)
+		ctx.ShouldBindJSON(&req)
+
+		e, err := c.employeeService.Update(uint64(id), req.CardNumberId, req.FirstName, req.LastName, req.WarehouseId)
 
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest,
@@ -92,9 +95,43 @@ func (c *EmployeeController) Update() gin.HandlerFunc {
 	}
 }
 
-type request struct {
-	CardNumberId string `json:"card_number_id"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	WarehouseId  uint64 `json:"warehouse_id"`
+func (c *EmployeeController) GetAll() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		employees, err := c.employeeService.GetAll()
+
+		if err != nil {
+			ctx.JSON(404, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		ctx.JSON(200, web.NewResponse(200, employees, ""))
+	}
+}
+
+func (c *EmployeeController) Delete() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
+
+		if err != nil {
+			ctx.JSON(404, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		_, err = c.employeeService.Get(uint64(id))
+
+		if err != nil {
+			ctx.JSON(404, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		err = c.employeeService.Delete(uint64(id))
+		ctx.JSON(204, web.NewResponse(204, nil, ""))
+	}
 }

@@ -48,11 +48,11 @@ type Product struct {
 }
 
 type Employee struct {
-	Id           uint64
-	CardNumberId string
-	FirstName    string
-	LastName     string
-	WarehouseId  uint64
+	Id           uint64 `json:"id"`
+	CardNumberId string `json:"card_number_id"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	WarehouseId  uint64 `json:"warehouse_id"`
 }
 
 type Buyer struct {
