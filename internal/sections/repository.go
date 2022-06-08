@@ -8,12 +8,15 @@ import (
 )
 
 type SectionRepository interface {
+
 	GetAll() ([]db.Section, error)
 	Get(id uint64) (db.Section, error)
-	Create(number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32, minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64) (db.Section, error)
 	Update(id uint64, updatedSection db.Section) (db.Section, error)
 	Delete(id uint64) error
-	GetNextId() uint64
+	ExistsSectionNumber(number uint64) bool
+
+	Create(number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32,
+		minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64) (db.Section, error)
 }
 
 func NewRepository(sections []db.Section) SectionRepository {
@@ -36,21 +39,16 @@ func (r *sectionRepository) Get(id uint64) (db.Section, error) {
 			return section, nil
 		}
 	}
-	return db.Section{}, errors.New("section not found")
+	return db.Section{}, errors.New("Section not found")
 }
 
 func (r *sectionRepository) Create(
-	number uint64,
-	currentTemperature float32,
-	minimumTemperature float32,
-	currentCapacity uint32,
-	minimumCapacity uint32,
-	maximumCapacity uint32,
-	warehouseId uint64,
-	productTypeId uint64) (db.Section, error) {
+	number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32,
+	minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64,
+) (db.Section, error) {
 
 	s := db.Section{
-		Id:                 r.GetNextId(),
+		Id:                 r.getNextId(),
 		Number:             number,
 		CurrentTemperature: currentTemperature,
 		MinimumTemperature: minimumTemperature,
@@ -61,6 +59,7 @@ func (r *sectionRepository) Create(
 		ProductTypeId:      productTypeId,
 		Products:           []db.Product{},
 	}
+
 	r.sections = append(r.sections, s)
 	return s, nil
 }
@@ -72,7 +71,7 @@ func (r *sectionRepository) Update(id uint64, updatedSection db.Section) (db.Sec
 			return updatedSection, nil
 		}
 	}
-	return db.Section{}, fmt.Errorf("section not found")
+	return db.Section{}, fmt.Errorf("Section not found")
 }
 
 func (r *sectionRepository) Delete(id uint64) error {
@@ -82,10 +81,20 @@ func (r *sectionRepository) Delete(id uint64) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("section not found")
+	return fmt.Errorf("Section not found")
 }
 
-func (r *sectionRepository) GetNextId() uint64 {
+func (r *sectionRepository) ExistsSectionNumber(number uint64) bool {
+	for _, section := range r.sections {
+		if section.Number == number {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *sectionRepository) getNextId() uint64 {
+
 	sections, err := r.GetAll()
 	if err != nil {
 		return 1

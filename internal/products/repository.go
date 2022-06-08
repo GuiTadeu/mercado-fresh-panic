@@ -10,10 +10,12 @@ import (
 type ProductRepository interface {
 	GetAll() ([]db.Product, error)
 	Get(id uint64) (db.Product, error)
-	Create(id uint64, code string, description string, width float32, height float32, length float32, netWeight float32, expirationDate string,
-		recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64) (db.Product, error)
 	Update(id uint64, updatedproduct db.Product) (db.Product, error)
 	Delete(id uint64) error
+	ExistsProductCode(code string) bool
+
+	Create(code string, description string, width float32, height float32, length float32, netWeight float32, expirationRate float32,
+		recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64) (db.Product, error)
 }
 
 func NewProductRepository(products []db.Product) ProductRepository {
@@ -36,23 +38,24 @@ func (r *productRepository) Get(id uint64) (db.Product, error) {
 			return product, nil
 		}
 	}
-	return db.Product{}, errors.New("product not found")
+	return db.Product{}, errors.New("Product not found")
 }
 
 func (r *productRepository) Create(
-	id uint64, code string, description string, width float32, height float32, length float32, netWeight float32,
-	expirationDate string, recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64,
+	code string, description string, width float32, height float32, length float32,
+	netWeight float32, expirationRate float32, recommendedFreezingTemp float32,
+	freezingRate float32, productTypeId uint64, sellerId uint64,
 ) (db.Product, error) {
 
 	s := db.Product{
-		Id:                      id,
+		Id:                      r.getNextId(),
 		Code:                    code,
 		Description:             description,
 		Width:                   width,
 		Height:                  height,
 		Length:                  length,
 		NetWeight:               netWeight,
-		ExpirationDate:          expirationDate,
+		ExpirationRate:          expirationRate,
 		RecommendedFreezingTemp: recommendedFreezingTemp,
 		FreezingRate:            freezingRate,
 		ProductTypeId:           productTypeId,
@@ -80,4 +83,27 @@ func (r *productRepository) Delete(id uint64) error {
 		}
 	}
 	return fmt.Errorf("Product not found")
+}
+
+func (r *productRepository) ExistsProductCode(code string) bool {
+	for _, product := range r.products {
+		if product.Code == code {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *productRepository) getNextId() uint64 {
+
+	products, err := r.GetAll()
+	if err != nil {
+		return 1
+	}
+
+	if len(products) == 0 {
+		return 1
+	}
+
+	return products[len(products)-1].Id + 1
 }

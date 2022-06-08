@@ -39,8 +39,8 @@ type Product struct {
 	Width                   float32 `json:"width" binding:"required"`
 	Height                  float32 `json:"height" binding:"required"`
 	Length                  float32 `json:"length" binding:"required"`
-	NetWeight               float32 `json:"netWeight" binding:"required"`
-	ExpirationDate          string  `json:"expiration_date" binding:"required"`
+	NetWeight               float32 `json:"net_weight" binding:"required"`
+	ExpirationRate          float32  `json:"expiration_rate" binding:"required"`
 	RecommendedFreezingTemp float32 `json:"recommended_freezing_temperature" binding:"required"`
 	FreezingRate            float32 `json:"freezing_rate" binding:"required"`
 	ProductTypeId           uint64  `json:"product_type_id" binding:"required"`

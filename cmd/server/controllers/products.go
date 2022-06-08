@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
@@ -9,29 +10,29 @@ import (
 )
 
 type CreateProductRequest struct {
-	Code string `json:"product_code" binding:"required"`
-	Description string `json:"description" binding:"required"`
-	Width float32 `json:"width" binding:"required"`
-	Height float32 `json:"height" binding:"required"`
-	Length float32 `json:"length" binding:"required"`
-	NetWeight float32 `json:"netWeight" binding:"required"`
-	ExpirationDate string `json:"expiration_date" binding:"required"`
+	Code                    string  `json:"product_code" binding:"required"`
+	Description             string  `json:"description" binding:"required"`
+	Width                   float32 `json:"width" binding:"required"`
+	Height                  float32 `json:"height" binding:"required"`
+	Length                  float32 `json:"length" binding:"required"`
+	NetWeight               float32 `json:"net_weight" binding:"required"`
+	ExpirationRate          float32 `json:"expiration_rate" binding:"required"`
 	RecommendedFreezingTemp float32 `json:"recommended_freezing_temperature" binding:"required"`
-	FreezingRate float32 `json:"freezing_rate" binding:"required"`
-	ProductTypeId uint64 `json:"product_type_id" binding:"required"`
-	SellerId uint64 `json:"seller_id" binding:"required"`
+	FreezingRate            float32 `json:"freezing_rate" binding:"required"`
+	ProductTypeId           uint64  `json:"product_type_id" binding:"required"`
+	SellerId                uint64  `json:"seller_id" binding:"required"`
 }
 
 type UpdateProductRequest struct {
-	Code string `json:"code"`
-	Description string `json:"description"`
-	Width float32 `json:"width"`
-	Height float32 `json:"height"`
-	Length float32 `json:"length"`
-	NetWeight float32 `json:"netWeight"`
-	ExpirationDate string `json:"expiration_date"`
-	RecommendedFreezingTemp float32 `json:"recommended_freezing_temp"`
-	FreezingRate float32 `json:"freezing_rate"`
+	Code                    string  `json:"product_code"`
+	Description             string  `json:"description"`
+	Width                   float32 `json:"width"`
+	Height                  float32 `json:"height"`
+	Length                  float32 `json:"length"`
+	NetWeight               float32 `json:"net_weight"`
+	ExpirationRate          float32 `json:"expiration_rate"`
+	RecommendedFreezingTemp float32 `json:"recommended_freezing_temperature"`
+	FreezingRate            float32 `json:"freezing_rate"`
 }
 
 type productController struct {
@@ -48,79 +49,70 @@ func (c *productController) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		products, err := c.productService.GetAll()
-
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, products, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, products, ""))
 	}
 }
 
 func (c *productController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
 
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		product, err := c.productService.Get(uint64(id))
+		product, err := c.productService.Get(id)
 
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, product, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, product, ""))
 	}
 }
 
+// TODO Adicionar verificação de ProductTypeId e SellerId (ambos precisam existir)
 func (c *productController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		var request CreateProductRequest
+
 		err := ctx.ShouldBindJSON(&request)
-
 		if err != nil {
-			ctx.JSON(422, gin.H{
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		products, err := c.productService.GetAll()
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		for _, product := range products {
-			if product.Code == request.Code {
-				ctx.JSON(409, web.NewResponse(409, nil, "Product code already existis"))
-				return
-			}
+		if c.productService.ExistsProductCode(request.Code) {
+			ctx.JSON(
+				http.StatusConflict,
+				web.NewResponse(http.StatusConflict, nil, "Product code already exists"),
+			)
 		}
 
 		addedProduct, err := c.productService.Create(
-			c.productService.GetNextId(),
 			request.Code,
 			request.Description,
 			request.Width,
 			request.Height,
 			request.Length,
 			request.NetWeight,
-			request.ExpirationDate,
+			request.ExpirationRate,
 			request.RecommendedFreezingTemp,
 			request.FreezingRate,
 			request.ProductTypeId,
@@ -128,13 +120,13 @@ func (c *productController) Create() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			ctx.JSON(500, gin.H{
+			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, addedProduct, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, addedProduct, ""))
 	}
 }
 
@@ -142,64 +134,91 @@ func (c *productController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		var request UpdateProductRequest
+
 		err := ctx.ShouldBindJSON(&request)
+		if err != nil {
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(400, web.NewResponse(400, nil, "product id binding error"))
+			ctx.JSON(
+				http.StatusBadRequest,
+				web.NewResponse(http.StatusBadRequest, nil, "Product id binding error"),
+			)
+			return
+		}
+
+		foundProduct, err := c.productService.Get(id)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		if c.productService.ExistsProductCode(request.Code) {
+			ctx.JSON(
+				http.StatusConflict,
+				web.NewResponse(http.StatusConflict, nil, "Product code already exists"),
+			)
 			return
 		}
 
 		updatedproduct, err := c.productService.Update(
-			id,
+			foundProduct,
 			request.Code,
 			request.Description,
 			request.Width,
 			request.Height,
 			request.Length,
 			request.NetWeight,
-			request.ExpirationDate,
+			request.ExpirationRate,
 			request.RecommendedFreezingTemp,
 			request.FreezingRate,
 		)
 
 		if err != nil {
-			ctx.JSON(500, web.NewResponse(500, nil, err.Error()))
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, updatedproduct, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, updatedproduct, ""))
 	}
 }
 
 func (c *productController) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
 
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		_, err = c.productService.Get(uint64(id))
-
+		_, err = c.productService.Get(id)
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		err = c.productService.Delete(uint64(id))
+		err = c.productService.Delete(id)
 		if err != nil {
-			ctx.JSON(500, gin.H{
+			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		ctx.JSON(204, web.NewResponse(204, nil, ""))
+		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
 	}
 }

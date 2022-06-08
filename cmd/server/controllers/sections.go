@@ -43,7 +43,6 @@ func (c *sectionController) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		sections, err := c.sectionService.GetAll()
-
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
@@ -57,8 +56,8 @@ func (c *sectionController) GetAll() gin.HandlerFunc {
 
 func (c *sectionController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
 
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
@@ -66,7 +65,7 @@ func (c *sectionController) Get() gin.HandlerFunc {
 			return
 		}
 
-		section, err := c.sectionService.Get(uint64(id))
+		section, err := c.sectionService.Get(id)
 
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{
@@ -79,11 +78,12 @@ func (c *sectionController) Get() gin.HandlerFunc {
 	}
 }
 
+// TODO Adicionar verificação de WarehouseId e ProductTypeId (ambos precisam existir)
 func (c *sectionController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var req CreateSectionRequest
-		err := ctx.ShouldBindJSON(&req)
+		var request CreateSectionRequest
+		err := ctx.ShouldBindJSON(&request)
 
 		if err != nil {
 			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -92,10 +92,27 @@ func (c *sectionController) Create() gin.HandlerFunc {
 			return
 		}
 
-		addedSection, err := c.sectionService.Create(req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
+		if c.sectionService.ExistsSectionNumber(request.Number) {
+			ctx.JSON(
+				http.StatusConflict,
+				web.NewResponse(http.StatusConflict, nil, "Section number already exists"),
+			)
+			return
+		}
+
+		addedSection, err := c.sectionService.Create(
+			request.Number,
+			request.CurrentTemperature,
+			request.MinimumTemperature,
+			request.CurrentCapacity,
+			request.MinimumCapacity,
+			request.MaximumCapacity,
+			request.WarehouseId,
+			request.ProductTypeId,
+		)
 
 		if err != nil {
-			ctx.JSON(err.(*web.CustomError).Status, gin.H{
+			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
 			return
@@ -113,13 +130,31 @@ func (c *sectionController) Update() gin.HandlerFunc {
 
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
+			ctx.JSON(
+				http.StatusBadRequest,
+				web.NewResponse(http.StatusBadRequest, nil, "Section id binding error"),
+			)
+			return
+		}
 
-			ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "section id binding error"))
+		foundSection, err := c.sectionService.Get(id)
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		if c.sectionService.ExistsSectionNumber(request.Number) {
+			ctx.JSON(
+				http.StatusConflict,
+				web.NewResponse(http.StatusConflict, nil, "Section number already exists"),
+			)
 			return
 		}
 
 		updatedSection, err := c.sectionService.Update(
-			id,
+			foundSection,
 			request.Number,
 			request.CurrentTemperature,
 			request.MinimumTemperature,
@@ -129,10 +164,9 @@ func (c *sectionController) Update() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			ctx.JSON(err.(*web.CustomError).Status, gin.H{
+			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
-
 			return
 		}
 
@@ -142,8 +176,8 @@ func (c *sectionController) Update() gin.HandlerFunc {
 
 func (c *sectionController) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
 
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
@@ -151,9 +185,9 @@ func (c *sectionController) Delete() gin.HandlerFunc {
 			return
 		}
 
-		err = c.sectionService.Delete(uint64(id))
+		err = c.sectionService.Delete(id)
 		if err != nil {
-			ctx.JSON(err.(*web.CustomError).Status, gin.H{
+			ctx.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
 			return
