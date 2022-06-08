@@ -21,7 +21,7 @@ type Warehouse struct {
 
 type Section struct {
 	Id                 uint64  `json:"id"`
-	Number             uint64  `json:"number" binding:"required"`
+	Number             uint64  `json:"section_number" binding:"required"`
 	CurrentTemperature float32 `json:"current_temperature" binding:"required"`
 	MinimumTemperature float32 `json:"minimum_temperature" binding:"required"`
 	CurrentCapacity    uint32  `json:"current_capacity" binding:"required"`
