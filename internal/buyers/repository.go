@@ -27,14 +27,14 @@ type buyerRepository struct {
 }
 
 func (r *buyerRepository) Create(cardNumberId, firstName, lastName string) (db.Buyer, error) {
-	b := db.Buyer{
+	s := db.Buyer{
 		Id:           r.getNextId(),
 		CardNumberId: cardNumberId,
 		FirstName:    firstName,
 		LastName:     lastName,
 	}
-	r.buyers = append(r.buyers, b)
-	return b, nil
+	r.buyers = append(r.buyers, s)
+	return s, nil
 }
 
 func (r *buyerRepository) getNextId() uint64 {

@@ -14,8 +14,10 @@ type buyerService struct {
 	buyerRepository BuyerRepository
 }
 
-func NewBuyerService() BuyerService {
-	return &buyerService{}
+func NewBuyerService(r BuyerRepository) BuyerService {
+	return &buyerService{
+		buyerRepository: r,
+	}
 
 }
 
