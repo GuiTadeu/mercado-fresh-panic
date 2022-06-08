@@ -9,11 +9,10 @@ import (
 	"github.com/gin-gonic/gin"	
 )
 
-type warehouseRequest struct {
-	Id                  uint64  `json:"id"`
-	Code      			string  `json:"code"`
-	Address             string  `json:"endereco"`
-	Telephone           string  `json:"number"`
+type warehouseRequest struct {	
+	Code      			string  `json:"warehouse_code"`
+	Address             string  `json:"address"`
+	Telephone           string  `json:"telephone"`
 	MinimunCapacity     uint32   `json:"minimun_capacity"`
 	MinimunTemperature float32 `json:"minimun_temperature"`
 }
@@ -34,9 +33,7 @@ func (c *warehouseController) GetAll() gin.HandlerFunc {
 		warehouse, err := c.warehouseService.GetAll()
 
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H {
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, err.Error()))
 			return
 		}
 
@@ -51,18 +48,14 @@ func (r *warehouseController) Create() gin.HandlerFunc {
 		err := ctx.ShouldBindJSON(&req)
 
 		if err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusUnprocessableEntity, web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()))
 			return
 		}
 
-		addedWarehouse, err := r.warehouseService.Create(req.Id, req.Code, req.Address, req.Telephone, req.MinimunCapacity, req.MinimunTemperature)
+		addedWarehouse, err := r.warehouseService.Create(req.Code, req.Address, req.Telephone, req.MinimunCapacity, req.MinimunTemperature)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 			return
 		}
 		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedWarehouse, ""))
@@ -75,17 +68,13 @@ func (c *warehouseController) Get() gin.HandlerFunc {
 		id, err := strconv.Atoi(ctx.Param("id"))
 
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, err.Error()))
 			return
 		}
 		warehouse, err := c.warehouseService.Get(uint64(id))
 
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, err.Error()))
 			return
 		}
 
@@ -98,25 +87,47 @@ func (c *warehouseController) Delete() gin.HandlerFunc {
 		id, err := strconv.Atoi(ctx.Param("id"))
 
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, err.Error()))
 			return
 		}
 		_, err = c.warehouseService.Get(uint64(id))
 
 		if err != nil {
-			ctx.JSON(http.StatusOK, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, err.Error()))
 			return
 		}
 
 		err = c.warehouseService.Delete(uint64(id))
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
+			return
 		}
+		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
+
 	}
+}
+
+func (c *warehouseController) Update() gin.HandlerFunc {
+    return func(ctx *gin.Context) {
+        var request warehouseRequest
+        err := ctx.ShouldBindJSON(&request)
+        id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+        if err != nil {
+            ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "warehouse id binding error"))
+            return
+        }
+        updatedWarehouse, err := c.warehouseService.Update(
+            id,
+			request.Code,
+			request.Address,
+			request.Telephone,
+			request.MinimunCapacity,
+			request.MinimunTemperature,
+        )
+        if err != nil {
+            ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
+            return
+        }
+        ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, updatedWarehouse, ""))
+    }
 }

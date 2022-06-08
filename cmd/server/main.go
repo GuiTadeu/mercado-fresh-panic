@@ -41,8 +41,8 @@ func main() {
 	warehouseRoutes.GET("/", cwarehouses.GetAll())
 	warehouseRoutes.GET("/:id",cwarehouses.Get())
 	warehouseRoutes.POST("/", cwarehouses.Create())
-	//warehouseRoutes.PUT("/", cwarehouses.Update())
-	warehouseRoutes.DELETE("/", cwarehouses.Delete())
+	warehouseRoutes.PATCH("/:id", cwarehouses.Update())
+	warehouseRoutes.DELETE("/:id", cwarehouses.Delete())
 
 	r.Run()
 
