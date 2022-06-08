@@ -1,11 +1,6 @@
 package products
 
-import (
-	"errors"
-	"fmt"
-
-	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
-)
+import db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 
 type ProductRepository interface {
 	GetAll() ([]db.Product, error)
@@ -38,7 +33,7 @@ func (r *productRepository) Get(id uint64) (db.Product, error) {
 			return product, nil
 		}
 	}
-	return db.Product{}, errors.New("Product not found")
+	return db.Product{}, ProductNotFoundError
 }
 
 func (r *productRepository) Create(
@@ -72,7 +67,7 @@ func (r *productRepository) Update(id uint64, updatedProduct db.Product) (db.Pro
 			return updatedProduct, nil
 		}
 	}
-	return db.Product{}, fmt.Errorf("Product not found")
+	return db.Product{}, ProductNotFoundError
 }
 
 func (r *productRepository) Delete(id uint64) error {
@@ -82,7 +77,7 @@ func (r *productRepository) Delete(id uint64) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Product not found")
+	return ProductNotFoundError
 }
 
 func (r *productRepository) ExistsProductCode(code string) bool {

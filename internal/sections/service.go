@@ -1,11 +1,15 @@
 package sections
 
 import (
-	"net/http"
+	"errors"
 
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
-	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
 	"github.com/imdario/mergo"
+)
+
+var (
+	ExistsSectionNumberError = errors.New("Section number already exists")
+	SectionNotFoundError     = errors.New("Section not found")
 )
 
 type SectionService interface {
@@ -17,7 +21,7 @@ type SectionService interface {
 	Create(number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32,
 		minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64) (db.Section, error)
 
-	Update(foundSection db.Section, number uint64, currentTemperature float32, minimumTemperature float32,
+	Update(id uint64, number uint64, currentTemperature float32, minimumTemperature float32,
 		currentCapacity uint32, minimumCapacity uint32, maximumCapacity uint32) (db.Section, error)
 }
 
@@ -44,19 +48,38 @@ func (s *sectionService) Create(
 	currentCapacity uint32, minimumCapacity uint32, maximumCapacity uint32,
 	warehouseId uint64, productTypeId uint64,
 ) (db.Section, error) {
-	return s.sectionRepository.Create(
+
+	if s.ExistsSectionNumber(number) {
+		return db.Section{}, ExistsSectionNumberError
+	}
+
+	section, err := s.sectionRepository.Create(
 		number, currentTemperature, minimumTemperature, currentCapacity,
 		minimumCapacity, maximumCapacity, warehouseId, productTypeId,
 	)
+
+	if err != nil {
+		return db.Section{}, err
+	}
+
+	return section, nil
 }
 
 func (s *sectionService) Update(
-	foundSection db.Section, newNumber uint64, newCurrentTemperature float32,
+	id uint64, newNumber uint64, newCurrentTemperature float32,
 	newMinimumTemperature float32, newCurrentCapacity uint32,
 	newMinimumCapacity uint32, newMaximumCapacity uint32,
 ) (db.Section, error) {
 
-	id := foundSection.Id
+	foundSection, err := s.Get(id)
+	if err != nil {
+		return db.Section{}, SectionNotFoundError
+	}
+
+	if s.ExistsSectionNumber(newNumber) {
+		return db.Section{}, ExistsSectionNumberError
+	}
+
 	updatedSection := db.Section{
 		Id:                 id,
 		Number:             newNumber,
@@ -67,14 +90,19 @@ func (s *sectionService) Update(
 		MaximumCapacity:    newMaximumCapacity,
 	}
 
-	mergo.Merge(&foundSection, updatedSection, mergo.WithOverride)
+	err = mergo.Merge(&foundSection, updatedSection, mergo.WithOverride)
+	if err != nil {
+		return db.Section{}, err
+	}
+
 	return s.sectionRepository.Update(id, foundSection)
 }
 
 func (s *sectionService) Delete(id uint64) error {
+
 	_, err := s.Get(id)
 	if err != nil {
-		return &web.CustomError{Status: http.StatusNotFound, Err: err}
+		return SectionNotFoundError
 	}
 
 	return s.sectionRepository.Delete(id)

@@ -1,8 +1,15 @@
 package products
 
 import (
+	"errors"
+
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/imdario/mergo"
+)
+
+var (
+	ExistsProductCodeError = errors.New("Product code already exists")
+	ProductNotFoundError = errors.New("Product not found")
 )
 
 type ProductService interface {
@@ -14,7 +21,7 @@ type ProductService interface {
 	Create(code string, description string, width float32, height float32, length float32, netWeight float32, expirationRate float32,
 		recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64) (db.Product, error)
 
-	Update(oldProduct db.Product, newCode string, newDescription string, newWidth float32, newHeight float32, newLength float32,
+	Update(id uint64, newCode string, newDescription string, newWidth float32, newHeight float32, newLength float32,
 		newNetWeight float32, newExpirationRate float32, newRecommendedFreezingTemp float32, newFreezingRate float32) (db.Product, error)
 }
 
@@ -41,18 +48,37 @@ func (s *productService) Create(
 	height float32, length float32, netWeight float32, expirationRate float32,
 	recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64,
 ) (db.Product, error) {
-	return s.productRepository.Create(
+
+	if s.ExistsProductCode(code) {
+		return db.Product{}, ExistsProductCodeError
+	}
+
+	product, err := s.productRepository.Create(
 		code, description, width, height, length, netWeight, expirationRate,
 		recommendedFreezingTemp, freezingRate, productTypeId, sellerId,
 	)
+
+	if err != nil {
+		return db.Product{}, err
+	}
+
+	return product, nil
 }
 
 func (s *productService) Update(
-	foundProduct db.Product, newCode string, newDescription string, newWidth float32, newHeight float32, newLength float32,
+	id uint64, newCode string, newDescription string, newWidth float32, newHeight float32, newLength float32,
 	newNetWeight float32, newExpirationRate float32, newRecommendedFreezingTemp float32, newFreezingRate float32,
 ) (db.Product, error) {
 
-	id := foundProduct.Id
+	foundProduct, err := s.Get(id)
+	if err != nil {
+		return db.Product{}, ProductNotFoundError
+	}
+
+	if s.ExistsProductCode(newCode) {
+		return db.Product{}, ExistsProductCodeError
+	}
+
 	updatedProduct := db.Product{
 		Id:                      id,
 		Code:                    newCode,
@@ -66,11 +92,21 @@ func (s *productService) Update(
 		FreezingRate:            newFreezingRate,
 	}
 
-	mergo.Merge(&foundProduct, updatedProduct, mergo.WithOverride)
+	err = mergo.Merge(&foundProduct, updatedProduct, mergo.WithOverride)
+	if err != nil {
+		return db.Product{}, err
+	}
+
 	return s.productRepository.Update(id, foundProduct)
 }
 
 func (s *productService) Delete(id uint64) error {
+
+	_, err := s.Get(id)
+	if err != nil {
+		return ProductNotFoundError
+	}
+
 	return s.productRepository.Delete(id)
 }
 

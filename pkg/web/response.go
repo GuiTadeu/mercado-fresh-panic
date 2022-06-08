@@ -1,7 +1,7 @@
 package web
 
 type Response struct {
-	Code  int         `json:"code"`
+	Code  int         `json:"-"`
 	Data  interface{} `json:"data,omitempty"`
 	Error string      `json:"error,omitempty"`
 }

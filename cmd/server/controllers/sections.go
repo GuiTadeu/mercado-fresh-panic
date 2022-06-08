@@ -44,9 +44,8 @@ func (c *sectionController) GetAll() gin.HandlerFunc {
 
 		sections, err := c.sectionService.GetAll()
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
@@ -68,9 +67,8 @@ func (c *sectionController) Get() gin.HandlerFunc {
 		section, err := c.sectionService.Get(id)
 
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
@@ -92,14 +90,6 @@ func (c *sectionController) Create() gin.HandlerFunc {
 			return
 		}
 
-		if c.sectionService.ExistsSectionNumber(request.Number) {
-			ctx.JSON(
-				http.StatusConflict,
-				web.NewResponse(http.StatusConflict, nil, "Section number already exists"),
-			)
-			return
-		}
-
 		addedSection, err := c.sectionService.Create(
 			request.Number,
 			request.CurrentTemperature,
@@ -112,9 +102,8 @@ func (c *sectionController) Create() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
@@ -137,24 +126,8 @@ func (c *sectionController) Update() gin.HandlerFunc {
 			return
 		}
 
-		foundSection, err := c.sectionService.Get(id)
-		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		if c.sectionService.ExistsSectionNumber(request.Number) {
-			ctx.JSON(
-				http.StatusConflict,
-				web.NewResponse(http.StatusConflict, nil, "Section number already exists"),
-			)
-			return
-		}
-
 		updatedSection, err := c.sectionService.Update(
-			foundSection,
+			id,
 			request.Number,
 			request.CurrentTemperature,
 			request.MinimumTemperature,
@@ -164,9 +137,8 @@ func (c *sectionController) Update() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
@@ -186,13 +158,27 @@ func (c *sectionController) Delete() gin.HandlerFunc {
 		}
 
 		err = c.sectionService.Delete(id)
+
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
 		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
+	}
+}
+
+func sectionErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+	switch err {
+
+	case sections.SectionNotFoundError:
+		return http.StatusNotFound, gin.H{"error": err.Error()}
+
+	case sections.ExistsSectionNumberError:
+		return http.StatusConflict, gin.H{"error": err.Error()}
+
+	default:
+		return http.StatusInternalServerError, gin.H{"error": err.Error()}
 	}
 }

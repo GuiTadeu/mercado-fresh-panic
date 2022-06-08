@@ -50,9 +50,8 @@ func (c *productController) GetAll() gin.HandlerFunc {
 
 		products, err := c.productService.GetAll()
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			status, header := productErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
@@ -74,9 +73,8 @@ func (c *productController) Get() gin.HandlerFunc {
 		product, err := c.productService.Get(id)
 
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			status, header := productErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
@@ -88,6 +86,7 @@ func (c *productController) Get() gin.HandlerFunc {
 func (c *productController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
+		var service = c.productService
 		var request CreateProductRequest
 
 		err := ctx.ShouldBindJSON(&request)
@@ -98,14 +97,7 @@ func (c *productController) Create() gin.HandlerFunc {
 			return
 		}
 
-		if c.productService.ExistsProductCode(request.Code) {
-			ctx.JSON(
-				http.StatusConflict,
-				web.NewResponse(http.StatusConflict, nil, "Product code already exists"),
-			)
-		}
-
-		addedProduct, err := c.productService.Create(
+		addedProduct, err := service.Create(
 			request.Code,
 			request.Description,
 			request.Width,
@@ -120,9 +112,8 @@ func (c *productController) Create() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			status, header := productErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
@@ -152,24 +143,8 @@ func (c *productController) Update() gin.HandlerFunc {
 			return
 		}
 
-		foundProduct, err := c.productService.Get(id)
-		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		if c.productService.ExistsProductCode(request.Code) {
-			ctx.JSON(
-				http.StatusConflict,
-				web.NewResponse(http.StatusConflict, nil, "Product code already exists"),
-			)
-			return
-		}
-
 		updatedproduct, err := c.productService.Update(
-			foundProduct,
+			id,
 			request.Code,
 			request.Description,
 			request.Width,
@@ -182,12 +157,11 @@ func (c *productController) Update() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			status, header := productErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
-
+		
 		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, updatedproduct, ""))
 	}
 }
@@ -203,22 +177,28 @@ func (c *productController) Delete() gin.HandlerFunc {
 			return
 		}
 
-		_, err = c.productService.Get(id)
-		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
 		err = c.productService.Delete(id)
+
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			status, header := productErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
-
+		
 		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
+	}
+}
+
+func productErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+	switch err {
+
+	case products.ProductNotFoundError:
+		return http.StatusNotFound, gin.H{"error": err.Error()}
+
+	case products.ExistsProductCodeError:
+		return http.StatusConflict, gin.H{"error": err.Error()}
+
+	default:
+		return http.StatusInternalServerError, gin.H{"error": err.Error()}
 	}
 }
