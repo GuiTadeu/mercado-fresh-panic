@@ -9,10 +9,11 @@ import (
 
 type WarehouseRepository interface {
 	GetAll() ([]database.Warehouse, error)
-	Create(id uint64, Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error)
-	Get(id uint64) (database.Warehouse, error)
-	getNextId() uint64
+	Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error)
+	Get(id uint64) (database.Warehouse, error)	
 	Delete(id uint64) error
+	Update(warehouse database.Warehouse) (database.Warehouse, error)
+	FindCode(code string) bool
 }
 
 func NewRepository(warehouse []database.Warehouse) WarehouseRepository {
@@ -29,8 +30,8 @@ func (r *warehouseRepository) GetAll() ([]database.Warehouse, error) {
 	return r.warehouses, nil
 }
 
-func (r *warehouseRepository) Create(id uint64, code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error) {
-	sware := database.Warehouse{Id: r.getNextId(), Code: code, Address: address, Telephone: telephone, MinimunCapacity: minimunCapacity, MinimumTemperature: minimunTemperature,}
+func (r *warehouseRepository) Create(code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error) {
+	sware := database.Warehouse{Id: r.getNextId(), Code: code, Address: address, Telephone: telephone, MinimunCapacity: minimunCapacity, MinimumTemperature: minimunTemperature}
 	r.warehouses = append(r.warehouses, sware)
 	return sware, nil
 }
@@ -65,4 +66,23 @@ func (r *warehouseRepository) Delete(id uint64) error {
 		}
 	}
 	return fmt.Errorf("Warehouse not found")
+}
+
+func (r *warehouseRepository) FindCode(code string) bool {
+    for _, warehouse := range r.warehouses {
+        if warehouse.Code == code {
+            return true
+        }
+    }
+    return false
+}
+
+func (r *warehouseRepository) Update(warehouse database.Warehouse) (database.Warehouse, error) {
+    for idx, w := range r.warehouses {
+        if w.Id == warehouse.Id {
+            r.warehouses[idx] = warehouse
+            return r.warehouses[idx], nil
+        }
+    }
+    return database.Warehouse{}, fmt.Errorf("error: warehoue with id %d not found", warehouse.Id)
 }
