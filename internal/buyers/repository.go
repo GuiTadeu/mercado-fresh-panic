@@ -1,8 +1,6 @@
 package buyers
 
 import (
-	"errors"
-	"fmt"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 )
 
@@ -10,10 +8,10 @@ type BuyerRepository interface {
 	Create(cardNumberId, firstName, lastName string) (db.Buyer, error)
 	Get(id uint64) (db.Buyer, error)
 	GetAll() ([]db.Buyer, error)
-	//Update()
 	Delete(id uint64) error
 	getNextId() uint64
 	Update(id uint64, cardNumberId string, firstName string, lastName string) (db.Buyer, error)
+	ExistsBuyerCardNumberId(cardNumberId string) bool
 }
 
 func NewBuyerRepository(buyers []db.Buyer) BuyerRepository {
@@ -57,7 +55,7 @@ func (r *buyerRepository) Get(id uint64) (db.Buyer, error) {
 			return buyer, nil
 		}
 	}
-	return db.Buyer{}, errors.New("buyer not found")
+	return db.Buyer{}, BuyerNotFoundError
 }
 
 func (r *buyerRepository) GetAll() ([]db.Buyer, error) {
@@ -67,11 +65,11 @@ func (r *buyerRepository) GetAll() ([]db.Buyer, error) {
 func (r *buyerRepository) Delete(id uint64) error {
 	for i := range r.buyers {
 		if r.buyers[i].Id == id {
-			r.buyers = append(r.buyers[:1], r.buyers[i+1:]...)
+			r.buyers = append(r.buyers[:i], r.buyers[i+1:]...)
 			return nil
 		}
 	}
-	return fmt.Errorf("Buyer not found")
+	return BuyerNotFoundError
 }
 
 func (r *buyerRepository) Update(id uint64, cardNumberId string, firstName string, lastName string) (db.Buyer, error) {
@@ -82,5 +80,14 @@ func (r *buyerRepository) Update(id uint64, cardNumberId string, firstName strin
 			return uBuyer, nil
 		}
 	}
-	return db.Buyer{}, fmt.Errorf("Buyer not found")
+	return db.Buyer{}, BuyerNotFoundError
+}
+
+func (r *buyerRepository) ExistsBuyerCardNumberId(cardNumberId string) bool {
+	for _, buyer := range r.buyers {
+		if buyer.CardNumberId == cardNumberId {
+			return true
+		}
+	}
+	return false
 }

@@ -1,8 +1,14 @@
 package buyers
 
 import (
+	"errors"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/imdario/mergo"
+)
+
+var (
+	ExistsBuyerCardNumberIdError = errors.New("buyer card_number_id already exists")
+	BuyerNotFoundError           = errors.New("buyer not found")
 )
 
 type BuyerService interface {
@@ -25,6 +31,9 @@ func NewBuyerService(r BuyerRepository) BuyerService {
 }
 
 func (s *buyerService) Create(cardNumberId, firstName, lastName string) (db.Buyer, error) {
+	if s.existsBuyerCardNumberId(cardNumberId) {
+		return db.Buyer{}, ExistsBuyerCardNumberIdError
+	}
 	return s.buyerRepository.Create(cardNumberId, firstName, lastName)
 }
 
@@ -37,18 +46,33 @@ func (s *buyerService) GetAll() ([]db.Buyer, error) {
 }
 
 func (s *buyerService) Update(id uint64, cardNumberId, firstName, lastName string) (db.Buyer, error) {
+	buyer, err := s.Get(id)
+	if err != nil {
+		return db.Buyer{}, BuyerNotFoundError
+	}
+
+	if s.existsBuyerCardNumberId(cardNumberId) {
+		return db.Buyer{}, ExistsBuyerCardNumberIdError
+	}
+
 	data := db.Buyer{id, cardNumberId, firstName, lastName}
 
-	buyer, err := s.Get(id)
-
+	err = mergo.Merge(&buyer, data, mergo.WithOverride)
 	if err != nil {
 		return db.Buyer{}, err
 	}
 
-	mergo.Merge(&buyer, data, mergo.WithOverride)
 	return s.buyerRepository.Update(buyer.Id, buyer.CardNumberId, buyer.FirstName, buyer.LastName)
 }
 
 func (s *buyerService) Delete(id uint64) error {
+	_, err := s.Get(id)
+	if err != nil {
+		return BuyerNotFoundError
+	}
 	return s.buyerRepository.Delete(id)
+}
+
+func (s *buyerService) existsBuyerCardNumberId(cardNumberId string) bool {
+	return s.buyerRepository.ExistsBuyerCardNumberId(cardNumberId)
 }
