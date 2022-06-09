@@ -5,6 +5,7 @@ import (
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	products "github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	sections "github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
+	sellers "github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,12 +14,26 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var _, _, sectionsDB, productsDB, _, _ = db.CreateDatabases()
+	var sellersDB, _, sectionsDB, productsDB, _, _ = db.CreateDatabases()
 
+	sellersHandlers(sellersDB, server)
 	sectionHandlers(sectionsDB, server)
 	productHandlers(productsDB, server)
 
 	server.Run()
+}
+
+func sellersHandlers(sellersDB []db.Seller, server *gin.Engine) {
+	sellerRepository := sellers.NewRepository(sellersDB)
+	sellerService := sellers.NewService(sellerRepository)
+	sellerController := controller.NewSeller(sellerService)
+
+	sellerGroup := server.Group("/api/v1/sellers")
+	sellerGroup.GET("/", sellerController.FindAll())
+	sellerGroup.GET("/:id", sellerController.FindOne())
+	sellerGroup.POST("/", sellerController.Create())
+	sellerGroup.PATCH("/:id", sellerController.Update())
+	sellerGroup.DELETE("/:id", sellerController.Delete())
 }
 
 func productHandlers(productsDB []db.Product, server *gin.Engine) {
