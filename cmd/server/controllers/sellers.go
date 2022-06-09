@@ -90,7 +90,7 @@ func (control *SellersController) Update() gin.HandlerFunc {
 		id, err := strconv.ParseUint(idParam, 0, 64)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, "ID in wrong format"))
+			ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, "id in wrong format"))
 			return
 		}
 

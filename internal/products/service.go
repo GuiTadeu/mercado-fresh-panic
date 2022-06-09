@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ExistsProductCodeError = errors.New("Product code already exists")
-	ProductNotFoundError = errors.New("Product not found")
+	ExistsProductCodeError = errors.New("product code already exists")
+	ProductNotFoundError   = errors.New("product not found")
 )
 
 type ProductService interface {

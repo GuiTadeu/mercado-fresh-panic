@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ExistsSellerCodeError = errors.New("error: seller code already exists")
-	SellerNotFoundError   = errors.New("error: seller not found")
+	ExistsSellerCodeError = errors.New("seller code already exists")
+	SellerNotFoundError   = errors.New("seller not found")
 )
 
 type Service interface {

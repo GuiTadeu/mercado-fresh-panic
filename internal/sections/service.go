@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ExistsSectionNumberError = errors.New("Section number already exists")
-	SectionNotFoundError     = errors.New("Section not found")
+	ExistsSectionNumberError = errors.New("section number already exists")
+	SectionNotFoundError     = errors.New("section not found")
 )
 
 type SectionService interface {
