@@ -6,6 +6,7 @@ import (
 	products "github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	sections "github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	sellers "github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
+	warehouses "github.com/GuiTadeu/mercado-fresh-panic/internal/warehouse"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,9 +15,11 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var sellersDB, _, sectionsDB, productsDB, _, _ = db.CreateDatabases()
+
+	var sellersDB, warehousesDB, sectionsDB, productsDB, _, _ = db.CreateDatabases()
 
 	sellersHandlers(sellersDB, server)
+	warehousesHandlers(warehousesDB, server)
 	sectionHandlers(sectionsDB, server)
 	productHandlers(productsDB, server)
 
@@ -34,6 +37,19 @@ func sellersHandlers(sellersDB []db.Seller, server *gin.Engine) {
 	sellerGroup.POST("/", sellerController.Create())
 	sellerGroup.PATCH("/:id", sellerController.Update())
 	sellerGroup.DELETE("/:id", sellerController.Delete())
+}
+
+func warehousesHandlers(warehousesDB []db.Warehouse, server *gin.Engine) {
+	warehouseRepository := warehouses.NewRepository(warehousesDB)
+	warehouseService := warehouses.NewService(warehouseRepository)
+	warehouseController := controller.NewWarehouseController(warehouseService)
+
+	warehouseGroup := server.Group("/api/v1/warehouses")
+	warehouseGroup.GET("/", warehouseController.GetAll())
+	warehouseGroup.GET("/:id", warehouseController.Get())
+	warehouseGroup.POST("/", warehouseController.Create())
+	warehouseGroup.PATCH("/:id", warehouseController.Update())
+	warehouseGroup.DELETE("/:id", warehouseController.Delete())
 }
 
 func productHandlers(productsDB []db.Product, server *gin.Engine) {
