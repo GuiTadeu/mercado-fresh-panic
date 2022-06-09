@@ -1,4 +1,4 @@
-package warehouse
+package warehouses
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	ExistsWarehouseCodeError = errors.New("warehouse code already exists")
-	WarehouseNotFoundError   = errors.New("warehouse not found")
+	ExistsWarehouseCodeError = errors.New("warehouses code already exists")
+	WarehouseNotFoundError   = errors.New("warehouses not found")
 )
 
 type WarehouseService interface {

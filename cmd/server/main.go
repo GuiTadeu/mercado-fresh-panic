@@ -3,11 +3,12 @@ package main
 import (
 	controller "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controllers"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
-	products "github.com/GuiTadeu/mercado-fresh-panic/internal/products"
-	sections "github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
-	sellers "github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
-	warehouses "github.com/GuiTadeu/mercado-fresh-panic/internal/warehouse"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,12 +17,13 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var sellersDB, warehousesDB, sectionsDB, productsDB, employeeDB, _ = db.CreateDatabases()
+	var sellersDB, warehousesDB, sectionsDB, productsDB, employeeDB, buyersDB = db.CreateDatabases()
 
 	sellersHandlers(sellersDB, server)
 	warehousesHandlers(warehousesDB, server)
 	sectionHandlers(sectionsDB, server)
 	productHandlers(productsDB, server)
+	buyerHandlers(buyersDB, server)
 	employeeHandlers(employeeDB, server)
 
 	server.Run()
@@ -97,4 +99,19 @@ func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
 	employeeRoutes.DELETE("/:id", employeeHandler.Delete())
 	employeeRoutes.GET("/:id", employeeHandler.Get())
 	employeeRoutes.PATCH("/:id", employeeHandler.Update())
+}
+
+func buyerHandlers(buyersDB []db.Buyer, server *gin.Engine) {
+
+	rBuyers := buyers.NewBuyerRepository(buyersDB)
+	sBuyers := buyers.NewBuyerService(rBuyers)
+	cBuyers := controller.NewBuyerController(sBuyers)
+
+	buyerRoutes := server.Group("/api/v1/buyers")
+
+	buyerRoutes.GET("/", cBuyers.GetAll())
+	buyerRoutes.GET("/:id", cBuyers.Get())
+	buyerRoutes.POST("/", cBuyers.Create())
+	buyerRoutes.PATCH("/:id", cBuyers.Update())
+	buyerRoutes.DELETE("/:id", cBuyers.Delete())
 }

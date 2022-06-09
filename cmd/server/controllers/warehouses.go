@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouse"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
 	"github.com/gin-gonic/gin"
 )
@@ -26,10 +26,10 @@ type createWarehouseRequest struct {
 }
 
 type warehouseController struct {
-	warehouseService warehouse.WarehouseService
+	warehouseService warehouses.WarehouseService
 }
 
-func NewWarehouseController(warehouse warehouse.WarehouseService) *warehouseController {
+func NewWarehouseController(warehouse warehouses.WarehouseService) *warehouseController {
 	return &warehouseController{
 		warehouseService: warehouse,
 	}
@@ -127,7 +127,7 @@ func (c *warehouseController) Update() gin.HandlerFunc {
 		err := ctx.ShouldBindJSON(&request)
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "warehouse id binding error"))
+			ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "warehouses id binding error"))
 			return
 		}
 		updatedWarehouse, err := c.warehouseService.Update(
@@ -149,9 +149,9 @@ func (c *warehouseController) Update() gin.HandlerFunc {
 
 func warehouseErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
 	switch err {
-	case warehouse.WarehouseNotFoundError:
+	case warehouses.WarehouseNotFoundError:
 		return http.StatusNotFound, gin.H{"error": err.Error()}
-	case warehouse.ExistsWarehouseCodeError:
+	case warehouses.ExistsWarehouseCodeError:
 		return http.StatusConflict, gin.H{"error": err.Error()}
 	default:
 		return http.StatusInternalServerError, gin.H{"error": err.Error()}
