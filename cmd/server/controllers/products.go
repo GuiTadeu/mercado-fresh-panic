@@ -138,12 +138,12 @@ func (c *productController) Update() gin.HandlerFunc {
 		if err != nil {
 			ctx.JSON(
 				http.StatusBadRequest,
-				web.NewResponse(http.StatusBadRequest, nil, "Product id binding error"),
+				web.NewResponse(http.StatusBadRequest, nil, "product id binding error"),
 			)
 			return
 		}
 
-		updatedProduct, err := c.productService.Update(
+		updatedproduct, err := c.productService.Update(
 			id,
 			request.Code,
 			request.Description,
@@ -162,7 +162,7 @@ func (c *productController) Update() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, updatedProduct, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, updatedproduct, ""))
 	}
 }
 
@@ -184,7 +184,7 @@ func (c *productController) Delete() gin.HandlerFunc {
 			ctx.JSON(status, header)
 			return
 		}
-
+		
 		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
 	}
 }

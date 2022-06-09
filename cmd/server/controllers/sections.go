@@ -121,7 +121,7 @@ func (c *sectionController) Update() gin.HandlerFunc {
 		if err != nil {
 			ctx.JSON(
 				http.StatusBadRequest,
-				web.NewResponse(http.StatusBadRequest, nil, "Section id binding error"),
+				web.NewResponse(http.StatusBadRequest, nil, "section id binding error"),
 			)
 			return
 		}
