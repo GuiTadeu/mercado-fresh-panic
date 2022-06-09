@@ -1,10 +1,9 @@
 package warehouse
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"	
+	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 )
 
 type WarehouseRepository interface {
@@ -55,7 +54,7 @@ func (r *warehouseRepository) Get(id uint64) (database.Warehouse, error) {
 		}
 	}
 
-	return database.Warehouse{}, errors.New("warehouse not found")
+	return database.Warehouse{}, WarehouseNotFoundError
 }
 
 func (r *warehouseRepository) Delete(id uint64) error {
@@ -65,7 +64,7 @@ func (r *warehouseRepository) Delete(id uint64) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Warehouse not found")
+	return WarehouseNotFoundError
 }
 
 func (r *warehouseRepository) FindCode(code string) bool {

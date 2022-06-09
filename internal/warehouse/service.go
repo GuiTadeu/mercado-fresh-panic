@@ -8,6 +8,11 @@ import (
 	"github.com/imdario/mergo"
 )
 
+var (
+    ExistsWarehouseCodeError = errors.New("warehouse code already exists")
+    WarehouseNotFoundError   = errors.New("warehouse not found")
+)
+
 type WarehouseService interface {
 	GetAll() ([]database.Warehouse, error)
 	Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error)
@@ -39,7 +44,7 @@ func (s *warehouseService) Create(code string, address string, telephone string,
     }
     for _, v := range warehouses {
         if v.Code == code {
-            return database.Warehouse{}, errors.New("warehouse code already exists")
+            return database.Warehouse{}, ExistsWarehouseCodeError
         }
     }
 	return s.warehouseRepo.Create(code, address, telephone, minimumCapacity, minimumTemperature)
@@ -69,11 +74,11 @@ func (s *warehouseService) GetNextId() uint64 {
 func (s *warehouseService) Update(id uint64, code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32) (database.Warehouse, error) {
     foundWarehouse, err := s.warehouseRepo.Get(id)
     if err != nil {
-        return database.Warehouse{}, fmt.Errorf("error: warehouse not found")
+        return database.Warehouse{}, WarehouseNotFoundError
     }
     isUsedCid := s.warehouseRepo.FindCode(code)
     if isUsedCid {
-        return database.Warehouse{}, fmt.Errorf("warehouse with this cid already exists")
+        return database.Warehouse{}, ExistsWarehouseCodeError
     }
     updatedWarehouse := database.Warehouse{
         Id:          id,
