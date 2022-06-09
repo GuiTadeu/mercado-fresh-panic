@@ -138,7 +138,7 @@ func (c *productController) Update() gin.HandlerFunc {
 		if err != nil {
 			ctx.JSON(
 				http.StatusBadRequest,
-				web.NewResponse(http.StatusBadRequest, nil, "Product id binding error"),
+				web.NewResponse(http.StatusBadRequest, nil, "product id binding error"),
 			)
 			return
 		}
