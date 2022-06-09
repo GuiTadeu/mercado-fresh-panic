@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -49,7 +50,7 @@ func (c *EmployeeController) Create() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusCreated, gin.H{"data": employee})
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, employee, ""))
 	}
 }
 
@@ -72,7 +73,7 @@ func (c *EmployeeController) Get() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{"data": employee})
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, employee, ""))
 
 	}
 }
@@ -107,7 +108,7 @@ func (c *EmployeeController) Update() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{"data": employee})
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, employee, ""))
 	}
 }
 
@@ -122,7 +123,7 @@ func (c *EmployeeController) GetAll() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{"data": employees})
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, employees, ""))
 	}
 }
 
@@ -143,7 +144,7 @@ func (c *EmployeeController) Delete() gin.HandlerFunc {
 			ctx.JSON(status, header)
 			return
 		}
-		ctx.JSON(http.StatusNoContent, nil)
+		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
 	}
 }
 

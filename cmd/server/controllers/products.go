@@ -117,7 +117,7 @@ func (c *productController) Create() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, addedProduct, ""))
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedProduct, ""))
 	}
 }
 
