@@ -9,8 +9,8 @@ import (
 )
 
 var (
-    ExistsWarehouseCodeError = errors.New("warehouse code already exists")
-    WarehouseNotFoundError   = errors.New("warehouse not found")
+	ExistsWarehouseCodeError = errors.New("warehouse code already exists")
+	WarehouseNotFoundError   = errors.New("warehouse not found")
 )
 
 type WarehouseService interface {
@@ -19,7 +19,6 @@ type WarehouseService interface {
 	Get(id uint64) (database.Warehouse, error)
 	Delete(id uint64) error
 	Update(id uint64, code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32) (database.Warehouse, error)
-	
 }
 
 func NewService(warehouseRepo WarehouseRepository) WarehouseService {
@@ -37,16 +36,16 @@ func (s *warehouseService) GetAll() ([]database.Warehouse, error) {
 
 }
 
-func (s *warehouseService) Create(code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32) (database.Warehouse, error) {	
+func (s *warehouseService) Create(code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32) (database.Warehouse, error) {
 	warehouses, err := s.GetAll()
-    if err != nil {
-        return database.Warehouse{}, err
-    }
-    for _, v := range warehouses {
-        if v.Code == code {
-            return database.Warehouse{}, ExistsWarehouseCodeError
-        }
-    }
+	if err != nil {
+		return database.Warehouse{}, err
+	}
+	for _, v := range warehouses {
+		if v.Code == code {
+			return database.Warehouse{}, ExistsWarehouseCodeError
+		}
+	}
 	return s.warehouseRepo.Create(code, address, telephone, minimumCapacity, minimumTemperature)
 }
 
@@ -72,40 +71,26 @@ func (s *warehouseService) GetNextId() uint64 {
 }
 
 func (s *warehouseService) Update(id uint64, code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32) (database.Warehouse, error) {
-    foundWarehouse, err := s.warehouseRepo.Get(id)
-    if err != nil {
-        return database.Warehouse{}, WarehouseNotFoundError
-    }
-    isUsedCid := s.warehouseRepo.FindCode(code)
-    if isUsedCid {
-        return database.Warehouse{}, ExistsWarehouseCodeError
-    }
-    updatedWarehouse := database.Warehouse{
-        Id:          id,
-        Code:         code,
-        Address: 	  address,
-        Telephone:   telephone,
-		MinimunCapacity: minimumCapacity,
+	foundWarehouse, err := s.warehouseRepo.Get(id)
+	if err != nil {
+		return database.Warehouse{}, WarehouseNotFoundError
+	}
+	isUsedCid := s.warehouseRepo.FindCode(code)
+	if isUsedCid {
+		return database.Warehouse{}, ExistsWarehouseCodeError
+	}
+	updatedWarehouse := database.Warehouse{
+		Id:                 id,
+		Code:               code,
+		Address:            address,
+		Telephone:          telephone,
+		MinimunCapacity:    minimumCapacity,
 		MinimumTemperature: minimumTemperature,
-    }
-    mergo.Merge(&foundWarehouse, updatedWarehouse, mergo.WithOverride)
-    newWarehouse, err := s.warehouseRepo.Update(foundWarehouse)
-    if err != nil {
-        return database.Warehouse{}, fmt.Errorf("error: internal server error")
-    }
-    return newWarehouse, nil
+	}
+	mergo.Merge(&foundWarehouse, updatedWarehouse, mergo.WithOverride)
+	newWarehouse, err := s.warehouseRepo.Update(foundWarehouse)
+	if err != nil {
+		return database.Warehouse{}, fmt.Errorf("error: internal server error")
+	}
+	return newWarehouse, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -2,11 +2,11 @@ package main
 
 import (
 	controller "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controllers"
-	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"	
-	warehouses "github.com/GuiTadeu/mercado-fresh-panic/internal/warehouse"
+	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	products "github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	sections "github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	sellers "github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
+	warehouses "github.com/GuiTadeu/mercado-fresh-panic/internal/warehouse"
 	"github.com/gin-gonic/gin"
 )
 

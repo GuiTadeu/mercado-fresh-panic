@@ -9,7 +9,7 @@ import (
 type WarehouseRepository interface {
 	GetAll() ([]database.Warehouse, error)
 	Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error)
-	Get(id uint64) (database.Warehouse, error)	
+	Get(id uint64) (database.Warehouse, error)
 	Delete(id uint64) error
 	Update(warehouse database.Warehouse) (database.Warehouse, error)
 	FindCode(code string) bool
@@ -68,20 +68,20 @@ func (r *warehouseRepository) Delete(id uint64) error {
 }
 
 func (r *warehouseRepository) FindCode(code string) bool {
-    for _, warehouse := range r.warehouses {
-        if warehouse.Code == code {
-            return true
-        }
-    }
-    return false
+	for _, warehouse := range r.warehouses {
+		if warehouse.Code == code {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *warehouseRepository) Update(warehouse database.Warehouse) (database.Warehouse, error) {
-    for idx, w := range r.warehouses {
-        if w.Id == warehouse.Id {
-            r.warehouses[idx] = warehouse
-            return r.warehouses[idx], nil
-        }
-    }
-    return database.Warehouse{}, fmt.Errorf("error: warehoue with id %d not found", warehouse.Id)
+	for idx, w := range r.warehouses {
+		if w.Id == warehouse.Id {
+			r.warehouses[idx] = warehouse
+			return r.warehouses[idx], nil
+		}
+	}
+	return database.Warehouse{}, fmt.Errorf("error: warehoue with id %d not found", warehouse.Id)
 }
