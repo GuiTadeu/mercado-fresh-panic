@@ -3,6 +3,7 @@ package main
 import (
 	controller "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controllers"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
 	products "github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	sections "github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	sellers "github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
@@ -15,13 +16,13 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-
-	var sellersDB, warehousesDB, sectionsDB, productsDB, _, _ = db.CreateDatabases()
+	var sellersDB, warehousesDB, sectionsDB, productsDB, employeeDB, _ = db.CreateDatabases()
 
 	sellersHandlers(sellersDB, server)
 	warehousesHandlers(warehousesDB, server)
 	sectionHandlers(sectionsDB, server)
 	productHandlers(productsDB, server)
+	employeeHandlers(employeeDB, server)
 
 	server.Run()
 }
@@ -80,4 +81,20 @@ func sectionHandlers(sectionsDB []db.Section, server *gin.Engine) {
 	sectionRoutes.POST("/", sectionHandler.Create())
 	sectionRoutes.PATCH("/:id", sectionHandler.Update())
 	sectionRoutes.DELETE("/:id", sectionHandler.Delete())
+
+}
+
+func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
+
+	employeeRepository := employees.NewRepository(employeeDB)
+	employeeService := employees.NewService(employeeRepository)
+	employeeHandler := controller.NewEmployeeController(employeeService)
+
+	employeeRoutes := server.Group("/api/v1/employees")
+
+	employeeRoutes.GET("/", employeeHandler.GetAll())
+	employeeRoutes.POST("/", employeeHandler.Create())
+	employeeRoutes.DELETE("/:id", employeeHandler.Delete())
+	employeeRoutes.GET("/:id", employeeHandler.Get())
+	employeeRoutes.PATCH("/:id", employeeHandler.Update())
 }

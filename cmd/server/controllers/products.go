@@ -82,7 +82,7 @@ func (c *productController) Get() gin.HandlerFunc {
 	}
 }
 
-// TODO Adicionar verificação de ProductTypeId e SellerId (ambos precisam existir)
+//TODO Adicionar verificação de ProductTypeId e SellerId (ambos precisam existir)
 func (c *productController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -117,7 +117,7 @@ func (c *productController) Create() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, addedProduct, ""))
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedProduct, ""))
 	}
 }
 
@@ -184,7 +184,7 @@ func (c *productController) Delete() gin.HandlerFunc {
 			ctx.JSON(status, header)
 			return
 		}
-
+		
 		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
 	}
 }
