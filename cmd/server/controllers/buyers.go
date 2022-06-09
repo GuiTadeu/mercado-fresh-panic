@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
+	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -48,7 +49,7 @@ func (c buyerController) Create() gin.HandlerFunc {
 			ctx.JSON(status, header)
 			return
 		}
-		ctx.JSON(http.StatusCreated, gin.H{"data": buyer})
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, buyer, ""))
 	}
 
 }
@@ -64,7 +65,7 @@ func (c *buyerController) GetAll() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{"data": buyers})
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, buyers, ""))
 	}
 
 }
@@ -88,7 +89,7 @@ func (c *buyerController) Get() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{"data": buyer})
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, buyer, ""))
 	}
 }
 
@@ -140,7 +141,7 @@ func (c *buyerController) Update() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, gin.H{"data": buyer})
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, buyer, ""))
 	}
 }
 

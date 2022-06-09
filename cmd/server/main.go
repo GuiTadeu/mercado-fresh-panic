@@ -4,8 +4,11 @@ import (
 	controller "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controllers"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
-	products "github.com/GuiTadeu/mercado-fresh-panic/internal/products"
-	sections "github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,13 +17,42 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var _, _, sectionsDB, productsDB, _, buyersDB = db.CreateDatabases()
+	var sellersDB, warehousesDB, sectionsDB, productsDB, employeeDB, buyersDB = db.CreateDatabases()
 
+	sellersHandlers(sellersDB, server)
+	warehousesHandlers(warehousesDB, server)
 	sectionHandlers(sectionsDB, server)
 	productHandlers(productsDB, server)
 	buyerHandlers(buyersDB, server)
+	employeeHandlers(employeeDB, server)
 
 	server.Run()
+}
+
+func sellersHandlers(sellersDB []db.Seller, server *gin.Engine) {
+	sellerRepository := sellers.NewRepository(sellersDB)
+	sellerService := sellers.NewService(sellerRepository)
+	sellerController := controller.NewSeller(sellerService)
+
+	sellerGroup := server.Group("/api/v1/sellers")
+	sellerGroup.GET("/", sellerController.FindAll())
+	sellerGroup.GET("/:id", sellerController.FindOne())
+	sellerGroup.POST("/", sellerController.Create())
+	sellerGroup.PATCH("/:id", sellerController.Update())
+	sellerGroup.DELETE("/:id", sellerController.Delete())
+}
+
+func warehousesHandlers(warehousesDB []db.Warehouse, server *gin.Engine) {
+	warehouseRepository := warehouses.NewRepository(warehousesDB)
+	warehouseService := warehouses.NewService(warehouseRepository)
+	warehouseController := controller.NewWarehouseController(warehouseService)
+
+	warehouseGroup := server.Group("/api/v1/warehouses")
+	warehouseGroup.GET("/", warehouseController.GetAll())
+	warehouseGroup.GET("/:id", warehouseController.Get())
+	warehouseGroup.POST("/", warehouseController.Create())
+	warehouseGroup.PATCH("/:id", warehouseController.Update())
+	warehouseGroup.DELETE("/:id", warehouseController.Delete())
 }
 
 func productHandlers(productsDB []db.Product, server *gin.Engine) {
@@ -51,6 +83,22 @@ func sectionHandlers(sectionsDB []db.Section, server *gin.Engine) {
 	sectionRoutes.POST("/", sectionHandler.Create())
 	sectionRoutes.PATCH("/:id", sectionHandler.Update())
 	sectionRoutes.DELETE("/:id", sectionHandler.Delete())
+
+}
+
+func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
+
+	employeeRepository := employees.NewRepository(employeeDB)
+	employeeService := employees.NewService(employeeRepository)
+	employeeHandler := controller.NewEmployeeController(employeeService)
+
+	employeeRoutes := server.Group("/api/v1/employees")
+
+	employeeRoutes.GET("/", employeeHandler.GetAll())
+	employeeRoutes.POST("/", employeeHandler.Create())
+	employeeRoutes.DELETE("/:id", employeeHandler.Delete())
+	employeeRoutes.GET("/:id", employeeHandler.Get())
+	employeeRoutes.PATCH("/:id", employeeHandler.Update())
 }
 
 func buyerHandlers(buyersDB []db.Buyer, server *gin.Engine) {

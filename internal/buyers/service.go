@@ -55,7 +55,7 @@ func (s *buyerService) Update(id uint64, cardNumberId, firstName, lastName strin
 		return db.Buyer{}, ExistsBuyerCardNumberIdError
 	}
 
-	data := db.Buyer{id, cardNumberId, firstName, lastName}
+	data := db.Buyer{Id: id, CardNumberId: cardNumberId, FirstName: firstName, LastName: lastName}
 
 	err = mergo.Merge(&buyer, data, mergo.WithOverride)
 	if err != nil {
