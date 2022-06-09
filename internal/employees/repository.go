@@ -1,8 +1,6 @@
-package employee
+package employees
 
 import (
-	"errors"
-	"fmt"
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 )
 
@@ -13,6 +11,7 @@ type EmployeeRepository interface {
 	Get(id uint64) (database.Employee, error)
 	Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (database.Employee, error)
 	Delete(id uint64) error
+	ExistsEmployeeCardNumberId(cardNumberId string) bool
 }
 
 type employeeRepository struct {
@@ -36,7 +35,7 @@ func (r *employeeRepository) Get(id uint64) (database.Employee, error) {
 			return employee, nil
 		}
 	}
-	return database.Employee{}, errors.New("section not found")
+	return database.Employee{}, EmployeeNotFoundError
 }
 
 func (r *employeeRepository) GetAll() ([]database.Employee, error) {
@@ -44,19 +43,14 @@ func (r *employeeRepository) GetAll() ([]database.Employee, error) {
 }
 
 func (r *employeeRepository) Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (database.Employee, error) {
-	e := database.Employee{Id: id, CardNumberId: cardNumberId, FirstName: firstName, LastName: lastName, WarehouseId: wareHouseId}
-	updated := false
+	updatedEmployee := database.Employee{Id: id, CardNumberId: cardNumberId, FirstName: firstName, LastName: lastName, WarehouseId: wareHouseId}
 	for i := range r.employees {
 		if r.employees[i].Id == id {
-			r.employees[i] = e
-			updated = true
-			break
+			r.employees[i] = updatedEmployee
+			return updatedEmployee, nil
 		}
 	}
-	if !updated {
-		return database.Employee{}, fmt.Errorf("produto %d não encontrado", id)
-	}
-	return e, nil
+	return database.Employee{}, EmployeeNotFoundError
 }
 
 func (r *employeeRepository) Delete(id uint64) error {
@@ -66,7 +60,16 @@ func (r *employeeRepository) Delete(id uint64) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Section not found")
+	return EmployeeNotFoundError
+}
+
+func (r *employeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) bool {
+	for _, employee := range r.employees {
+		if employee.CardNumberId == cardNumberId {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *employeeRepository) getNextId() uint64 {

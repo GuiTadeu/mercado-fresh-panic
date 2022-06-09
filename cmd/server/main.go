@@ -3,23 +3,48 @@ package main
 import (
 	controller "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controllers"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
-	"github.com/GuiTadeu/mercado-fresh-panic/internal/employee"
-	rp "github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 
+	server := gin.Default()
+
 	// sellers, warehouses, sections, products, employees, buyers
-	var _, _, sections, _, employees, _ = db.CreateDatabases()
+	var _, _, sectionsDB, productsDB, employeeDB, _ = db.CreateDatabases()
 
-	sectionRepository := rp.NewRepository(sections)
-	sectionService := rp.NewService(sectionRepository)
-	sectionHandler := controller.NewController(sectionService)
+	sectionHandlers(sectionsDB, server)
+	productHandlers(productsDB, server)
+	employeeHandlers(employeeDB, server)
 
-	r := gin.Default()
+	server.Run()
+}
 
-	sectionRoutes := r.Group("/api/v1/sections")
+func productHandlers(productsDB []db.Product, server *gin.Engine) {
+
+	productRepository := products.NewProductRepository(productsDB)
+	productService := products.NewProductService(productRepository)
+	productHandler := controller.NewProductController(productService)
+
+	productRoutes := server.Group("/api/v1/products")
+
+	productRoutes.GET("/", productHandler.GetAll())
+	productRoutes.GET("/:id", productHandler.Get())
+	productRoutes.POST("/", productHandler.Create())
+	productRoutes.PATCH("/:id", productHandler.Update())
+	productRoutes.DELETE("/:id", productHandler.Delete())
+}
+
+func sectionHandlers(sectionsDB []db.Section, server *gin.Engine) {
+
+	sectionRepository := sections.NewRepository(sectionsDB)
+	sectionService := sections.NewService(sectionRepository)
+	sectionHandler := controller.NewSectionController(sectionService)
+
+	sectionRoutes := server.Group("/api/v1/sections")
 
 	sectionRoutes.GET("/", sectionHandler.GetAll())
 	sectionRoutes.GET("/:id", sectionHandler.Get())
@@ -27,16 +52,19 @@ func main() {
 	sectionRoutes.PATCH("/:id", sectionHandler.Update())
 	sectionRoutes.DELETE("/:id", sectionHandler.Delete())
 
-	rEmployee := employee.NewRepository(employees)
-	sEmployee := employee.NewService(rEmployee)
-	cEmployee := controller.NewEmployee(sEmployee)
+}
 
-	employeeRoutes := r.Group("/api/v1/employees")
-	employeeRoutes.GET("/", cEmployee.GetAll())
-	employeeRoutes.POST("/", cEmployee.Create())
-	employeeRoutes.DELETE("/:id", cEmployee.Delete())
-	employeeRoutes.GET("/:id", cEmployee.Get())
-	employeeRoutes.PATCH("/:id", cEmployee.Update())
-	r.Run()
+func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
 
+	employeeRepository := employees.NewRepository(employeeDB)
+	employeeService := employees.NewService(employeeRepository)
+	employeeHandler := controller.NewEmployeeController(employeeService)
+
+	employeeRoutes := server.Group("/api/v1/employees")
+
+	employeeRoutes.GET("/", employeeHandler.GetAll())
+	employeeRoutes.POST("/", employeeHandler.Create())
+	employeeRoutes.DELETE("/:id", employeeHandler.Delete())
+	employeeRoutes.GET("/:id", employeeHandler.Get())
+	employeeRoutes.PATCH("/:id", employeeHandler.Update())
 }
