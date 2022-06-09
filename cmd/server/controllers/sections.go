@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
@@ -8,8 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type request struct {
-	Id                 uint64  `json:"id"`
+type CreateSectionRequest struct {
 	Number             uint64  `json:"number" binding:"required"`
 	CurrentTemperature float32 `json:"current_temperature" binding:"required"`
 	MinimumTemperature float32 `json:"minimum_temperature" binding:"required"`
@@ -20,11 +20,20 @@ type request struct {
 	ProductTypeId      uint64  `json:"product_type_id" binding:"required"`
 }
 
+type UpdateSectionRequest struct {
+	Number             uint64  `json:"number"`
+	CurrentTemperature float32 `json:"current_temperature"`
+	MinimumTemperature float32 `json:"minimum_temperature"`
+	CurrentCapacity    uint32  `json:"current_capacity"`
+	MinimumCapacity    uint32  `json:"minimum_capacity"`
+	MaximumCapacity    uint32  `json:"maximum_capacity"`
+}
+
 type sectionController struct {
 	sectionService sections.SectionService
 }
 
-func NewController(s sections.SectionService) *sectionController {
+func NewSectionController(s sections.SectionService) *sectionController {
 	return &sectionController{
 		sectionService: s,
 	}
@@ -34,156 +43,142 @@ func (c *sectionController) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		sections, err := c.sectionService.GetAll()
-
 		if err != nil {
-			ctx.JSON(404, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, sections, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, sections, ""))
 	}
 }
 
 func (c *sectionController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
 
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		section, err := c.sectionService.Get(uint64(id))
+		section, err := c.sectionService.Get(id)
 
 		if err != nil {
-			ctx.JSON(404, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		ctx.JSON(200, web.NewResponse(200, section, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, section, ""))
 	}
 }
 
+// TODO Adicionar verificação de WarehouseId e ProductTypeId (ambos precisam existir)
 func (c *sectionController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
 
-		err := ctx.ShouldBindJSON(&req)
+		var request CreateSectionRequest
+		err := ctx.ShouldBindJSON(&request)
 
 		if err != nil {
-			ctx.JSON(422, gin.H{
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		sections, err := c.sectionService.GetAll()
+		addedSection, err := c.sectionService.Create(
+			request.Number,
+			request.CurrentTemperature,
+			request.MinimumTemperature,
+			request.CurrentCapacity,
+			request.MinimumCapacity,
+			request.MaximumCapacity,
+			request.WarehouseId,
+			request.ProductTypeId,
+		)
+
 		if err != nil {
-			ctx.JSON(500, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		for _, v := range sections {
-			if v.Number == req.Number {
-				ctx.JSON(409, web.NewResponse(409, nil, "Section number already existis"))
-				return
-			}
-		}
-
-		addedSection, err := c.sectionService.Create(c.sectionService.GetNextId(), req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
-
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		ctx.JSON(200, web.NewResponse(200, addedSection, ""))
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedSection, ""))
 	}
-
 }
 
 func (c *sectionController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
 
+		var request UpdateSectionRequest
+		err := ctx.ShouldBindJSON(&request)
+
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(404, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(
+				http.StatusBadRequest,
+				web.NewResponse(http.StatusBadRequest, nil, "section id binding error"),
+			)
 			return
 		}
 
-		var req request
-
-		err = ctx.ShouldBindJSON(&req)
+		updatedSection, err := c.sectionService.Update(
+			id,
+			request.Number,
+			request.CurrentTemperature,
+			request.MinimumTemperature,
+			request.CurrentCapacity,
+			request.MinimumCapacity,
+			request.MaximumCapacity,
+		)
 
 		if err != nil {
-			ctx.JSON(422, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		_, err = c.sectionService.Get(uint64(id))
-		if err != nil {
-			ctx.JSON(404, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		updatedSection, err := c.sectionService.Update(uint64(id), req.Number, req.CurrentTemperature, req.MinimumTemperature, req.CurrentCapacity, req.MinimumCapacity, req.MaximumCapacity, req.WarehouseId, req.ProductTypeId)
-
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		ctx.JSON(200, web.NewResponse(200, updatedSection, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, updatedSection, ""))
 	}
-
 }
 
 func (c *sectionController) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
 
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(404, gin.H{
+			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		_, err = c.sectionService.Get(uint64(id))
+		err = c.sectionService.Delete(id)
 
 		if err != nil {
-			ctx.JSON(404, gin.H{
-				"error": err.Error(),
-			})
+			status, header := sectionErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		err = c.sectionService.Delete(uint64(id))
-		if err != nil {
-			ctx.JSON(500, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
+		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
+	}
+}
 
-		ctx.JSON(204, web.NewResponse(204, nil, ""))
+func sectionErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+	switch err {
+
+	case sections.SectionNotFoundError:
+		return http.StatusNotFound, gin.H{"error": err.Error()}
+
+	case sections.ExistsSectionNumberError:
+		return http.StatusConflict, gin.H{"error": err.Error()}
+
+	default:
+		return http.StatusInternalServerError, gin.H{"error": err.Error()}
 	}
 }

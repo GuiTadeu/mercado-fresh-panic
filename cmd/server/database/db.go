@@ -3,11 +3,11 @@ package database
 import "fmt"
 
 type Seller struct {
-	Id          uint64
-	Cid         string
-	CompanyName string
-	Address     string
-	Telephone   string
+	Id          uint64 `json:"id"`
+	Cid         uint64 `json:"cid" binding:"required"`
+	CompanyName string `json:"company_name" binding:"required"`
+	Address     string `json:"address" binding:"required"`
+	Telephone   string `json:"telephone" binding:"required"`
 }
 
 type Warehouse struct {
@@ -33,18 +33,18 @@ type Section struct {
 }
 
 type Product struct {
-	Id                      uint64
-	Code                    string
-	Description             string
-	Width                   float32
-	Height                  float32
-	Length                  float32
-	NetWeight               float32
-	ExpirationDate          string
-	RecommendedFreezingTemp float32
-	FreezingRate            float32
-	ProductTypeId           uint64
-	SellerId                uint64
+	Id                      uint64  `json:"id"`
+	Code                    string  `json:"product_code" binding:"required"`
+	Description             string  `json:"description" binding:"required"`
+	Width                   float32 `json:"width" binding:"required"`
+	Height                  float32 `json:"height" binding:"required"`
+	Length                  float32 `json:"length" binding:"required"`
+	NetWeight               float32 `json:"net_weight" binding:"required"`
+	ExpirationRate          float32 `json:"expiration_rate" binding:"required"`
+	RecommendedFreezingTemp float32 `json:"recommended_freezing_temperature" binding:"required"`
+	FreezingRate            float32 `json:"freezing_rate" binding:"required"`
+	ProductTypeId           uint64  `json:"product_type_id" binding:"required"`
+	SellerId                uint64  `json:"seller_id" binding:"required"`
 }
 
 type Employee struct {
