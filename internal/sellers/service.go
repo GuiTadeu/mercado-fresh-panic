@@ -1,70 +1,74 @@
 package sellers
 
 import (
-	"fmt"
-	"net/http"
+	"errors"
 
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/imdario/mergo"
 )
 
+var (
+	ExistsSellerCodeError = errors.New("error: seller code already exists")
+	SellerNotFoundError   = errors.New("error: seller not found")
+)
+
 type Service interface {
-	FindAll() ([]database.Seller, int, error)
-	Create(cid uint64, companyName string, address string, telephone string) ([]database.Seller, int, error)
-	FindOne(id uint64) (database.Seller, int, error)
-	Update(id uint64, cid uint64, companyName string, address string, telephone string) (database.Seller, int, error)
-	Delete(id uint64) (int, error)
+	FindAll() ([]database.Seller, error)
+	Create(cid uint64, companyName string, address string, telephone string) (database.Seller, error)
+	FindOne(id uint64) (database.Seller, error)
+	Update(id uint64, cid uint64, companyName string, address string, telephone string) (database.Seller, error)
+	Delete(id uint64) error
 }
 
 type service struct {
 	repo Repository
 }
 
-func (s service) FindAll() ([]database.Seller, int, error) {
+func (s service) FindAll() ([]database.Seller, error) {
 	db, err := s.repo.FindAll()
 
 	if err != nil {
-		return []database.Seller{}, http.StatusInternalServerError, fmt.Errorf("error on loading data")
+		return []database.Seller{}, err
 	}
 
-	return db, http.StatusOK, err
+	return db, err
 }
 
-func (s service) FindOne(id uint64) (database.Seller, int, error) {
+func (s service) FindOne(id uint64) (database.Seller, error) {
 	db, err := s.repo.FindOne(id)
 
 	if err != nil {
-		return db, http.StatusNotFound, err
+		return db, SellerNotFoundError
 	}
-	return db, http.StatusOK, err
+	return db, err
 }
 
-func (s service) Create(cid uint64, companyName string, address string, telephone string) ([]database.Seller, int, error) {
+func (s service) Create(cid uint64, companyName string, address string, telephone string) (database.Seller, error) {
 
 	isUsedCid := s.repo.FindCid(cid)
 
 	if isUsedCid {
-		return []database.Seller{}, http.StatusConflict, fmt.Errorf("seller with this cid already exists")
+		return database.Seller{}, ExistsSellerCodeError
 	}
 
-	sellersData, err := s.repo.Create(cid, companyName, address, telephone)
+	sellerData, err := s.repo.Create(cid, companyName, address, telephone)
 
 	if err != nil {
-		return []database.Seller{}, http.StatusInternalServerError, fmt.Errorf("error on writing data")
+		return database.Seller{}, err
 	}
-	return sellersData, http.StatusCreated, nil
+	return sellerData, nil
 }
 
-func (s service) Update(id uint64, cid uint64, companyName string, address string, telephone string) (database.Seller, int, error) {
+func (s service) Update(id uint64, cid uint64, companyName string, address string, telephone string) (database.Seller, error) {
 	foundSeller, err := s.repo.FindOne(id)
 	if err != nil {
-		return database.Seller{}, http.StatusNotFound, fmt.Errorf("error: seller not found")
+		return database.Seller{}, SellerNotFoundError
 	}
 
 	isUsedCid := s.repo.FindCid(cid)
 
 	if isUsedCid {
-		return database.Seller{}, http.StatusConflict, fmt.Errorf("seller with this cid already exists")
+		return database.Seller{}, ExistsSellerCodeError
 	}
 
 	updatedSeller := database.Seller{
@@ -79,19 +83,19 @@ func (s service) Update(id uint64, cid uint64, companyName string, address strin
 	newSeller, err := s.repo.Update(foundSeller)
 
 	if err != nil {
-		return database.Seller{}, http.StatusInternalServerError, fmt.Errorf("error: internal server error")
+		return database.Seller{}, err
 	}
 
-	return newSeller, http.StatusOK, nil
+	return newSeller, nil
 }
 
-func (s service) Delete(id uint64) (int, error) {
+func (s service) Delete(id uint64) error {
 	err := s.repo.Delete(id)
 
 	if err != nil {
-		return http.StatusNotFound, err
+		return SellerNotFoundError
 	}
-	return http.StatusNoContent, err
+	return err
 }
 
 func NewService(r Repository) Service {

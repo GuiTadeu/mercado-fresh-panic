@@ -21,16 +21,15 @@ func NewSeller(s sellers.Service) *SellersController {
 
 func (control *SellersController) FindAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		s, statusCode, err := control.service.FindAll()
+		s, err := control.service.FindAll()
 
 		if err != nil {
-			ctx.JSON(statusCode, gin.H{
-				"message": err.Error(),
-			})
+			status, header := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		ctx.JSON(statusCode, web.NewResponse(statusCode, s, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, s, ""))
 	}
 }
 
@@ -42,48 +41,49 @@ func (control *SellersController) FindOne() gin.HandlerFunc {
 		id, err := strconv.ParseUint(idParam, 0, 64)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, "ID in wrong format"))
+			status, header := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		s, statusCode, err := control.service.FindOne(id)
+		s, err := control.service.FindOne(id)
 
 		if err != nil {
-			ctx.JSON(statusCode, gin.H{
-				"message": err.Error(),
-			})
+			status, header := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		ctx.JSON(statusCode, web.NewResponse(statusCode, s, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, s, ""))
 	}
 }
 
 func (control *SellersController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var req sellerRequest
+		var req createSellerRequest
 
 		if err := ctx.ShouldBindJSON(&req); err != nil {
 			ctx.JSON(http.StatusUnprocessableEntity, web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()))
 			return
 		}
 
-		s, statusCode, err := control.service.Create(req.Cid, req.CompanyName, req.Address, req.Telephone)
+		s, err := control.service.Create(req.Cid, req.CompanyName, req.Address, req.Telephone)
 
 		if err != nil {
-			ctx.JSON(statusCode, web.NewResponse(statusCode, nil, err.Error()))
+			status, header := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		ctx.JSON(statusCode, web.NewResponse(statusCode, s, ""))
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, s, ""))
 	}
 }
 
 func (control *SellersController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		var req sellerRequest
+		var req updateSellerRequest
 
 		idParam := ctx.Param("id")
 
@@ -95,18 +95,19 @@ func (control *SellersController) Update() gin.HandlerFunc {
 		}
 
 		if err := ctx.ShouldBindJSON(&req); err != nil {
-			ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
+			ctx.JSON(http.StatusUnprocessableEntity, web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()))
 			return
 		}
 
-		s, statusCode, err := control.service.Update(id, req.Cid, req.CompanyName, req.Address, req.Telephone)
+		s, err := control.service.Update(id, req.Cid, req.CompanyName, req.Address, req.Telephone)
 
 		if err != nil {
-			ctx.JSON(statusCode, web.NewResponse(statusCode, nil, err.Error()))
+			status, header := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		ctx.JSON(statusCode, web.NewResponse(statusCode, s, ""))
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, s, ""))
 	}
 }
 
@@ -118,24 +119,46 @@ func (control *SellersController) Delete() gin.HandlerFunc {
 		id, err := strconv.ParseUint(idParam, 0, 64)
 
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, "ID in wrong format"))
+			ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, "id in wrong format"))
 			return
 		}
 
-		statusCode, err := control.service.Delete(id)
+		err = control.service.Delete(id)
 
 		if err != nil {
-			ctx.JSON(statusCode, web.NewResponse(statusCode, nil, err.Error()))
+			status, header := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, header)
 			return
 		}
 
-		ctx.JSON(statusCode, web.NewResponse(statusCode, nil, ""))
+		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
 	}
 }
 
-type sellerRequest struct {
+func sellerErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+	switch err {
+
+	case sellers.SellerNotFoundError:
+		return http.StatusNotFound, gin.H{"error": err.Error()}
+
+	case sellers.ExistsSellerCodeError:
+		return http.StatusConflict, gin.H{"error": err.Error()}
+
+	default:
+		return http.StatusInternalServerError, gin.H{"error": err.Error()}
+	}
+}
+
+type createSellerRequest struct {
 	Cid         uint64 `json:"cid" binding:"required"`
 	CompanyName string `json:"company_name" binding:"required"`
 	Address     string `json:"address" binding:"required"`
 	Telephone   string `json:"telephone" binding:"required"`
+}
+
+type updateSellerRequest struct {
+	Cid         uint64 `json:"cid"`
+	CompanyName string `json:"company_name"`
+	Address     string `json:"address"`
+	Telephone   string `json:"telephone"`
 }

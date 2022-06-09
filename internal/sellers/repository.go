@@ -10,7 +10,7 @@ const initialId uint64 = 0
 
 type Repository interface {
 	FindAll() ([]database.Seller, error)
-	Create(cid uint64, companyName string, address string, telephone string) ([]database.Seller, error)
+	Create(cid uint64, companyName string, address string, telephone string) (database.Seller, error)
 	FindOne(id uint64) (database.Seller, error)
 	Update(seller database.Seller) (database.Seller, error)
 	Delete(id uint64) error
@@ -34,11 +34,11 @@ func (r *repository) FindOne(id uint64) (database.Seller, error) {
 	return database.Seller{}, fmt.Errorf("error: seller with id %d not found", id)
 }
 
-func (r *repository) Create(cid uint64, companyName string, address string, telephone string) ([]database.Seller, error) {
+func (r *repository) Create(cid uint64, companyName string, address string, telephone string) (database.Seller, error) {
 	id := r.generateId()
 	data := createSeller(id, cid, companyName, address, telephone)
 	r.db = append(r.db, data)
-	return r.db, nil
+	return data, nil
 }
 
 func (r *repository) Update(seller database.Seller) (database.Seller, error) {
