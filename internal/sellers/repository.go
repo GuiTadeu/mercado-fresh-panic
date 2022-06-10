@@ -6,7 +6,7 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 )
 
-const initialId uint64 = 0
+var initialId uint64 = 0
 
 type Repository interface {
 	FindAll() ([]database.Seller, error)
@@ -81,10 +81,8 @@ func createSeller(id uint64, cid uint64, companyName string, address string, tel
 }
 
 func (r repository) generateId() uint64 {
-	if len(r.db) == 0 {
-		return initialId
-	}
-	return r.db[len(r.db)-1].Id + 1
+	initialId++
+	return initialId
 }
 
 func NewRepository(db []database.Seller) Repository {
