@@ -8,51 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-/*
-find_all Se a lista tiver "n" elementos, retornará uma quantidade do total de elementos
-
-find_by_id_non_existent Se o elemento procurado por id não existir, retorna null
-
-find_by_id_existent Se o elemento procurado por id existir, ele retornará as informações do elemento solicitado
-
-update_existent Quando a atualização dos dados for bem sucedida, o produto será devolvido com as informações
-atualizadas
-
-update_non_existent Se o produto a ser atualizado não existir, será retornado null.
-
-delete_non_existent Quando o produto não existe, null será retornado.
-
-delete_ok Se a exclusão for bem-sucedida, o item não aparecerá na lista.
-*/
-
-/*
-service
-func XYZ()
-a
-b -> repository
-c
-d
-e -> repository
-f
-g
-
-func XYZ()
-a
-b -> service
-c
-d
-e -> service
-f
-g
-
-
-result, expectedResult
-
-mockRepository
-
-
-*/
-
 func Test_Create_Ok(t *testing.T) {
 
 	expectedResult := db.Product{
