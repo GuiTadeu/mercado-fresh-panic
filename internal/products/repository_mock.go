@@ -7,6 +7,8 @@ import (
 type mockProductRepository struct {
 	result any
 	err    error
+	existsProductCode bool
+	getById db.Product
 }
 
 func (m mockProductRepository) GetAll() ([]db.Product, error) {
@@ -17,10 +19,11 @@ func (m mockProductRepository) GetAll() ([]db.Product, error) {
 }
 
 func (m mockProductRepository) Get(id uint64) (db.Product, error) {
-	if m.err != nil {
+	if (m.getById == db.Product{} && m.err != nil) {
 		return db.Product{}, m.err
 	}
-	return m.result.(db.Product), nil
+
+	return m.getById, nil
 }
 
 func (m mockProductRepository) Delete(id uint64) error {
@@ -31,25 +34,22 @@ func (m mockProductRepository) Delete(id uint64) error {
 }
 
 func (m mockProductRepository) ExistsProductCode(code string) bool {
-	if m.err != nil {
-		return false
-	}
-	return true
+	return m.existsProductCode
 }
 
 func (m mockProductRepository) Create(
 	code string, description string, width float32, height float32, length float32, netWeight float32,
 	expirationRate float32, recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64,
 	sellerId uint64) (db.Product, error) {
-	if m.err != nil {
+	if m.err != nil || m.existsProductCode {
 		return db.Product{}, m.err
 	}
 	return m.result.(db.Product), nil
 }
 
 func (m mockProductRepository) Update(id uint64, updatedproduct db.Product) (db.Product, error) {
-	if m.err != nil {
-		return db.Product{}, m.err
+	if (m.result.(db.Product) != db.Product{}) {
+		return updatedproduct, nil
 	}
-	return m.result.(db.Product), nil
+	return db.Product{}, m.err
 }
