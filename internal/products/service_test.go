@@ -59,7 +59,7 @@ func Test_Get_OK(t *testing.T) {
 	expectedResult := db.Product{}
 
 	mockProductRepository := mockProductRepository{
-		result: expectedResult,
+		getById: expectedResult,
 		err:    nil,
 	}
 
