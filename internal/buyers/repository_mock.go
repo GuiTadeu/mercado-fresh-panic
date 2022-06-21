@@ -20,7 +20,7 @@ func (m mockBuyerRepository) Get(id uint64) (db.Buyer, error) {
 	if (m.getById == db.Buyer{} && m.err != nil) {
 		return db.Buyer{}, m.err
 	}
-	return m.result.(db.Buyer), nil
+	return m.getById, nil
 }
 
 func (m mockBuyerRepository) Delete(id uint64) error {
