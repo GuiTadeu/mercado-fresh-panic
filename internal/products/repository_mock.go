@@ -5,10 +5,10 @@ import (
 )
 
 type mockProductRepository struct {
-	result any
-	err    error
+	result            any
+	err               error
 	existsProductCode bool
-	getById db.Product
+	getById           db.Product
 }
 
 func (m mockProductRepository) GetAll() ([]db.Product, error) {
@@ -27,10 +27,7 @@ func (m mockProductRepository) Get(id uint64) (db.Product, error) {
 }
 
 func (m mockProductRepository) Delete(id uint64) error {
-	if m.err != nil {
-		return m.err
-	}
-	return nil
+	return m.err
 }
 
 func (m mockProductRepository) ExistsProductCode(code string) bool {
