@@ -15,8 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO: ADICIONAR CHECK DE MENSAGEM DE ERRO
-
 func Test_Create_201(t *testing.T) {
 
 	validProduct := db.Product{
@@ -218,58 +216,132 @@ func Test_Get_404(t *testing.T) {
 	assert.Equal(t, 404, response.Code)
 }
 
-// func Test_Update_200(t *testing.T) {
+func Test_Update_200(t *testing.T) {
 
-// 	productToUpdate := db.Product{
-// 		Id:                      1,
-// 		Code:                    "ABC",
-// 		Description:             "ABC",
-// 		Width:                   1.0,
-// 		Height:                  1.0,
-// 		Length:                  1.0,
-// 		NetWeight:               1.0,
-// 		ExpirationRate:          1.0,
-// 		RecommendedFreezingTemp: 1.0,
-// 		FreezingRate:            1.0,
-// 		ProductTypeId:           1,
-// 		SellerId:                1,
-// 	}
+	productToUpdate := db.Product{
+		Id:                      1,
+		Code:                    "ABC",
+		Description:             "ABC",
+		Width:                   1.0,
+		Height:                  1.0,
+		Length:                  1.0,
+		NetWeight:               1.0,
+		ExpirationRate:          1.0,
+		RecommendedFreezingTemp: 1.0,
+		FreezingRate:            1.0,
+		ProductTypeId:           1,
+		SellerId:                1,
+	}
 
-// 	jsonValue, _ := json.Marshal(productToUpdate)
-// 	requestBody := bytes.NewBuffer(jsonValue)
+	jsonValue, _ := json.Marshal(productToUpdate)
+	requestBody := bytes.NewBuffer(jsonValue)
 
-// 	updatedProduct := db.Product{
-// 		Id:                      2,
-// 		Code:                    "DEF",
-// 		Description:             "DEF",
-// 		Width:                   2.0,
-// 		Height:                  2.0,
-// 		Length:                  2.0,
-// 		NetWeight:               2.0,
-// 		ExpirationRate:          2.0,
-// 		RecommendedFreezingTemp: 2.0,
-// 		FreezingRate:            2.0,
-// 		ProductTypeId:           1,
-// 		SellerId:                1,
-// 	}
+	updatedProduct := db.Product{
+		Id:                      2,
+		Code:                    "DEF",
+		Description:             "DEF",
+		Width:                   2.0,
+		Height:                  2.0,
+		Length:                  2.0,
+		NetWeight:               2.0,
+		ExpirationRate:          2.0,
+		RecommendedFreezingTemp: 2.0,
+		FreezingRate:            2.0,
+		ProductTypeId:           1,
+		SellerId:                1,
+	}
 
-// 	mockService := mockProductService{
-// 		result: updatedProduct,
-// 		err:    nil,
-// 	}
+	mockService := mockProductService{
+		result: updatedProduct,
+		err:    nil,
+	}
 
-// 	router := setupRouter(mockService)
+	router := setupRouter(mockService)
 
-// 	response := httptest.NewRecorder()
-// 	request, _ := http.NewRequest("PATCH", "/api/v1/products", requestBody)
-// 	router.ServeHTTP(response, request)
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("PATCH", "/api/v1/products/1", requestBody)
+	router.ServeHTTP(response, request)
 
-// 	assert.Equal(t, 409, response.Code)
-// }
+	responseData := db.Product{}
+	decodeWebResponse(response, &responseData)
+
+	assert.Equal(t, 200, response.Code)
+	assert.Equal(t, updatedProduct, responseData)
+}
+
+func Test_Update_404(t *testing.T) {
+
+	productToUpdate := db.Product{
+		Id:                      1,
+		Code:                    "ABC",
+		Description:             "ABC",
+		Width:                   1.0,
+		Height:                  1.0,
+		Length:                  1.0,
+		NetWeight:               1.0,
+		ExpirationRate:          1.0,
+		RecommendedFreezingTemp: 1.0,
+		FreezingRate:            1.0,
+		ProductTypeId:           1,
+		SellerId:                1,
+	}
+
+	jsonValue, _ := json.Marshal(productToUpdate)
+	requestBody := bytes.NewBuffer(jsonValue)
+
+	mockService := mockProductService{
+		result: db.Product{},
+		err:    products.ProductNotFoundError,
+	}
+
+	router := setupRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("PATCH", "/api/v1/products/1", requestBody)
+	router.ServeHTTP(response, request)
+
+	responseData := db.Product{}
+	decodeWebResponse(response, &responseData)
+
+	assert.Equal(t, 404, response.Code)
+}
+
+func Test_Delete_204(t *testing.T) {
+
+	mockService := mockProductService{
+		result: db.Product{},
+		err:    nil,
+	}
+
+	router := setupRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("DELETE", "/api/v1/products/1", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 204, response.Code)
+}
+
+func Test_Delete_404(t *testing.T) {
+
+	mockService := mockProductService{
+		result: db.Product{},
+		err:    products.ProductNotFoundError,
+	}
+
+	router := setupRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("DELETE", "/api/v1/products/1", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 404, response.Code)
+}
 
 func decodeWebResponse(response *httptest.ResponseRecorder, responseData any) {
 	responseStruct := web.Response{}
 	json.Unmarshal(response.Body.Bytes(), &responseStruct)
+
 	jsonData, _ := json.Marshal(responseStruct.Data)
 	json.Unmarshal(jsonData, &responseData)
 }
@@ -282,6 +354,7 @@ func setupRouter(mockService mockProductService) *gin.Engine {
 	router.GET("/api/v1/products", controller.GetAll())
 	router.GET("/api/v1/products/:id", controller.Get())
 	router.PATCH("/api/v1/products/:id", controller.Update())
+	router.DELETE("/api/v1/products/:id", controller.Delete())
 
 	return router
 }
