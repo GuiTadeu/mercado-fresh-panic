@@ -10,17 +10,17 @@ import (
 )
 
 type CreateProductRequest struct {
-	Code                    string  `json:"product_code" mapstructure:"product_code" binding:"required"`
+	Code                    string  `json:"product_code" binding:"required"`
 	Description             string  `json:"description" binding:"required"`
 	Width                   float32 `json:"width" binding:"required"`
 	Height                  float32 `json:"height" binding:"required"`
 	Length                  float32 `json:"length" binding:"required"`
-	NetWeight               float32 `json:"net_weight" mapstructure:"net_weight" binding:"required"`
-	ExpirationRate          float32 `json:"expiration_rate" mapstructure:"expiration_rate" binding:"required"`
-	RecommendedFreezingTemp float32 `json:"recommended_freezing_temperature" mapstructure:"recommended_freezing_temperature" binding:"required"`
-	FreezingRate            float32 `json:"freezing_rate" mapstructure:"freezing_rate" binding:"required"`
-	ProductTypeId           uint64  `json:"product_type_id" mapstructure:"product_type_id" binding:"required"`
-	SellerId                uint64  `json:"seller_id" mapstructure:"seller_id" binding:"required"`
+	NetWeight               float32 `json:"net_weight" binding:"required"`
+	ExpirationRate          float32 `json:"expiration_rate" binding:"required"`
+	RecommendedFreezingTemp float32 `json:"recommended_freezing_temperature" binding:"required"`
+	FreezingRate            float32 `json:"freezing_rate" binding:"required"`
+	ProductTypeId           uint64  `json:"product_type_id" binding:"required"`
+	SellerId                uint64  `json:"seller_id" binding:"required"`
 }
 
 type UpdateProductRequest struct {
