@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Create_201(t *testing.T) {
+func Test_Section_Create_201(t *testing.T) {
 
 	validSection := db.Section{
 		Number:             4,
@@ -36,20 +36,20 @@ func Test_Create_201(t *testing.T) {
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "/api/v1/sections", requestBody)
 	router.ServeHTTP(response, request)
 
 	responseData := db.Section{}
-	decodeWebResponse(response, &responseData)
+	decodeSectionWebResponse(response, &responseData)
 
 	assert.Equal(t, 201, response.Code)
 	assert.Equal(t, validSection, responseData)
 }
 
-func Test_Create_422(t *testing.T) {
+func Test_Section_Create_422(t *testing.T) {
 
 	invalidSection := db.Section{}
 	jsonValue, _ := json.Marshal(invalidSection)
@@ -57,7 +57,7 @@ func Test_Create_422(t *testing.T) {
 
 	mockService := mockSectionService{}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "/api/v1/sections", requestBody)
@@ -66,7 +66,7 @@ func Test_Create_422(t *testing.T) {
 	assert.Equal(t, 422, response.Code)
 }
 
-func Test_Create_409(t *testing.T) {
+func Test_Section_Create_409(t *testing.T) {
 
 	validSection := db.Section{
 		Id:                 1,
@@ -88,7 +88,7 @@ func Test_Create_409(t *testing.T) {
 		err:    sections.ExistsSectionNumberError,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "/api/v1/sections", requestBody)
@@ -97,7 +97,7 @@ func Test_Create_409(t *testing.T) {
 	assert.Equal(t, 409, response.Code)
 }
 
-func Test_GetAll_200(t *testing.T) {
+func Test_Section_GetAll_200(t *testing.T) {
 
 	sectionList := []db.Section{
 		{
@@ -140,20 +140,20 @@ func Test_GetAll_200(t *testing.T) {
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/api/v1/sections", nil)
 	router.ServeHTTP(response, request)
 
 	responseData := []db.Section{}
-	decodeWebResponse(response, &responseData)
+	decodeSectionWebResponse(response, &responseData)
 
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, sectionList, responseData)
 }
 
-func Test_Get_200(t *testing.T) {
+func Test_Section_Get_200(t *testing.T) {
 
 	foundSection := db.Section{
 		Id:                 1,
@@ -172,7 +172,7 @@ func Test_Get_200(t *testing.T) {
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/api/v1/sections/666", nil)
@@ -181,14 +181,14 @@ func Test_Get_200(t *testing.T) {
 	assert.Equal(t, 200, response.Code)
 }
 
-func Test_Get_404(t *testing.T) {
+func Test_Section_Get_404(t *testing.T) {
 
 	mockService := mockSectionService{
 		result: db.Section{},
 		err:    sections.SectionNotFoundError,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/api/v1/sections/666", nil)
@@ -197,7 +197,7 @@ func Test_Get_404(t *testing.T) {
 	assert.Equal(t, 404, response.Code)
 }
 
-func Test_Update_200(t *testing.T) {
+func Test_Section_Update_200(t *testing.T) {
 
 	sectionToUpdate := db.Section{
 		Id:                 1,
@@ -231,20 +231,20 @@ func Test_Update_200(t *testing.T) {
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("PATCH", "/api/v1/sections/1", requestBody)
 	router.ServeHTTP(response, request)
 
 	responseData := db.Section{}
-	decodeWebResponse(response, &responseData)
+	decodeSectionWebResponse(response, &responseData)
 
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, updatedSection, responseData)
 }
 
-func Test_Update_404(t *testing.T) {
+func Test_Section_Update_404(t *testing.T) {
 
 	sectionToUpdate := db.Section{
 		Id:                 1,
@@ -266,26 +266,26 @@ func Test_Update_404(t *testing.T) {
 		err:    sections.SectionNotFoundError,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("PATCH", "/api/v1/sections/1", requestBody)
 	router.ServeHTTP(response, request)
 
 	responseData := db.Section{}
-	decodeWebResponse(response, &responseData)
+	decodeSectionWebResponse(response, &responseData)
 
 	assert.Equal(t, 404, response.Code)
 }
 
-func Test_Delete_204(t *testing.T) {
+func Test_Section_Delete_204(t *testing.T) {
 
 	mockService := mockSectionService{
 		result: db.Section{},
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("DELETE", "/api/v1/sections/1", nil)
@@ -294,14 +294,14 @@ func Test_Delete_204(t *testing.T) {
 	assert.Equal(t, 204, response.Code)
 }
 
-func Test_Delete_404(t *testing.T) {
+func Test_Section_Delete_404(t *testing.T) {
 
 	mockService := mockSectionService{
 		result: db.Section{},
 		err:    sections.SectionNotFoundError,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("DELETE", "/api/v1/sections/", nil)
@@ -310,7 +310,7 @@ func Test_Delete_404(t *testing.T) {
 	assert.Equal(t, 404, response.Code)
 }
 
-func decodeWebResponse(response *httptest.ResponseRecorder, responseData any) {
+func decodeSectionWebResponse(response *httptest.ResponseRecorder, responseData any) {
 	responseStruct := web.Response{}
 	json.Unmarshal(response.Body.Bytes(), &responseStruct)
 
@@ -318,7 +318,7 @@ func decodeWebResponse(response *httptest.ResponseRecorder, responseData any) {
 	json.Unmarshal(jsonData, &responseData)
 }
 
-func setupRouter(mockService mockSectionService) *gin.Engine {
+func setupSectionRouter(mockService mockSectionService) *gin.Engine {
 	controller := NewSectionController(mockService)
 
 	router := gin.Default()
