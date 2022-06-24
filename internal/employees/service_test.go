@@ -68,12 +68,69 @@ func Test_GetAll_ShouldReturnErrorWhenDatabaseFails(t *testing.T) {
 }
 
 func Test_Update_OK(t *testing.T) {
+	getById := db.Employee{
+		Id: 10,
+		CardNumberId: "1",
+		FirstName: "Nelson",
+		LastName: "Nerd",
+		WarehouseId: 1,
+	}
+
+	expectedResult := db.Employee{
+		Id: 10,
+		CardNumberId: "5",
+		FirstName: "Nelson",
+		LastName: "Lord",
+		WarehouseId: 3,
+	}
+
+	mockProductRepository := mockEmployeeRepository{
+		result:            expectedResult,
+		getById:           getById,
+		existsEmployeeCode: false,
+	}
+
+	service := NewService(mockProductRepository)
+	result, err := service.Update(10, "5", "Nelson", "Lord", 3)
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResult, result)
 }
 
 func Test_Update_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
+
+	mockProductRepository := mockEmployeeRepository{
+		existsEmployeeCode: false,
+		err: EmployeeNotFoundError,
+	}
+
+	service := NewService(mockProductRepository)
+	result, err := service.Update(10, "5", "Nelson", "Lord", 3)
+
+	assert.Empty(t, result)
+	assert.Equal(t, EmployeeNotFoundError, err)
 }
 
 func Test_Update_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
+	getById := db.Employee{
+		Id: 10,
+		CardNumberId: "1",
+		FirstName: "Nelson",
+		LastName: "Nerd",
+		WarehouseId: 1,
+	}
+
+	mockProductRepository := mockEmployeeRepository{
+		existsEmployeeCode: true,
+		err: ExistsCardNumberIdError,
+		getById: getById,
+	}
+
+	service := NewService(mockProductRepository)
+	result, err := service.Update(10, "5", "Nelson", "Lord", 3)
+
+	assert.Empty(t, result)
+	assert.Equal(t, ExistsCardNumberIdError, err)
 }
 
 func Test_Delete_Ok(t *testing.T) {

@@ -1,11 +1,17 @@
 package controller
 
 import (
+	"bytes"
 	"encoding/json"
-	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
-	"github.com/gin-gonic/gin"
+	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_Employee_Create_201(t *testing.T) {
@@ -32,11 +38,73 @@ func Test_Employee_Get_404(t *testing.T) {
 }
 
 func Test_Employee_Update_200(t *testing.T) {
+	employeeToUpdate := db.Employee{
+		Id: 10,
+		CardNumberId: "1",
+		FirstName: "Nelson",
+		LastName: "Nerd",
+		WarehouseId: 1,
+	}
 
+	jsonValue, _ := json.Marshal(employeeToUpdate)
+	requestBody := bytes.NewBuffer(jsonValue)
+
+	updatedEmployee := db.Employee{
+		Id: 10,
+		CardNumberId: "5",
+		FirstName: "Nelson",
+		LastName: "Lord",
+		WarehouseId: 3,
+	}
+
+	mockEmployeeService := mockEmployeeService{
+		result: updatedEmployee,
+		err: nil,
+	}
+
+	router := setupEmployeeRouter(mockEmployeeService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("PATCH", "/api/v1/employees/10", requestBody)
+	router.ServeHTTP(response, request)
+
+	responseData := db.Employee{}
+	decodeEmployeeWebResponse(response, &responseData)
+
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, updatedEmployee, responseData)
 }
 
 func Test_Employee_Update_404(t *testing.T) {
+	employeeToUpdate := db.Employee{
+		Id: 10,
+		CardNumberId: "1",
+		FirstName: "Nelson",
+		LastName: "Nerd",
+		WarehouseId: 1,
+	}
 
+	expectedError := employees.EmployeeNotFoundError.Error()
+
+	jsonValue, _ := json.Marshal(employeeToUpdate)
+	requestBody := bytes.NewBuffer(jsonValue)
+
+	mockEmployeeService := mockEmployeeService{
+		result: db.Product{},
+		err: employees.EmployeeNotFoundError,
+	}
+
+	router := setupEmployeeRouter(mockEmployeeService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("PATCH", "/api/v1/employees/10", requestBody)
+	router.ServeHTTP(response, request)
+
+	responseStruct := web.Response{}
+	json.Unmarshal(response.Body.Bytes(), &responseStruct)
+
+	assert.Equal(t, http.StatusNotFound, response.Code)
+	assert.Equal(t, expectedError, responseStruct.Error)
 }
 
 func Test_Employee_Delete_204(t *testing.T) {
