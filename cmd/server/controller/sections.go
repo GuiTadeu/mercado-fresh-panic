@@ -171,6 +171,7 @@ func (c *sectionController) Delete() gin.HandlerFunc {
 		if err != nil {
 			status := sectionErrorHandler(err)
 			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+			return
 
 		}
 
