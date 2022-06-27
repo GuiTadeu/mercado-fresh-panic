@@ -37,14 +37,9 @@ func (s *warehouseService) GetAll() ([]database.Warehouse, error) {
 }
 
 func (s *warehouseService) Create(code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32) (database.Warehouse, error) {
-	warehouses, err := s.GetAll()
-	if err != nil {
-		return database.Warehouse{}, err
-	}
-	for _, v := range warehouses {
-		if v.Code == code {
-			return database.Warehouse{}, ExistsWarehouseCodeError
-		}
+	isUsedCid := s.warehouseRepo.FindCode(code)
+	if isUsedCid {
+		return database.Warehouse{}, ExistsWarehouseCodeError
 	}
 	return s.warehouseRepo.Create(code, address, telephone, minimumCapacity, minimumTemperature)
 }

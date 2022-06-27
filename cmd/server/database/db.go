@@ -11,12 +11,12 @@ type Seller struct {
 }
 
 type Warehouse struct {
-	Id                 uint64
-	Code               string
-	Address            string
-	Telephone          string
-	MinimunCapacity    uint32
-	MinimumTemperature float32
+	Id                 uint64  `json:"id"`
+	Code               string  `json:"warehouse_code" binding:"required"`
+	Address            string  `json:"address" binding:"required"`
+	Telephone          string  `json:"telephone" binding:"required"`
+	MinimunCapacity    uint32  `json:"mimimun_capacity" binding:"required"`
+	MinimumTemperature float32 `json:"minimun_temperature" binding:"required"`
 }
 
 type Section struct {
