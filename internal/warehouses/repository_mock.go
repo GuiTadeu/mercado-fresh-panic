@@ -8,7 +8,7 @@ import (
 type mockWarehouseRepository struct {
 	result any	
 	err error
-	findCode bool
+	findByCode bool
 	getById database.Warehouse	
 }
 
@@ -35,12 +35,12 @@ func (m mockWarehouseRepository) Delete(id uint64) error {
 
 }
 
-func (m mockWarehouseRepository) FindCode(code string) bool {
-	return m.findCode
+func (m mockWarehouseRepository) FindByCode(code string) bool {
+	return m.findByCode
 }
 
 func (m mockWarehouseRepository) Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error) {
-	if m.err != nil || m.findCode {
+	if m.err != nil || m.findByCode {
 		return database.Warehouse{}, m.err
 	}
 	return m.result.(database.Warehouse), nil

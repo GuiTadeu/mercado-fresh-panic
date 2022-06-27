@@ -21,7 +21,7 @@ func Test_Create_ShouldReturnOK(t *testing.T) {
 	mockRepository := mockWarehouseRepository{
 		result:   expectedResult,
 		err:      nil,
-		findCode: false,
+		findByCode: false,
 	}
 
 	service := NewService(mockRepository)
@@ -37,7 +37,7 @@ func Test_Create_ShouldReturnError(t *testing.T) {
 	mockRepository := mockWarehouseRepository{
 		result:   database.Warehouse{},
 		err:      expectedError,
-		findCode: true,
+		findByCode: true,
 	}
 	service := NewService(mockRepository)
 	_, err := service.Create("SC", "psn", "45674458", 5, 1.1)
@@ -160,7 +160,7 @@ func Test_Update_ShouldReturnOK(t *testing.T) {
 	mockRepository := mockWarehouseRepository{
 		result:   expectedResult,
 		err:      nil,
-		findCode: false,
+		findByCode: false,
 		getById:  getById,
 	}
 
@@ -177,7 +177,7 @@ func Test_Update_ShouldReturnError(t *testing.T) {
 	mockWarehouseRepository := mockWarehouseRepository{
 		err:      expectedError,
 		getById:  database.Warehouse{},
-		findCode: false,
+		findByCode: false,
 	}
 
 	service := NewService(mockWarehouseRepository)
@@ -203,7 +203,7 @@ func Test_Update_ShouldReturnErrorExists(t *testing.T) {
 	mockWarehouseRepository := mockWarehouseRepository{
 		err:      expectedError,
 		getById:  getById,
-		findCode: true,
+		findByCode: true,
 	}
 
 	service := NewService(mockWarehouseRepository)

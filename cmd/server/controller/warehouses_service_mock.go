@@ -2,7 +2,7 @@ package controller
 
 import (
 	database "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
-	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
+
 )
 
 type mockWarehouseService struct {
@@ -30,10 +30,6 @@ func (m mockWarehouseService) Delete(id uint64) error {
 	}
 	return nil
 
-}
-
-func (m mockWarehouseService) FindByCode(code string) bool {
-	return m.err == warehouses.ExistsWarehouseCodeError
 }
 
 func (m mockWarehouseService) Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error) {
