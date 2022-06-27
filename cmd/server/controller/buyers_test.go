@@ -39,7 +39,7 @@ func Test_Buyer_Create_201(t *testing.T) {
 	responseData := db.Buyer{}
 	decodeBuyerWebResponse(response, &responseData)
 
-	assert.Equal(t, 201, response.Code)
+	assert.Equal(t, http.StatusCreated, response.Code)
 	assert.Equal(t, validBuyer, responseData)
 }
 
@@ -86,15 +86,91 @@ func Test_Buyer_Create_409(t *testing.T) {
 }
 
 func Test_Buyer_GetAll_200(t *testing.T) {
+	buyers := []db.Buyer{
+		{
+			Id:           1,
+			CardNumberId: "5",
+			FirstName:    "NameT1",
+			LastName:     "LastNameT1",
+		},
+		{
+			Id:           2,
+			CardNumberId: "10",
+			FirstName:    "NameT2",
+			LastName:     "LastNameT2",
+		},
+		{
+			Id:           3,
+			CardNumberId: "15",
+			FirstName:    "NameT3",
+			LastName:     "LastNameT3",
+		},
+	}
 
+	mockService := mockBuyerService{
+		result: buyers,
+		err:    nil,
+	}
+
+	router := setupBuyerRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/buyers", nil)
+	router.ServeHTTP(response, request)
+
+	responseData := []db.Buyer{}
+	decodeBuyerWebResponse(response, &responseData)
+
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, buyers, responseData)
 }
 
 func Test_Buyer_Get_200(t *testing.T) {
+	buyer := db.Buyer{
+		Id:           1,
+		CardNumberId: "5",
+		FirstName:    "NameT1",
+		LastName:     "LastNameT1",
+	}
 
+	mockService := mockBuyerService{
+		result: buyer,
+		err:    nil,
+	}
+
+	router := setupBuyerRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/buyers/1", nil)
+	router.ServeHTTP(response, request)
+
+	responseData := db.Buyer{}
+	decodeBuyerWebResponse(response, &responseData)
+
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, buyer, responseData)
 }
 
 func Test_Buyer_Get_404(t *testing.T) {
 
+	mockService := mockBuyerService{
+		result: db.Buyer{},
+		err:    buyers.BuyerNotFoundError,
+	}
+
+	expectedError := buyers.BuyerNotFoundError.Error()
+
+	router := setupBuyerRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/buyers/1", nil)
+	router.ServeHTTP(response, request)
+
+	responseStruct := web.Response{}
+	json.Unmarshal(response.Body.Bytes(), &responseStruct)
+
+	assert.Equal(t, http.StatusNotFound, response.Code)
+	assert.Equal(t, expectedError, responseStruct.Error)
 }
 
 func Test_Buyer_Update_200(t *testing.T) {
@@ -129,7 +205,7 @@ func Test_Buyer_Update_200(t *testing.T) {
 	responseData := db.Buyer{}
 	decodeBuyerWebResponse(response, &responseData)
 
-	assert.Equal(t, 200, response.Code)
+	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, updatedBuyer, responseData)
 }
 
@@ -157,16 +233,38 @@ func Test_Buyer_Update_404(t *testing.T) {
 	responseData := db.Buyer{}
 	decodeBuyerWebResponse(response, &responseData)
 
-	assert.Equal(t, 404, response.Code)
+	assert.Equal(t, http.StatusNotFound, response.Code)
 
 }
 
 func Test_Buyer_Delete_204(t *testing.T) {
+	mockService := mockBuyerService{
+		result: db.Buyer{},
+		err:    nil,
+	}
 
+	router := setupBuyerRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("DELETE", "/api/v1/buyers/1", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, http.StatusNoContent, response.Code)
 }
 
 func Test_Buyer_Delete_404(t *testing.T) {
+	mockService := mockBuyerService{
+		result: db.Product{},
+		err:    buyers.BuyerNotFoundError,
+	}
 
+	router := setupBuyerRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("DELETE", "/api/v1/buyers/1", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, http.StatusNotFound, response.Code)
 }
 
 func decodeBuyerWebResponse(response *httptest.ResponseRecorder, responseData any) {

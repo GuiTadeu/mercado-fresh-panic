@@ -13,26 +13,35 @@ func (m mockBuyerService) Create(
 	if m.err != nil {
 		return db.Buyer{}, m.err
 	}
-	return db.Buyer{}, nil
+	return m.result.(db.Buyer), nil
 }
 
 func (m mockBuyerService) Get(id uint64) (db.Buyer, error) {
-	//TODO implement me
-	panic("implement me")
+	if m.err != nil {
+		return db.Buyer{}, m.err
+	}
+	return m.result.(db.Buyer), nil
 }
 
 func (m mockBuyerService) GetAll() ([]db.Buyer, error) {
-	//TODO implement me
-	panic("implement me")
+	if m.err != nil {
+		return []db.Buyer{}, m.err
+	}
+	return m.result.([]db.Buyer), nil
 }
 
 func (m mockBuyerService) Update(
 	id uint64, cardNumberId, firstName, lastName string,
 ) (db.Buyer, error) {
-	return db.Buyer{}, nil
+	if m.err != nil {
+		return db.Buyer{}, m.err
+	}
+	return m.result.(db.Buyer), nil
 }
 
 func (m mockBuyerService) Delete(id uint64) error {
-	//TODO implement me
-	panic("implement me")
+	if m.err != nil {
+		return m.err
+	}
+	return nil
 }
