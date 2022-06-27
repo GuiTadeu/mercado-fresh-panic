@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Create_201(t *testing.T) {
+func Test_Seller_Create_201(t *testing.T) {
 
 	validSeller := db.Seller{
 		Id:          1,
@@ -28,33 +28,33 @@ func Test_Create_201(t *testing.T) {
 	jsonValue, _ := json.Marshal(validSeller)
 	requestBody := bytes.NewBuffer(jsonValue)
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: validSeller,
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "/api/v1/sellers", requestBody)
 	router.ServeHTTP(response, request)
 
 	responseData := db.Seller{}
-	decodeWebResponse(response, &responseData)
+	decodeWebSellerResponse(response, &responseData)
 
 	assert.Equal(t, http.StatusCreated, response.Code)
 	assert.Equal(t, validSeller, responseData)
 }
 
-func Test_Create_422(t *testing.T) {
+func Test_Seller_Create_422(t *testing.T) {
 
 	invalidSeller := db.Seller{}
 	jsonValue, _ := json.Marshal(invalidSeller)
 	requestBody := bytes.NewBuffer(jsonValue)
 
-	mockService := mockSellerService{}
+	mockSellerService := mockSellerService{}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "/api/v1/sellers", requestBody)
@@ -63,7 +63,7 @@ func Test_Create_422(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, response.Code)
 }
 
-func Test_Create_409(t *testing.T) {
+func Test_Seller_Create_409(t *testing.T) {
 
 	validSeller := db.Seller{
 		Id:          1,
@@ -76,12 +76,12 @@ func Test_Create_409(t *testing.T) {
 	jsonValue, _ := json.Marshal(validSeller)
 	requestBody := bytes.NewBuffer(jsonValue)
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: db.Seller{},
 		err:    sellers.ExistsSellerCodeError,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "/api/v1/sellers", requestBody)
@@ -90,7 +90,7 @@ func Test_Create_409(t *testing.T) {
 	assert.Equal(t, http.StatusConflict, response.Code)
 }
 
-func Test_GetAll_200(t *testing.T) {
+func Test_Seller_GetAll_200(t *testing.T) {
 
 	sellersList := []db.Seller{
 		{
@@ -116,25 +116,25 @@ func Test_GetAll_200(t *testing.T) {
 		},
 	}
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: sellersList,
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/api/v1/sellers", nil)
 	router.ServeHTTP(response, request)
 
 	responseData := []db.Seller{}
-	decodeWebResponse(response, &responseData)
+	decodeWebSellerResponse(response, &responseData)
 
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, sellersList, responseData)
 }
 
-func Test_Get_200(t *testing.T) {
+func Test_Seller_Get_200(t *testing.T) {
 
 	foundSeller := db.Seller{
 		Id:          1,
@@ -144,12 +144,12 @@ func Test_Get_200(t *testing.T) {
 		Telephone:   "13997780890",
 	}
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: foundSeller,
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/api/v1/sellers/1", nil)
@@ -158,14 +158,14 @@ func Test_Get_200(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 }
 
-func Test_Get_404(t *testing.T) {
+func Test_Seller_Get_404(t *testing.T) {
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: db.Seller{},
 		err:    sellers.SellerNotFoundError,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/api/v1/Sellers/666", nil)
@@ -174,7 +174,7 @@ func Test_Get_404(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, response.Code)
 }
 
-func Test_Update_200(t *testing.T) {
+func Test_Seller_Update_200(t *testing.T) {
 
 	sellerToUpdate := db.Seller{
 		Id:          1,
@@ -195,25 +195,25 @@ func Test_Update_200(t *testing.T) {
 		Telephone:   "13997780890",
 	}
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: updatedSeller,
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("PATCH", "/api/v1/sellers/1", requestBody)
 	router.ServeHTTP(response, request)
 
 	responseData := db.Seller{}
-	decodeWebResponse(response, &responseData)
+	decodeWebSellerResponse(response, &responseData)
 
 	assert.Equal(t, http.StatusOK, response.Code)
 	assert.Equal(t, updatedSeller, responseData)
 }
 
-func Test_Update_404(t *testing.T) {
+func Test_Seller_Update_404(t *testing.T) {
 
 	SellerToUpdate := db.Seller{
 		Id:          1,
@@ -226,31 +226,31 @@ func Test_Update_404(t *testing.T) {
 	jsonValue, _ := json.Marshal(SellerToUpdate)
 	requestBody := bytes.NewBuffer(jsonValue)
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: db.Seller{},
 		err:    sellers.SellerNotFoundError,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("PATCH", "/api/v1/sellers/1", requestBody)
 	router.ServeHTTP(response, request)
 
 	responseData := db.Seller{}
-	decodeWebResponse(response, &responseData)
+	decodeWebSellerResponse(response, &responseData)
 
 	assert.Equal(t, http.StatusNotFound, response.Code)
 }
 
-func Test_Delete_204(t *testing.T) {
+func Test_Seller_Delete_204(t *testing.T) {
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: db.Seller{},
 		err:    nil,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("DELETE", "/api/v1/sellers/1", nil)
@@ -259,14 +259,14 @@ func Test_Delete_204(t *testing.T) {
 	assert.Equal(t, http.StatusNoContent, response.Code)
 }
 
-func Test_Delete_404(t *testing.T) {
+func Test_Seller_Delete_404(t *testing.T) {
 
-	mockService := mockSellerService{
+	mockSellerService := mockSellerService{
 		result: db.Seller{},
 		err:    sellers.SellerNotFoundError,
 	}
 
-	router := setupRouter(mockService)
+	router := setupSellerRouter(mockSellerService)
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("DELETE", "/api/v1/sellers/1", nil)
@@ -275,7 +275,7 @@ func Test_Delete_404(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, response.Code)
 }
 
-func decodeWebResponse(response *httptest.ResponseRecorder, responseData any) {
+func decodeWebSellerResponse(response *httptest.ResponseRecorder, responseData any) {
 	responseStruct := web.Response{}
 	json.Unmarshal(response.Body.Bytes(), &responseStruct)
 
@@ -283,8 +283,8 @@ func decodeWebResponse(response *httptest.ResponseRecorder, responseData any) {
 	json.Unmarshal(jsonData, &responseData)
 }
 
-func setupRouter(mockService mockSellerService) *gin.Engine {
-	controller := NewSeller(mockService)
+func setupSellerRouter(mockSellerService mockSellerService) *gin.Engine {
+	controller := NewSeller(mockSellerService)
 
 	router := gin.Default()
 	router.POST("/api/v1/sellers", controller.Create())
