@@ -15,7 +15,7 @@ type Warehouse struct {
 	Code               string  `json:"warehouse_code" binding:"required"`
 	Address            string  `json:"address" binding:"required"`
 	Telephone          string  `json:"telephone" binding:"required"`
-	MinimunCapacity    uint32  `json:"mimimun_capacity" binding:"required"`
+	MinimunCapacity    uint32  `json:"minimun_capacity" binding:"required"`
 	MinimumTemperature float32 `json:"minimun_temperature" binding:"required"`
 }
 
