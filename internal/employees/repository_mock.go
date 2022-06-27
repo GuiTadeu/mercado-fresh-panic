@@ -33,20 +33,18 @@ func (m mockEmployeeRepository) Delete(id uint64) error {
 }
 
 func (m mockEmployeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) bool {
-	if m.err != nil {
-		return false
-	}
-	return true
+	return m.existsEmployeeCode
 }
 
 func (m mockEmployeeRepository) Create(
-	cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error) {
-	if m.err != nil {
+	cardNumberId string, firstName string,
+	lastName string, wareHouseId uint64) (db.Employee, error) {
+	if m.err != nil || m.existsEmployeeCode {
 		return db.Employee{}, m.err
 	}
 	return m.result.(db.Employee), nil
 }
 
-func (m mockEmployeeRepository) Update() {
-
+func (m mockEmployeeRepository) Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error) {
+	return db.Employee{}, nil
 }

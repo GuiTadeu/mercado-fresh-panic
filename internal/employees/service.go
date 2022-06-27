@@ -23,13 +23,15 @@ type employeeService struct {
 	employeeRepository EmployeeRepository
 }
 
-func NewService(r EmployeeRepository) *employeeService {
+func NewEmployeeService(r EmployeeRepository) EmployeeService {
 	return &employeeService{
 		employeeRepository: r,
 	}
 }
 
-func (s employeeService) Create(cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error) {
+func (s *employeeService) Create(
+	cardNumberId string, firstName string,
+	lastName string, wareHouseId uint64) (db.Employee, error) {
 	if s.existsEmployeeCardNumberId(cardNumberId) {
 		return db.Employee{}, ExistsCardNumberIdError
 	}
@@ -41,15 +43,15 @@ func (s employeeService) Create(cardNumberId string, firstName string, lastName 
 	return employee, nil
 }
 
-func (s employeeService) existsEmployeeCardNumberId(cardNumberId string) bool {
+func (s *employeeService) existsEmployeeCardNumberId(cardNumberId string) bool {
 	return s.employeeRepository.ExistsEmployeeCardNumberId(cardNumberId)
 }
 
-func (s employeeService) Get(id uint64) (db.Employee, error) {
+func (s *employeeService) Get(id uint64) (db.Employee, error) {
 	return s.employeeRepository.Get(id)
 }
 
-func (s employeeService) Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error) {
+func (s *employeeService) Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error) {
 	employee, err := s.Get(id)
 	if err != nil {
 		return db.Employee{}, err
