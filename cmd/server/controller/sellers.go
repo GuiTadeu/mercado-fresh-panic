@@ -24,8 +24,8 @@ func (control *SellersController) FindAll() gin.HandlerFunc {
 		s, err := control.service.FindAll()
 
 		if err != nil {
-			status, header := sellerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -41,16 +41,16 @@ func (control *SellersController) FindOne() gin.HandlerFunc {
 		id, err := strconv.ParseUint(idParam, 0, 64)
 
 		if err != nil {
-			status, header := sellerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
 		s, err := control.service.FindOne(id)
 
 		if err != nil {
-			status, header := sellerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -71,8 +71,8 @@ func (control *SellersController) Create() gin.HandlerFunc {
 		s, err := control.service.Create(req.Cid, req.CompanyName, req.Address, req.Telephone)
 
 		if err != nil {
-			status, header := sellerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -102,8 +102,8 @@ func (control *SellersController) Update() gin.HandlerFunc {
 		s, err := control.service.Update(id, req.Cid, req.CompanyName, req.Address, req.Telephone)
 
 		if err != nil {
-			status, header := sellerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -126,8 +126,8 @@ func (control *SellersController) Delete() gin.HandlerFunc {
 		err = control.service.Delete(id)
 
 		if err != nil {
-			status, header := sellerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sellerErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -135,17 +135,17 @@ func (control *SellersController) Delete() gin.HandlerFunc {
 	}
 }
 
-func sellerErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+func sellerErrorHandler(err error, ctx *gin.Context) int {
 	switch err {
 
 	case sellers.SellerNotFoundError:
-		return http.StatusNotFound, gin.H{"error": err.Error()}
+		return http.StatusNotFound
 
 	case sellers.ExistsSellerCodeError:
-		return http.StatusConflict, gin.H{"error": err.Error()}
+		return http.StatusConflict
 
 	default:
-		return http.StatusInternalServerError, gin.H{"error": err.Error()}
+		return http.StatusInternalServerError
 	}
 }
 
