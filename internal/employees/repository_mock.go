@@ -37,8 +37,9 @@ func (m mockEmployeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) 
 }
 
 func (m mockEmployeeRepository) Create(
-	cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error) {
-	if m.err != nil {
+	cardNumberId string, firstName string,
+	lastName string, wareHouseId uint64) (db.Employee, error) {
+	if m.err != nil || m.existsEmployeeCode {
 		return db.Employee{}, m.err
 	}
 	return m.result.(db.Employee), nil
