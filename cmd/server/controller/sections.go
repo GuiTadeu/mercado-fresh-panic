@@ -10,7 +10,7 @@ import (
 )
 
 type CreateSectionRequest struct {
-	Number             uint64  `json:"number" binding:"required"`
+	Number             uint64  `json:"section_number" binding:"required"`
 	CurrentTemperature float32 `json:"current_temperature" binding:"required"`
 	MinimumTemperature float32 `json:"minimum_temperature" binding:"required"`
 	CurrentCapacity    uint32  `json:"current_capacity" binding:"required"`
@@ -44,8 +44,8 @@ func (c *sectionController) GetAll() gin.HandlerFunc {
 
 		sections, err := c.sectionService.GetAll()
 		if err != nil {
-			status, header := sectionErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sectionErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -67,8 +67,8 @@ func (c *sectionController) Get() gin.HandlerFunc {
 		section, err := c.sectionService.Get(id)
 
 		if err != nil {
-			status, header := sectionErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sectionErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -80,17 +80,20 @@ func (c *sectionController) Get() gin.HandlerFunc {
 func (c *sectionController) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
+		var service = c.sectionService
 		var request CreateSectionRequest
+
 		err := ctx.ShouldBindJSON(&request)
 
 		if err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(
+				http.StatusUnprocessableEntity,
+				web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()),
+			)
 			return
 		}
 
-		addedSection, err := c.sectionService.Create(
+		addedSection, err := service.Create(
 			request.Number,
 			request.CurrentTemperature,
 			request.MinimumTemperature,
@@ -102,8 +105,8 @@ func (c *sectionController) Create() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			status, header := sectionErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sectionErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -115,14 +118,22 @@ func (c *sectionController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		var request UpdateSectionRequest
+
 		err := ctx.ShouldBindJSON(&request)
+		if err != nil {
+			ctx.JSON(
+				http.StatusUnprocessableEntity,
+				web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()),
+			)
+			return
+		}
 
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+
 		if err != nil {
 			ctx.JSON(
 				http.StatusBadRequest,
-				web.NewResponse(http.StatusBadRequest, nil, "section id binding error"),
-			)
+				web.NewResponse(http.StatusBadRequest, nil, "section id binding error"))
 			return
 		}
 
@@ -137,8 +148,8 @@ func (c *sectionController) Update() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			status, header := sectionErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sectionErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -151,34 +162,33 @@ func (c *sectionController) Delete() gin.HandlerFunc {
 
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, err.Error()))
 			return
 		}
 
 		err = c.sectionService.Delete(id)
 
 		if err != nil {
-			status, header := sectionErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := sectionErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
+
 		}
 
 		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
 	}
 }
 
-func sectionErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+func sectionErrorHandler(err error) int {
 	switch err {
 
 	case sections.SectionNotFoundError:
-		return http.StatusNotFound, gin.H{"error": err.Error()}
+		return http.StatusNotFound
 
 	case sections.ExistsSectionNumberError:
-		return http.StatusConflict, gin.H{"error": err.Error()}
+		return http.StatusConflict
 
 	default:
-		return http.StatusInternalServerError, gin.H{"error": err.Error()}
+		return http.StatusInternalServerError
 	}
 }
