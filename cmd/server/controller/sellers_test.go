@@ -158,6 +158,30 @@ func Test_Seller_Get_200(t *testing.T) {
 	assert.Equal(t, http.StatusOK, response.Code)
 }
 
+func Test_Seller_Get_Error_500(t *testing.T) {
+
+	foundSeller := db.Seller{
+		Id:          1,
+		Cid:         1,
+		CompanyName: "Nike",
+		Address:     "Avenida Paulista, 202",
+		Telephone:   "13997780890",
+	}
+
+	mockSellerService := mockSellerService{
+		result: foundSeller,
+		err:    nil,
+	}
+
+	router := setupSellerRouter(mockSellerService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/sellers/teste", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, http.StatusInternalServerError, response.Code)
+}
+
 func Test_Seller_Get_404(t *testing.T) {
 
 	mockSellerService := mockSellerService{
