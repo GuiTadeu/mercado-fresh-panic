@@ -45,13 +45,53 @@ func NewProductController(s products.ProductService) *productController {
 	}
 }
 
+// TODO Adicionar verificação de ProductTypeId e SellerId (ambos precisam existir)
+func (c *productController) Create() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		var service = c.productService
+		var request CreateProductRequest
+
+		err := ctx.ShouldBindJSON(&request)
+		if err != nil {
+			ctx.JSON(
+				http.StatusUnprocessableEntity,
+				web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()),
+			)
+			return
+		}
+
+		addedProduct, err := service.Create(
+			request.Code,
+			request.Description,
+			request.Width,
+			request.Height,
+			request.Length,
+			request.NetWeight,
+			request.ExpirationRate,
+			request.RecommendedFreezingTemp,
+			request.FreezingRate,
+			request.ProductTypeId,
+			request.SellerId,
+		)
+
+		if err != nil {
+			status := productErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+			return
+		}
+
+		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedProduct, ""))
+	}
+}
+
 func (c *productController) GetAll() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		products, err := c.productService.GetAll()
 		if err != nil {
-			status, header := productErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := productErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -73,51 +113,12 @@ func (c *productController) Get() gin.HandlerFunc {
 		product, err := c.productService.Get(id)
 
 		if err != nil {
-			status, header := productErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := productErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
 		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, product, ""))
-	}
-}
-
-// TODO Adicionar verificação de ProductTypeId e SellerId (ambos precisam existir)
-func (c *productController) Create() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-
-		var service = c.productService
-		var request CreateProductRequest
-
-		err := ctx.ShouldBindJSON(&request)
-		if err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		addedProduct, err := service.Create(
-			request.Code,
-			request.Description,
-			request.Width,
-			request.Height,
-			request.Length,
-			request.NetWeight,
-			request.ExpirationRate,
-			request.RecommendedFreezingTemp,
-			request.FreezingRate,
-			request.ProductTypeId,
-			request.SellerId,
-		)
-
-		if err != nil {
-			status, header := productErrorHandler(err, ctx)
-			ctx.JSON(status, header)
-			return
-		}
-
-		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedProduct, ""))
 	}
 }
 
@@ -128,9 +129,10 @@ func (c *productController) Update() gin.HandlerFunc {
 
 		err := ctx.ShouldBindJSON(&request)
 		if err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(
+				http.StatusUnprocessableEntity, 
+				web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()),
+			)
 			return
 		}
 
@@ -157,8 +159,8 @@ func (c *productController) Update() gin.HandlerFunc {
 		)
 
 		if err != nil {
-			status, header := productErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := productErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -171,17 +173,18 @@ func (c *productController) Delete() gin.HandlerFunc {
 
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(
+				http.StatusNotFound,
+				web.NewResponse(http.StatusNotFound, nil, err.Error()),
+			)
 			return
 		}
 
 		err = c.productService.Delete(id)
 
 		if err != nil {
-			status, header := productErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := productErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -189,16 +192,16 @@ func (c *productController) Delete() gin.HandlerFunc {
 	}
 }
 
-func productErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+func productErrorHandler(err error) (int) {
 	switch err {
 
 	case products.ProductNotFoundError:
-		return http.StatusNotFound, gin.H{"error": err.Error()}
+		return http.StatusNotFound
 
 	case products.ExistsProductCodeError:
-		return http.StatusConflict, gin.H{"error": err.Error()}
+		return http.StatusConflict
 
 	default:
-		return http.StatusInternalServerError, gin.H{"error": err.Error()}
+		return http.StatusInternalServerError
 	}
 }

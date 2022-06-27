@@ -41,8 +41,8 @@ func (c *warehouseController) GetAll() gin.HandlerFunc {
 		warehouse, err := c.warehouseService.GetAll()
 
 		if err != nil {
-			status, header := warehouseErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := warehouseErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -64,8 +64,8 @@ func (c *warehouseController) Create() gin.HandlerFunc {
 		addedWarehouse, err := c.warehouseService.Create(req.Code, req.Address, req.Telephone, req.MinimunCapacity, req.MinimunTemperature)
 
 		if err != nil {
-			status, header := warehouseErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := warehouseErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, addedWarehouse, ""))
@@ -77,15 +77,15 @@ func (c *warehouseController) Get() gin.HandlerFunc {
 		id, err := strconv.Atoi(ctx.Param("id"))
 
 		if err != nil {
-			status, header := warehouseErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := warehouseErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 		warehouse, err := c.warehouseService.Get(uint64(id))
 
 		if err != nil {
-			status, header := warehouseErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := warehouseErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -98,22 +98,22 @@ func (c *warehouseController) Delete() gin.HandlerFunc {
 		id, err := strconv.Atoi(ctx.Param("id"))
 
 		if err != nil {
-			status, header := warehouseErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := warehouseErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 		_, err = c.warehouseService.Get(uint64(id))
 
 		if err != nil {
-			status, header := warehouseErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := warehouseErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
 		err = c.warehouseService.Delete(uint64(id))
 		if err != nil {
-			status, header := warehouseErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := warehouseErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
@@ -139,21 +139,21 @@ func (c *warehouseController) Update() gin.HandlerFunc {
 			request.MinimunTemperature,
 		)
 		if err != nil {
-			status, header := warehouseErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := warehouseErrorHandler(err, ctx)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, updatedWarehouse, ""))
 	}
 }
 
-func warehouseErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+func warehouseErrorHandler(err error, ctx *gin.Context) int {
 	switch err {
 	case warehouses.WarehouseNotFoundError:
-		return http.StatusNotFound, gin.H{"error": err.Error()}
+		return http.StatusNotFound
 	case warehouses.ExistsWarehouseCodeError:
-		return http.StatusConflict, gin.H{"error": err.Error()}
+		return http.StatusConflict
 	default:
-		return http.StatusInternalServerError, gin.H{"error": err.Error()}
+		return http.StatusInternalServerError
 	}
 }

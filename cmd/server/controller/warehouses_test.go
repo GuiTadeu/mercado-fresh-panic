@@ -40,7 +40,7 @@ func Test_Warehouse_Create_201(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	responseData := database.Warehouse{}
-	decodeWebResponse(response, &responseData)
+	decodeWarehouseWebResponse(response, &responseData)
 
 	assert.Equal(t, 201, response.Code)
 	assert.Equal(t, validWarehouse, responseData)
@@ -135,7 +135,7 @@ func Test_Warehouse_GetAll_200(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	responseData := []database.Warehouse{}
-	decodeWebResponse(response, &responseData)
+	decodeWarehouseWebResponse(response, &responseData)
 
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, warehousesList, responseData)
@@ -218,7 +218,7 @@ func Test_Warehouse_Update_200(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	responseData := database.Warehouse{}
-	decodeWebResponse(response, &responseData)
+	decodeWarehouseWebResponse(response, &responseData)
 
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, updatedWarehouse, responseData)
@@ -251,7 +251,7 @@ func Test_Warehouse_Update_404(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	responseData := []database.Warehouse{}
-	decodeWebResponse(response, &responseData)
+	decodeWarehouseWebResponse(response, &responseData)
 
 	assert.Equal(t, 404, response.Code)
 }
@@ -288,7 +288,7 @@ func Test_Warehouse_Delete_404(t *testing.T) {
 	assert.Equal(t, 404, response.Code)
 }
 
-func decodeWebResponse(response *httptest.ResponseRecorder, responseData any) {
+func decodeWarehouseWebResponse(response *httptest.ResponseRecorder, responseData any) {
 	responseStruct := web.Response{}
 	json.Unmarshal(response.Body.Bytes(), &responseStruct)
 
