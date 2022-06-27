@@ -32,7 +32,7 @@ func (m mockWarehouseService) Delete(id uint64) error {
 
 }
 
-func (m mockWarehouseService) FindCode(code string) bool {
+func (m mockWarehouseService) FindByCode(code string) bool {
 	return m.err == warehouses.ExistsWarehouseCodeError
 }
 
