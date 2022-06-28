@@ -12,7 +12,7 @@ type WarehouseRepository interface {
 	Get(id uint64) (database.Warehouse, error)
 	Delete(id uint64) error
 	Update(warehouse database.Warehouse) (database.Warehouse, error)
-	FindCode(code string) bool
+	FindByCode(code string) bool
 }
 
 func NewRepository(warehouse []database.Warehouse) WarehouseRepository {
@@ -67,7 +67,7 @@ func (r *warehouseRepository) Delete(id uint64) error {
 	return WarehouseNotFoundError
 }
 
-func (r *warehouseRepository) FindCode(code string) bool {
+func (r *warehouseRepository) FindByCode(code string) bool {
 	for _, warehouse := range r.warehouses {
 		if warehouse.Code == code {
 			return true

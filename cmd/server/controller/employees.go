@@ -45,8 +45,8 @@ func (c *EmployeeController) Create() gin.HandlerFunc {
 		employee, err := c.employeeService.Create(req.CardNumberId, req.FirstName, req.LastName, req.WarehouseId)
 
 		if err != nil {
-			status, header := employeeErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := employeeErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -68,8 +68,8 @@ func (c *EmployeeController) Get() gin.HandlerFunc {
 		employee, err := c.employeeService.Get(id)
 
 		if err != nil {
-			status, header := employeeErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := employeeErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -103,8 +103,8 @@ func (c *EmployeeController) Update() gin.HandlerFunc {
 		employee, err := c.employeeService.Update(id, req.CardNumberId, req.FirstName, req.LastName, req.WarehouseId)
 
 		if err != nil {
-			status, header := employeeErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := employeeErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -118,8 +118,8 @@ func (c *EmployeeController) GetAll() gin.HandlerFunc {
 		employees, err := c.employeeService.GetAll()
 
 		if err != nil {
-			status, header := employeeErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := employeeErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -140,23 +140,23 @@ func (c *EmployeeController) Delete() gin.HandlerFunc {
 
 		err = c.employeeService.Delete(id)
 		if err != nil {
-			status, header := employeeErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := employeeErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
 	}
 }
 
-func employeeErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+func employeeErrorHandler(err error) (int) {
 	switch err {
 
 	case employees.ExistsCardNumberIdError:
-		return http.StatusConflict, gin.H{"error": err.Error()}
+		return http.StatusConflict
 
 	case employees.EmployeeNotFoundError:
-		return http.StatusNotFound, gin.H{"error": err.Error()}
+		return http.StatusNotFound
 	default:
-		return http.StatusInternalServerError, gin.H{"error": err.Error()}
+		return http.StatusInternalServerError
 	}
 }
