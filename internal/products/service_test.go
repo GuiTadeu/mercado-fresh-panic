@@ -60,7 +60,7 @@ func Test_Get_OK(t *testing.T) {
 
 	mockProductRepository := mockProductRepository{
 		getById: expectedResult,
-		err:    nil,
+		err:     nil,
 	}
 
 	service := NewProductService(mockProductRepository)

@@ -1,11 +1,12 @@
 package controller
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
 	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type createBuyersRequest struct {
@@ -36,17 +37,15 @@ func (c buyerController) Create() gin.HandlerFunc {
 
 		err := ctx.ShouldBindJSON(&req)
 		if err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-				"error": err.Error(),
-			})
+			ctx.JSON(http.StatusUnprocessableEntity, web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()))
 			return
 		}
 
 		buyer, err := c.buyerService.Create(req.CardNumberId, req.FirstName, req.LastName)
 
 		if err != nil {
-			status, header := buyerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := buyerErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 		ctx.JSON(http.StatusCreated, web.NewResponse(http.StatusCreated, buyer, ""))
@@ -60,8 +59,8 @@ func (c *buyerController) GetAll() gin.HandlerFunc {
 		buyers, err := c.buyerService.GetAll()
 
 		if err != nil {
-			status, header := buyerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := buyerErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -84,8 +83,8 @@ func (c *buyerController) Get() gin.HandlerFunc {
 		buyer, err := c.buyerService.Get(id)
 
 		if err != nil {
-			status, header := buyerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := buyerErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -106,8 +105,8 @@ func (c *buyerController) Delete() gin.HandlerFunc {
 
 		err = c.buyerService.Delete(id)
 		if err != nil {
-			status, header := buyerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := buyerErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -136,8 +135,8 @@ func (c *buyerController) Update() gin.HandlerFunc {
 
 		buyer, err := c.buyerService.Update(id, req.CardNumberId, req.FirstName, req.LastName)
 		if err != nil {
-			status, header := buyerErrorHandler(err, ctx)
-			ctx.JSON(status, header)
+			status := buyerErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
 			return
 		}
 
@@ -145,16 +144,16 @@ func (c *buyerController) Update() gin.HandlerFunc {
 	}
 }
 
-func buyerErrorHandler(err error, ctx *gin.Context) (int, gin.H) {
+func buyerErrorHandler(err error) (int) {
 	switch err {
 
 	case buyers.BuyerNotFoundError:
-		return http.StatusNotFound, gin.H{"error": err.Error()}
+		return http.StatusNotFound
 
 	case buyers.ExistsBuyerCardNumberIdError:
-		return http.StatusConflict, gin.H{"error": err.Error()}
+		return http.StatusConflict
 
 	default:
-		return http.StatusInternalServerError, gin.H{"error": err.Error()}
+		return http.StatusInternalServerError
 	}
 }

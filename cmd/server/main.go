@@ -1,7 +1,7 @@
 package main
 
 import (
-	controller "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controller"
+	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controller"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
