@@ -89,7 +89,7 @@ func sectionHandlers(sectionsDB []db.Section, server *gin.Engine) {
 func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
 
 	employeeRepository := employees.NewRepository(employeeDB)
-	employeeService := employees.NewService(employeeRepository)
+	employeeService := employees.NewEmployeeService(employeeRepository)
 	employeeHandler := controller.NewEmployeeController(employeeService)
 
 	employeeRoutes := server.Group("/api/v1/employees")

@@ -7,7 +7,6 @@ import (
 type EmployeeRepository interface {
 	GetAll() ([]database.Employee, error)
 	Create(cardNumberId string, firstName string, lastName string, wareHouseId uint64) (database.Employee, error)
-	getNextId() uint64
 	Get(id uint64) (database.Employee, error)
 	Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (database.Employee, error)
 	Delete(id uint64) error
