@@ -47,5 +47,9 @@ func (m mockEmployeeService) Create(
 func (m mockEmployeeService) Update(
 	id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64,
 ) (db.Employee, error) {
-	return db.Employee{}, nil
+	if m.err != nil {
+		return db.Employee{}, m.err
+	}
+	return m.result.(db.Employee), nil
 }
+
