@@ -52,19 +52,6 @@ func (s *warehouseService) Delete(id uint64) error {
 	return s.warehouseRepo.Delete(id)
 }
 
-func (s *warehouseService) GetNextId() uint64 {
-	warehouses, err := s.warehouseRepo.GetAll()
-	if err != nil {
-		return 1
-	}
-
-	if len(warehouses) == 0 {
-		return 1
-	}
-
-	return warehouses[len(warehouses)-1].Id + 1
-}
-
 func (s *warehouseService) Update(id uint64, code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32) (database.Warehouse, error) {
 	foundWarehouse, err := s.warehouseRepo.Get(id)
 	if err != nil {

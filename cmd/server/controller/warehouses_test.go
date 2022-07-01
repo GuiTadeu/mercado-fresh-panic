@@ -3,6 +3,7 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -167,7 +168,7 @@ func Test_Get_OneOk(t *testing.T) {
 
 }
 
-func Test_Warehouse_Get_200(t *testing.T) {
+func Test_Warehouse_Get_404(t *testing.T) {
 
 	mockService := mockWarehouseService{
 		result: database.Warehouse{},
@@ -181,6 +182,22 @@ func Test_Warehouse_Get_200(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	assert.Equal(t, 404, response.Code)
+}
+
+func Test_Warehouse_GetAll_500(t *testing.T) {
+
+	mockService := mockWarehouseService{
+		result: database.Warehouse{},
+		err:    errors.New("internal error"),
+	}
+
+	router := setupWarehouseRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/warehouses", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 500, response.Code)
 }
 
 func Test_Warehouse_Update_200(t *testing.T) {
@@ -286,6 +303,22 @@ func Test_Warehouse_Delete_404(t *testing.T) {
 	router.ServeHTTP(response, request)
 
 	assert.Equal(t, 404, response.Code)
+}
+
+func Test_Warehouse_Delete_500(t *testing.T) {
+
+	mockService := mockWarehouseService{
+		result: database.Warehouse{},
+		err:    errors.New("internal error"),
+	}
+
+	router := setupWarehouseRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("DELETE", "/api/v1/warehouses/10", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 500, response.Code)
 }
 
 func decodeWarehouseWebResponse(response *httptest.ResponseRecorder, responseData any) {

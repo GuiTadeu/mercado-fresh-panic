@@ -3,6 +3,7 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -197,6 +198,21 @@ func Test_Section_Get_404(t *testing.T) {
 	assert.Equal(t, 404, response.Code)
 }
 
+func Test_Section_Get_500(t *testing.T) {
+
+	mockService := mockSectionService{
+		result: db.Section{},
+		err:    errors.New("internal server error"),
+	}
+
+	router := setupSectionRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/sections/666", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 500, response.Code)
+}
 func Test_Section_Update_200(t *testing.T) {
 
 	sectionToUpdate := db.Section{
@@ -304,7 +320,7 @@ func Test_Section_Delete_404(t *testing.T) {
 	router := setupSectionRouter(mockService)
 
 	response := httptest.NewRecorder()
-	request, _ := http.NewRequest("DELETE", "/api/v1/sections/", nil)
+	request, _ := http.NewRequest("DELETE", "/api/v1/sections/123", nil)
 	router.ServeHTTP(response, request)
 
 	assert.Equal(t, 404, response.Code)
