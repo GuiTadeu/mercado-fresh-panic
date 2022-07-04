@@ -8,7 +8,9 @@ CREATE TABLE `countries` (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   country_name VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`)
-); LOCK TABLES `countries` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `countries` WRITE;
 
 UNLOCK TABLES;
 
@@ -20,19 +22,23 @@ CREATE TABLE `provinces`(
   id_country_fk BIGINT UNSIGNED NOT NULL,
   FOREIGN KEY (id_country_fk) REFERENCES countries(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `provinces` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `provinces` WRITE;
 
 UNLOCK TABLES;
 
 DROP TABLE IF EXISTS `localities`;
 
 CREATE TABLE `localities` (
-  id VARCHAR(8) NOT NULL,
+  id VARCHAR(255) NOT NULL,
   locality_name VARCHAR(255) NOT NULL,
   province_id BIGINT UNSIGNED NOT NULL,
   FOREIGN KEY (province_id) REFERENCES provinces(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `provinces` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `provinces` WRITE;
 
 UNLOCK TABLES;
 
@@ -47,7 +53,9 @@ CREATE TABLE `sellers` (
   locality_id VARCHAR(255) NOT NULL,
   FOREIGN KEY (locality_id) REFERENCES localities(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `sellers` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `sellers` WRITE;
 
 UNLOCK TABLES;
 
@@ -62,7 +70,9 @@ CREATE TABLE `carriers` (
   locality_id VARCHAR(255) NOT NULL,
   FOREIGN KEY (locality_id) REFERENCES localities(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `carriers` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `carriers` WRITE;
 
 UNLOCK TABLES;
 
@@ -73,10 +83,10 @@ CREATE TABLE `warehouses` (
   address VARCHAR(255) NOT NULL,
   telephone VARCHAR(255) NOT NULL,
   warehouse_code VARCHAR(255) UNIQUE NOT NULL,
-  locality_id VARCHAR(8) NOT NULL, 
+  locality_id VARCHAR(255) NOT NULL,
   FOREIGN KEY (locality_id) REFERENCES localities(id),
   PRIMARY KEY(`id`)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
 
 LOCK TABLES `warehouses` WRITE;
 
@@ -88,7 +98,9 @@ CREATE TABLE `products_types` (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   description VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`)
-); LOCK TABLES `products_types` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `products_types` WRITE;
 
 UNLOCK TABLES;
 
@@ -110,7 +122,9 @@ CREATE TABLE `products`(
   FOREIGN KEY (product_type) REFERENCES products_types(id),
   FOREIGN KEY (seller_id) REFERENCES sellers(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `products` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `products` WRITE;
 
 UNLOCK TABLES;
 
@@ -129,7 +143,9 @@ CREATE TABLE `sections`(
   FOREIGN KEY (product_type) REFERENCES products_types(id),
   FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `sections` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `sections` WRITE;
 
 UNLOCK TABLES;
 
@@ -150,7 +166,9 @@ CREATE TABLE `product_batches`(
   FOREIGN KEY (product_id) REFERENCES products(id),
   FOREIGN KEY (section_id) REFERENCES sections(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `product_batches` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `product_batches` WRITE;
 
 UNLOCK TABLES;
 
@@ -164,7 +182,9 @@ CREATE TABLE `product_records`(
   product_id BIGINT UNSIGNED NOT NULL,
   FOREIGN KEY (product_id) REFERENCES products(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `product_records` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `product_records` WRITE;
 
 UNLOCK TABLES;
 
@@ -178,7 +198,9 @@ CREATE TABLE `employees`(
   warehouse_id BIGINT UNSIGNED NOT NULL,
   FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `employees` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `employees` WRITE;
 
 UNLOCK TABLES;
 
@@ -195,7 +217,9 @@ CREATE TABLE `inbound_orders`(
   FOREIGN KEY (product_batch_id) REFERENCES product_batches(id),
   FOREIGN KEY (warehouse_id) REFERENCES warehouses(id),
   PRIMARY KEY (`id`)
-); LOCK TABLE `inbound_orders` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLE `inbound_orders` WRITE;
 
 UNLOCK TABLES;
 
@@ -205,7 +229,9 @@ CREATE TABLE `order_status`(
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   description VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`)
-); LOCK TABLES `order_status` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `order_status` WRITE;
 
 UNLOCK TABLES;
 
@@ -217,7 +243,9 @@ CREATE TABLE `buyers`(
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`)
-); LOCK TABLES `buyers` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `buyers` WRITE;
 
 UNLOCK TABLES;
 
@@ -235,7 +263,9 @@ CREATE TABLE `purchase_orders`(
   FOREIGN KEY (order_status_id) REFERENCES order_status(id),
   FOREIGN KEY (product_record_id) REFERENCES product_records(id),
   PRIMARY KEY (`id`)
-); LOCK TABLES `purchase_orders` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `purchase_orders` WRITE;
 
 UNLOCK TABLES;
 
@@ -246,7 +276,9 @@ CREATE TABLE `users`(
   password VARCHAR(255) NOT NULL,
   username VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`)
-); LOCK TABLE `users` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLE `users` WRITE;
 
 UNLOCK TABLES;
 
@@ -257,7 +289,9 @@ CREATE TABLE `rol`(
   description VARCHAR(255) NOT NULL,
   rol_name VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`)
-); LOCK TABLES `rol` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `rol` WRITE;
 
 UNLOCK TABLES;
 
@@ -268,6 +302,8 @@ CREATE TABLE `user_rol`(
   rol_id BIGINT UNSIGNED NOT NULL,
   FOREIGN KEY(usuario_id) REFERENCES users(id),
   FOREIGN KEY(rol_id) REFERENCES rol(id)
-); LOCK TABLES `user_rol` WRITE;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+
+LOCK TABLES `user_rol` WRITE;
 
 UNLOCK TABLES;
