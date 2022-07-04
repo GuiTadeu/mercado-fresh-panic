@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	
+	"os"
+
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -13,8 +15,12 @@ var (
 )
 
 func Init() {
-	datasource := "root:panic@tcp(localhost:8080)/mercado-fresh-panic"
-	var err error
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Fatal("failed to load .env")
+	}
+	
+	datasource := os.Getenv("CONNECT_MYSQL")	
 
 	StorageDB, err = sql.Open("mysql", datasource)
 	if err != nil {

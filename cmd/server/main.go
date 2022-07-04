@@ -29,7 +29,7 @@ func main() {
 	buyerHandlers(buyersDB, server)
 	employeeHandlers(employeeDB, server)
 
-	server.Run(":8081")
+	server.Run(":8080")
 }
 
 func sellersHandlers(sellersDB []db.Seller, server *gin.Engine) {
