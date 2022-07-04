@@ -10,9 +10,12 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/gin-gonic/gin"
+	
 )
 
 func main() {
+
+	db.Init()
 
 	server := gin.Default()
 
@@ -26,7 +29,7 @@ func main() {
 	buyerHandlers(buyersDB, server)
 	employeeHandlers(employeeDB, server)
 
-	server.Run()
+	server.Run(":8081")
 }
 
 func sellersHandlers(sellersDB []db.Seller, server *gin.Engine) {

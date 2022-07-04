@@ -1,6 +1,30 @@
 package database
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	
+	_ "github.com/go-sql-driver/mysql"
+)
+
+var (
+	StorageDB *sql.DB
+)
+
+func Init() {
+	datasource := "root:panic@tcp(localhost:8080)/mercado-fresh-panic"
+	var err error
+
+	StorageDB, err = sql.Open("mysql", datasource)
+	if err != nil {
+		panic(err)		
+	}
+	if err = StorageDB.Ping(); err != nil {
+		panic(err)
+	}
+	log.Println("database configured")
+}
 
 type Seller struct {
 	Id          uint64 `json:"id"`
