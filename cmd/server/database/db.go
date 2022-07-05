@@ -19,12 +19,12 @@ func Init() {
 	if err != nil {
 		log.Fatal("failed to load .env")
 	}
-	
-	datasource := os.Getenv("CONNECT_MYSQL")	
+
+	datasource := os.Getenv("CONNECT_MYSQL")
 
 	StorageDB, err = sql.Open("mysql", datasource)
 	if err != nil {
-		panic(err)		
+		panic(err)
 	}
 	if err = StorageDB.Ping(); err != nil {
 		panic(err)
@@ -58,7 +58,7 @@ type Section struct {
 	MinimumCapacity    uint32  `json:"minimum_capacity" binding:"required"`
 	MaximumCapacity    uint32  `json:"maximum_capacity" binding:"required"`
 	WarehouseId        uint64  `json:"warehouse_id" binding:"required"`
-	ProductTypeId      uint64  `json:"product_type_id" binding:"required"`
+	ProductTypeId      uint64  `json:"product_type" binding:"required"`
 	Products           []Product
 }
 

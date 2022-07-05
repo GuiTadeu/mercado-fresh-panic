@@ -17,11 +17,11 @@ type CreateSectionRequest struct {
 	MinimumCapacity    uint32  `json:"minimum_capacity" binding:"required"`
 	MaximumCapacity    uint32  `json:"maximum_capacity" binding:"required"`
 	WarehouseId        uint64  `json:"warehouse_id" binding:"required"`
-	ProductTypeId      uint64  `json:"product_type_id" binding:"required"`
+	ProductTypeId      uint64  `json:"product_type" binding:"required"`
 }
 
 type UpdateSectionRequest struct {
-	Number             uint64  `json:"number"`
+	Number             uint64  `json:"section_number"`
 	CurrentTemperature float32 `json:"current_temperature"`
 	MinimumTemperature float32 `json:"minimum_temperature"`
 	CurrentCapacity    uint32  `json:"current_capacity"`
@@ -182,10 +182,10 @@ func (c *sectionController) Delete() gin.HandlerFunc {
 func sectionErrorHandler(err error) int {
 	switch err {
 
-	case sections.SectionNotFoundError:
+	case sections.ErrSectionNotFoundError:
 		return http.StatusNotFound
 
-	case sections.ExistsSectionNumberError:
+	case sections.ErrExistsSectionNumberError:
 		return http.StatusConflict
 
 	default:
