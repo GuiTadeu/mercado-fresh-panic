@@ -33,7 +33,7 @@ func (m mockSectionService) Delete(id uint64) error {
 }
 
 func (m mockSectionService) ExistsSectionNumber(number uint64) bool {
-	return m.err == sections.ExistsSectionNumberError
+	return m.err == sections.ErrExistsSectionNumberError
 }
 
 func (m mockSectionService) Create(

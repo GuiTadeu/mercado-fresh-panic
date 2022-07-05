@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ExistsSectionNumberError = errors.New("section number already exists")
-	SectionNotFoundError     = errors.New("section not found")
+	ErrExistsSectionNumberError = errors.New("section number already exists")
+	ErrSectionNotFoundError     = errors.New("section not found")
 )
 
 type SectionService interface {
@@ -50,7 +50,7 @@ func (s *sectionService) Create(
 ) (db.Section, error) {
 
 	if s.ExistsSectionNumber(number) {
-		return db.Section{}, ExistsSectionNumberError
+		return db.Section{}, ErrExistsSectionNumberError
 	}
 
 	section, err := s.sectionRepository.Create(
@@ -73,11 +73,11 @@ func (s *sectionService) Update(
 
 	foundSection, err := s.Get(id)
 	if err != nil {
-		return db.Section{}, SectionNotFoundError
+		return db.Section{}, ErrSectionNotFoundError
 	}
 
 	if s.ExistsSectionNumber(newNumber) {
-		return db.Section{}, ExistsSectionNumberError
+		return db.Section{}, ErrExistsSectionNumberError
 	}
 
 	updatedSection := db.Section{
@@ -102,7 +102,7 @@ func (s *sectionService) Delete(id uint64) error {
 
 	_, err := s.Get(id)
 	if err != nil {
-		return SectionNotFoundError
+		return ErrSectionNotFoundError
 	}
 
 	return s.sectionRepository.Delete(id)
