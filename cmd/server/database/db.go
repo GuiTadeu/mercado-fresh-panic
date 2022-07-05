@@ -1,6 +1,36 @@
 package database
 
-import "fmt"
+import (
+	"database/sql"
+	"fmt"
+	"log"
+	"os"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
+)
+
+var (
+	StorageDB *sql.DB
+)
+
+func Init() {
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Fatal("failed to load .env")
+	}
+	
+	datasource := os.Getenv("CONNECT_MYSQL")	
+
+	StorageDB, err = sql.Open("mysql", datasource)
+	if err != nil {
+		panic(err)		
+	}
+	if err = StorageDB.Ping(); err != nil {
+		panic(err)
+	}
+	log.Println("database configured")
+}
 
 type Seller struct {
 	Id          uint64 `json:"id"`

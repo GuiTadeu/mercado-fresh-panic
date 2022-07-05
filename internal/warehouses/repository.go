@@ -1,9 +1,11 @@
 package warehouses
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 
-	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"	
 )
 
 type WarehouseRepository interface {
@@ -29,10 +31,32 @@ func (r *warehouseRepository) GetAll() ([]database.Warehouse, error) {
 	return r.warehouses, nil
 }
 
-func (r *warehouseRepository) Create(code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error) {
-	sware := database.Warehouse{Id: r.getNextId(), Code: code, Address: address, Telephone: telephone, MinimunCapacity: minimunCapacity, MinimumTemperature: minimunTemperature}
-	r.warehouses = append(r.warehouses, sware)
-	return sware, nil
+func (r *warehouseRepository) Create(code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32) (database.Warehouse, error) {
+	db := database.StorageDB
+
+	stmt,err := db.Prepare("INSERT INTO warehouses(warehouse_code, address, telephone, minimum_capacity, minimum_temperature, locality_id) VALUES(?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer stmt.Close()	
+	var result sql.Result
+	result, err = stmt.Exec(code, address, telephone, minimumCapacity, minimumTemperature, 1)
+	if err != nil {
+		return database.Warehouse{}, err		
+	}
+
+	insertedId, _ := result.LastInsertId()
+	warehouse := database.Warehouse{
+		Id: uint64(insertedId),
+		Code: code,
+		Address: address,
+		Telephone: telephone,
+		MinimunCapacity: minimumCapacity,
+		MinimumTemperature: minimumTemperature,
+	}
+
+	return warehouse, nil
 }
 
 func (r *warehouseRepository) getNextId() uint64 {
