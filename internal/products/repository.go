@@ -1,6 +1,12 @@
 package products
 
-import db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+import (
+	"database/sql"
+	"log"
+
+	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+)
 
 type ProductRepository interface {
 	GetAll() ([]db.Product, error)
@@ -24,16 +30,81 @@ type productRepository struct {
 }
 
 func (r *productRepository) GetAll() ([]db.Product, error) {
-	return r.products, nil
+
+	db := db.StorageDB
+	rows, err := db.Query("SELECT * FROM products")
+	
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var products []database.Product
+	for rows.Next() {
+		
+		var product database.Product
+		err := rows.Scan(
+			&product.Id,
+			&product.Code,
+			&product.Description,
+			&product.Width,
+			&product.Height,
+			&product.Length,
+			&product.Length,
+			&product.NetWeight,
+			&product.ExpirationRate,
+			&product.RecommendedFreezingTemp,
+			&product.FreezingRate,
+			&product.ProductTypeId,
+			&product.SellerId,
+		)
+		
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+
+		products = append(products, product)
+	}
+
+	return products, nil
 }
 
 func (r *productRepository) Get(id uint64) (db.Product, error) {
-	for _, product := range r.products {
-		if product.Id == id {
+
+	var product database.Product
+	db := db.StorageDB
+	rows, err := db.Query("SELECT * FROM products WHERE id = ?", id)
+	
+	if err != nil {
+		log.Println(err)
+		return product, err
+	}
+
+	for rows.Next() {
+		err := rows.Scan(
+			&product.Id,
+			&product.Code,
+			&product.Description,
+			&product.Width,
+			&product.Height,
+			&product.Length,
+			&product.Length,
+			&product.NetWeight,
+			&product.ExpirationRate,
+			&product.RecommendedFreezingTemp,
+			&product.FreezingRate,
+			&product.ProductTypeId,
+			&product.SellerId,
+		)
+
+		if err != nil {
+			log.Println(err.Error())
 			return product, nil
 		}
 	}
-	return db.Product{}, ProductNotFoundError
+
+	return product, nil
 }
 
 func (r *productRepository) Create(
@@ -42,8 +113,50 @@ func (r *productRepository) Create(
 	freezingRate float32, productTypeId uint64, sellerId uint64,
 ) (db.Product, error) {
 
-	s := db.Product{
-		Id:                      r.getNextId(),
+	db := database.StorageDB
+	stmt, err := db.Prepare(`
+		INSERT INTO products(
+			product_code, 
+			description, 
+			width, 
+			height, 
+			length, 
+			net_weight, 
+			expiration_rate, 
+			recommended_freezing_temperature, 
+			freezing_rate, 
+			product_type, 
+			seller_id
+		) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer stmt.Close()
+	var result sql.Result
+	result, err = stmt.Exec(
+		code,
+		description,
+		width,
+		height,
+		length,
+		netWeight,
+		expirationRate,
+		recommendedFreezingTemp,
+		freezingRate,
+		productTypeId,
+		sellerId,
+	)
+	
+	if err != nil {
+		return database.Product{}, err
+	}
+
+	insertedId, _ := result.LastInsertId()
+	product := database.Product{
+		Id:                      uint64(insertedId),
 		Code:                    code,
 		Description:             description,
 		Width:                   width,
@@ -56,49 +169,106 @@ func (r *productRepository) Create(
 		ProductTypeId:           productTypeId,
 		SellerId:                sellerId,
 	}
-	r.products = append(r.products, s)
-	return s, nil
+
+	return product, nil
 }
 
 func (r *productRepository) Update(id uint64, updatedProduct db.Product) (db.Product, error) {
-	for index, product := range r.products {
-		if product.Id == id {
-			r.products[index] = updatedProduct
-			return updatedProduct, nil
-		}
+	
+	db := db.StorageDB
+	stmt, err := db.Prepare(`
+		UPDATE products SET
+		product_code = ?
+		description = ?
+		width = ?
+		height = ?
+		length = ?
+		net_weight = ? 
+		expiration_rate = ? 
+		recommended_freezing_temperature = ? 
+		freezing_rate = ?
+		product_type = ?
+		seller_id = ?
+		WHERE id = ?
+	`)
+
+	if err != nil {
+		log.Fatal(err)
 	}
-	return db.Product{}, ProductNotFoundError
+
+	defer stmt.Close()
+	_, err = stmt.Exec(
+		updatedProduct.Code,
+		updatedProduct.Description,
+		updatedProduct.Width,
+		updatedProduct.Height,
+		updatedProduct.Length,
+		updatedProduct.NetWeight,
+		updatedProduct.ExpirationRate,
+		updatedProduct.RecommendedFreezingTemp,
+		updatedProduct.FreezingRate,
+		updatedProduct.ProductTypeId,
+		updatedProduct.SellerId,
+		updatedProduct.Id,
+	)
+
+	if err != nil {
+		return database.Product{}, err
+	}
+
+	return updatedProduct, nil
 }
 
 func (r *productRepository) Delete(id uint64) error {
-	for i := range r.products {
-		if r.products[i].Id == id {
-			r.products = append(r.products[:i], r.products[i+1:]...)
-			return nil
-		}
+
+	db := db.StorageDB
+	stmt, err := db.Prepare("DELETE FROM products WHERE id = ?")
+	if err != nil {
+		log.Fatal(err)
 	}
-	return ProductNotFoundError
+
+	defer stmt.Close()
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *productRepository) ExistsProductCode(code string) bool {
-	for _, product := range r.products {
-		if product.Code == code {
+	
+	var product database.Product
+	db := db.StorageDB
+	rows, err := db.Query("SELECT * FROM products WHERE product_code = ?", code)
+	
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+
+	for rows.Next() {
+		err := rows.Scan(
+			&product.Id,
+			&product.Code,
+			&product.Description,
+			&product.Width,
+			&product.Height,
+			&product.Length,
+			&product.Length,
+			&product.NetWeight,
+			&product.ExpirationRate,
+			&product.RecommendedFreezingTemp,
+			&product.FreezingRate,
+			&product.ProductTypeId,
+			&product.SellerId,
+		)
+		
+		if err != nil {
+			log.Println(err.Error())
 			return true
 		}
 	}
+
 	return false
-}
-
-func (r *productRepository) getNextId() uint64 {
-
-	products, err := r.GetAll()
-	if err != nil {
-		return 1
-	}
-
-	if len(products) == 0 {
-		return 1
-	}
-
-	return products[len(products)-1].Id + 1
 }
