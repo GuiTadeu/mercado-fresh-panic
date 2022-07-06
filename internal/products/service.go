@@ -16,7 +16,7 @@ type ProductService interface {
 	GetAll() ([]db.Product, error)
 	Get(id uint64) (db.Product, error)
 	Delete(id uint64) error
-	ExistsProductCode(code string) bool
+	ExistsProductCode(code string) (bool, error)
 
 	Create(code string, description string, width float32, height float32, length float32, netWeight float32, expirationRate float32,
 		recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64) (db.Product, error)
@@ -49,7 +49,13 @@ func (s *productService) Create(
 	recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64,
 ) (db.Product, error) {
 
-	if s.ExistsProductCode(code) {
+	existsProduct, err := s.ExistsProductCode(code)
+
+	if err != nil {
+		return db.Product{}, err
+	}
+
+	if existsProduct {
 		return db.Product{}, ExistsProductCodeError
 	}
 
@@ -75,7 +81,13 @@ func (s *productService) Update(
 		return db.Product{}, ProductNotFoundError
 	}
 
-	if s.ExistsProductCode(newCode) {
+	existsProduct, err := s.ExistsProductCode(newCode)
+
+	if err != nil {
+		return db.Product{}, err
+	}
+
+	if existsProduct {
 		return db.Product{}, ExistsProductCodeError
 	}
 
@@ -110,6 +122,6 @@ func (s *productService) Delete(id uint64) error {
 	return s.productRepository.Delete(id)
 }
 
-func (s *productService) ExistsProductCode(code string) bool {
+func (s *productService) ExistsProductCode(code string) (bool, error) {
 	return s.productRepository.ExistsProductCode(code)
 }

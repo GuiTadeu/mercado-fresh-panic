@@ -12,7 +12,7 @@ type ProductRepository interface {
 	Get(id uint64) (models.Product, error)
 	Update(updatedproduct models.Product) (models.Product, error)
 	Delete(id uint64) error
-	ExistsProductCode(code string) bool
+	ExistsProductCode(code string) (bool, error)
 
 	Create(code string, description string, width float32, height float32, length float32, netWeight float32, expirationRate float32,
 		recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64) (models.Product, error)
@@ -129,7 +129,7 @@ func (r *productRepository) Create(
 	`)
 
 	if err != nil {
-		log.Fatal(err)
+		return models.Product{}, err
 	}
 
 	defer stmt.Close()
@@ -190,7 +190,7 @@ func (r *productRepository) Update(updatedProduct models.Product) (models.Produc
 	`)
 
 	if err != nil {
-		log.Fatal(err)
+		return models.Product{}, err
 	}
 
 	defer stmt.Close()
@@ -221,7 +221,7 @@ func (r *productRepository) Delete(id uint64) error {
 
 	stmt, err := r.db.Prepare("DELETE FROM products WHERE id = ?")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	defer stmt.Close()
@@ -233,14 +233,13 @@ func (r *productRepository) Delete(id uint64) error {
 	return nil
 }
 
-func (r *productRepository) ExistsProductCode(code string) bool {
+func (r *productRepository) ExistsProductCode(code string) (bool, error) {
 
 	var product models.Product
 	rows, err := r.db.Query("SELECT * FROM products WHERE product_code = ?", code)
 
 	if err != nil {
-		log.Println(err)
-		return false
+		return false, err
 	}
 
 	for rows.Next() {
@@ -262,10 +261,11 @@ func (r *productRepository) ExistsProductCode(code string) bool {
 		)
 
 		if err != nil {
-			log.Println(err.Error())
-			return true
+			return false, err
 		}
+
+		return true, nil
 	}
 
-	return false
+	return false, nil
 }

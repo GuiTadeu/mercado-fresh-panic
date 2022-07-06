@@ -30,8 +30,8 @@ func (m mockProductRepository) Delete(id uint64) error {
 	return m.err
 }
 
-func (m mockProductRepository) ExistsProductCode(code string) bool {
-	return m.existsProductCode
+func (m mockProductRepository) ExistsProductCode(code string) (bool, error) {
+	return m.existsProductCode, m.err
 }
 
 func (m mockProductRepository) Create(

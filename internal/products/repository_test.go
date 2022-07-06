@@ -41,6 +41,20 @@ func Test_Repo_Create_Ok(t *testing.T) {
 	util.DropDB(database)
 }
 
+func Test_Repo_Create_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	
+	repository := NewProductRepository(database)
+
+	database.Close()
+	_, err := repository.Create("", "", 0, 0, 0, 0, 0, 0, 0, 0, 0)
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
 func Test_Repo_Get_OK(t *testing.T) {
 
 	expectedProduct := models.Product{
@@ -87,6 +101,20 @@ func Test_Repo_Get_ShouldReturnEmptyProductWhenIdNotExists(t *testing.T) {
 	util.DropDB(database)
 }
 
+func Test_Repo_Get_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	
+	repository := NewProductRepository(database)
+
+	database.Close()
+	_, err := repository.Get(1)
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
 func Test_Repo_GetAll_OK(t *testing.T) {
 
 	database := util.CreateDB()
@@ -104,6 +132,20 @@ func Test_Repo_GetAll_OK(t *testing.T) {
 
 	foundProducts, err := repository.GetAll()
 	assert.Equal(t, expectedCountRows, len(foundProducts))
+
+	util.DropDB(database)
+}
+
+func Test_Repo_GetAll_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	
+	repository := NewProductRepository(database)
+
+	database.Close()
+	_, err := repository.GetAll()
+	assert.NotNil(t, err)
 
 	util.DropDB(database)
 }
@@ -172,6 +214,20 @@ func Test_Repo_Update_OK(t *testing.T) {
 	util.DropDB(database)
 }
 
+func Test_Repo_Update_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	
+	repository := NewProductRepository(database)
+
+	database.Close()
+	_, err := repository.Update(models.Product{})
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
 func Test_Repo_Delete_Ok(t *testing.T) {
 
 	expectedProduct := models.Product{
@@ -209,8 +265,68 @@ func Test_Repo_Delete_Ok(t *testing.T) {
 	util.DropDB(database)
 }
 
+func Test_Repo_Delete_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	
+	repository := NewProductRepository(database)
+
+	database.Close()
+	err := repository.Delete(1)
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_ExistsProductCode_OK(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	
+	repository := NewProductRepository(database)
+	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	existsProduct, err := repository.ExistsProductCode("dvd")
+	assert.Nil(t, err)
+	assert.True(t, existsProduct)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_ExistsProductCode_NotFound(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	
+	repository := NewProductRepository(database)
+	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	existsProduct, err := repository.ExistsProductCode("goiaba")
+	assert.Nil(t, err)
+	assert.False(t, existsProduct)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_ExistsProductCode_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	
+	repository := NewProductRepository(database)
+
+	database.Close()
+	_, err := repository.ExistsProductCode("")
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
 const CREATE_PRODUCTS_TABLE = `
-	CREATE TABLE "products"(
+	CREATE TABLE "products" (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		description TEXT NOT NULL,
 		expiration_rate DECIMAL(19, 2) NOT NULL,
