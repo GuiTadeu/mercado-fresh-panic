@@ -19,12 +19,12 @@ func Init() {
 	if err != nil {
 		log.Fatal("failed to load .env")
 	}
-	
-	datasource := os.Getenv("CONNECT_MYSQL")	
+
+	datasource := os.Getenv("CONNECT_MYSQL")
 
 	StorageDB, err = sql.Open("mysql", datasource)
 	if err != nil {
-		panic(err)		
+		panic(err)
 	}
 	if err = StorageDB.Ping(); err != nil {
 		panic(err)
@@ -38,6 +38,7 @@ type Seller struct {
 	CompanyName string `json:"company_name" binding:"required"`
 	Address     string `json:"address" binding:"required"`
 	Telephone   string `json:"telephone" binding:"required"`
+	LocalityId  string `json:"locality_id" binding:"required"`
 }
 
 type Warehouse struct {
