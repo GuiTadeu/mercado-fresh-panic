@@ -4,61 +4,60 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
-	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	models "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 )
 
 type ProductRepository interface {
-	GetAll() ([]db.Product, error)
-	Get(id uint64) (db.Product, error)
-	Update(id uint64, updatedproduct db.Product) (db.Product, error)
+	GetAll() ([]models.Product, error)
+	Get(id uint64) (models.Product, error)
+	Update(updatedproduct models.Product) (models.Product, error)
 	Delete(id uint64) error
 	ExistsProductCode(code string) bool
 
 	Create(code string, description string, width float32, height float32, length float32, netWeight float32, expirationRate float32,
-		recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64) (db.Product, error)
-}
-
-func NewProductRepository(products []db.Product) ProductRepository {
-	return &productRepository{
-		products: products,
-	}
+		recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64) (models.Product, error)
 }
 
 type productRepository struct {
-	products []db.Product
+	db *sql.DB
 }
 
-func (r *productRepository) GetAll() ([]db.Product, error) {
+func NewProductRepository(db *sql.DB) ProductRepository {
+	return &productRepository{
+		db: db,
+	}
+}
 
-	db := db.StorageDB
-	rows, err := db.Query("SELECT * FROM products")
-	
+func (r *productRepository) GetAll() ([]models.Product, error) {
+
+	rows, err := r.db.Query("SELECT * FROM products")
+
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	var products []database.Product
+	var products []models.Product
 	for rows.Next() {
-		
-		var product database.Product
+
+		var product models.Product
+
+		// Fields must be in the same order as in the database
 		err := rows.Scan(
 			&product.Id,
-			&product.Code,
 			&product.Description,
-			&product.Width,
+			&product.ExpirationRate,
+			&product.FreezingRate,
 			&product.Height,
 			&product.Length,
-			&product.Length,
 			&product.NetWeight,
-			&product.ExpirationRate,
+			&product.Code,
 			&product.RecommendedFreezingTemp,
-			&product.FreezingRate,
+			&product.Width,
 			&product.ProductTypeId,
 			&product.SellerId,
 		)
-		
+
 		if err != nil {
 			log.Fatal(err)
 			return nil, err
@@ -70,30 +69,30 @@ func (r *productRepository) GetAll() ([]db.Product, error) {
 	return products, nil
 }
 
-func (r *productRepository) Get(id uint64) (db.Product, error) {
+func (r *productRepository) Get(id uint64) (models.Product, error) {
 
-	var product database.Product
-	db := db.StorageDB
-	rows, err := db.Query("SELECT * FROM products WHERE id = ?", id)
-	
+	var product models.Product
+	rows, err := r.db.Query("SELECT * FROM products WHERE id = ?", id)
+
 	if err != nil {
 		log.Println(err)
 		return product, err
 	}
 
 	for rows.Next() {
+
+		// Fields must be in the same order as in the database
 		err := rows.Scan(
 			&product.Id,
-			&product.Code,
 			&product.Description,
-			&product.Width,
+			&product.ExpirationRate,
+			&product.FreezingRate,
 			&product.Height,
 			&product.Length,
-			&product.Length,
 			&product.NetWeight,
-			&product.ExpirationRate,
+			&product.Code,
 			&product.RecommendedFreezingTemp,
-			&product.FreezingRate,
+			&product.Width,
 			&product.ProductTypeId,
 			&product.SellerId,
 		)
@@ -111,10 +110,9 @@ func (r *productRepository) Create(
 	code string, description string, width float32, height float32, length float32,
 	netWeight float32, expirationRate float32, recommendedFreezingTemp float32,
 	freezingRate float32, productTypeId uint64, sellerId uint64,
-) (db.Product, error) {
+) (models.Product, error) {
 
-	db := database.StorageDB
-	stmt, err := db.Prepare(`
+	stmt, err := r.db.Prepare(`
 		INSERT INTO products(
 			product_code, 
 			description, 
@@ -149,13 +147,13 @@ func (r *productRepository) Create(
 		productTypeId,
 		sellerId,
 	)
-	
+
 	if err != nil {
-		return database.Product{}, err
+		return models.Product{}, err
 	}
 
 	insertedId, _ := result.LastInsertId()
-	product := database.Product{
+	product := models.Product{
 		Id:                      uint64(insertedId),
 		Code:                    code,
 		Description:             description,
@@ -173,21 +171,20 @@ func (r *productRepository) Create(
 	return product, nil
 }
 
-func (r *productRepository) Update(id uint64, updatedProduct db.Product) (db.Product, error) {
-	
-	db := db.StorageDB
-	stmt, err := db.Prepare(`
+func (r *productRepository) Update(updatedProduct models.Product) (models.Product, error) {
+
+	stmt, err := r.db.Prepare(`
 		UPDATE products SET
-		product_code = ?
-		description = ?
-		width = ?
-		height = ?
-		length = ?
-		net_weight = ? 
-		expiration_rate = ? 
-		recommended_freezing_temperature = ? 
-		freezing_rate = ?
-		product_type = ?
+		product_code = ?,
+		description = ?,
+		width = ?,
+		height = ?,
+		length = ?,
+		net_weight = ? ,
+		expiration_rate = ? ,
+		recommended_freezing_temperature = ?,
+		freezing_rate = ?,
+		product_type = ?,
 		seller_id = ?
 		WHERE id = ?
 	`)
@@ -197,6 +194,7 @@ func (r *productRepository) Update(id uint64, updatedProduct db.Product) (db.Pro
 	}
 
 	defer stmt.Close()
+
 	_, err = stmt.Exec(
 		updatedProduct.Code,
 		updatedProduct.Description,
@@ -213,7 +211,7 @@ func (r *productRepository) Update(id uint64, updatedProduct db.Product) (db.Pro
 	)
 
 	if err != nil {
-		return database.Product{}, err
+		return models.Product{}, err
 	}
 
 	return updatedProduct, nil
@@ -221,8 +219,7 @@ func (r *productRepository) Update(id uint64, updatedProduct db.Product) (db.Pro
 
 func (r *productRepository) Delete(id uint64) error {
 
-	db := db.StorageDB
-	stmt, err := db.Prepare("DELETE FROM products WHERE id = ?")
+	stmt, err := r.db.Prepare("DELETE FROM products WHERE id = ?")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -237,33 +234,33 @@ func (r *productRepository) Delete(id uint64) error {
 }
 
 func (r *productRepository) ExistsProductCode(code string) bool {
-	
-	var product database.Product
-	db := db.StorageDB
-	rows, err := db.Query("SELECT * FROM products WHERE product_code = ?", code)
-	
+
+	var product models.Product
+	rows, err := r.db.Query("SELECT * FROM products WHERE product_code = ?", code)
+
 	if err != nil {
 		log.Println(err)
 		return false
 	}
 
 	for rows.Next() {
+
+		// Fields must be in the same order as in the database
 		err := rows.Scan(
 			&product.Id,
-			&product.Code,
 			&product.Description,
-			&product.Width,
+			&product.ExpirationRate,
+			&product.FreezingRate,
 			&product.Height,
 			&product.Length,
-			&product.Length,
 			&product.NetWeight,
-			&product.ExpirationRate,
+			&product.Code,
 			&product.RecommendedFreezingTemp,
-			&product.FreezingRate,
+			&product.Width,
 			&product.ProductTypeId,
 			&product.SellerId,
 		)
-		
+
 		if err != nil {
 			log.Println(err.Error())
 			return true

@@ -97,7 +97,7 @@ func (s *productService) Update(
 		return db.Product{}, err
 	}
 
-	return s.productRepository.Update(id, foundProduct)
+	return s.productRepository.Update(foundProduct)
 }
 
 func (s *productService) Delete(id uint64) error {
