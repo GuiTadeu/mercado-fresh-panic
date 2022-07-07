@@ -8,22 +8,23 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 )
 
-var (
-	StorageDB *sql.DB
-)
+var StorageDB *sql.DB
 
-func Init() {
-	err := godotenv.Load("../../.env")
-	if err != nil {
-		log.Fatal("failed to load .env")
-	}
+func Init() (*sql.DB) {
 
-	datasource := os.Getenv("CONNECT_MYSQL")
+	user := os.Getenv("MERCADO_FRESH_DATABASE_USER")
+	password := os.Getenv("MERCADO_FRESH_DATABASE_PASSWORD")
+	databaseName := os.Getenv("MERCADO_FRESH_DATABASE_NAME")
+	port := os.Getenv("MERCADO_FRESH_DATABASE_PORT")
 
-	StorageDB, err = sql.Open("mysql", datasource)
+	connection := fmt.Sprintf(
+		"%s:%s@tcp(localhost%s)/%s",
+		user, password, port, databaseName,
+	)
+
+	StorageDB, err := sql.Open("mysql", connection)
 	if err != nil {
 		panic(err)
 	}
@@ -31,6 +32,8 @@ func Init() {
 		panic(err)
 	}
 	log.Println("database configured")
+
+	return StorageDB
 }
 
 type Seller struct {
@@ -185,7 +188,6 @@ func CreateDatabases() (
 	sellers []Seller,
 	warehouses []Warehouse,
 	sections []Section,
-	products []Product,
 	employees []Employee,
 	buyers []Buyer,
 ) {
@@ -195,14 +197,12 @@ func CreateDatabases() (
 	sellers = []Seller{}
 	warehouses = []Warehouse{}
 	sections = []Section{}
-	products = []Product{}
 	employees = []Employee{}
 	buyers = []Buyer{}
 
 	fmt.Printf("\n sellers:%v", sellers)
 	fmt.Printf("\n warehouses:%v", warehouses)
 	fmt.Printf("\n sections:%v", sections)
-	fmt.Printf("\n products:%v", products)
 	fmt.Printf("\n employees:%v", employees)
 	fmt.Printf("\n buyers:%v", buyers)
 
