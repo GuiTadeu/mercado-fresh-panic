@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"log"
+	"os"
 
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controller"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
@@ -12,9 +14,15 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error to load .env")
+	}
 
 	storageDB := db.Init()
 	server := gin.Default()
@@ -29,7 +37,8 @@ func main() {
 	buyerHandlers(buyersDB, server)
 	employeeHandlers(employeeDB, server)
 
-	server.Run(":8080")
+	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
+	server.Run(port)
 }
 
 func sellersHandlers(sellersDB []db.Seller, server *gin.Engine) {
