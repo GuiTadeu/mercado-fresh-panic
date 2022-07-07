@@ -31,8 +31,8 @@ func (m mockProductService) Delete(id uint64) error {
 	return nil
 }
 
-func (m mockProductService) ExistsProductCode(code string) bool {
-	return m.err == products.ExistsProductCodeError
+func (m mockProductService) ExistsProductCode(code string) (bool, error) {
+	return m.err == products.ExistsProductCodeError, m.err
 }
 
 func (m mockProductService) Create(
