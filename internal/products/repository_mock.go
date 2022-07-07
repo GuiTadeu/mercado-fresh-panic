@@ -30,8 +30,8 @@ func (m mockProductRepository) Delete(id uint64) error {
 	return m.err
 }
 
-func (m mockProductRepository) ExistsProductCode(code string) bool {
-	return m.existsProductCode
+func (m mockProductRepository) ExistsProductCode(code string) (bool, error) {
+	return m.existsProductCode, m.err
 }
 
 func (m mockProductRepository) Create(
@@ -44,7 +44,7 @@ func (m mockProductRepository) Create(
 	return m.result.(db.Product), nil
 }
 
-func (m mockProductRepository) Update(id uint64, updatedproduct db.Product) (db.Product, error) {
+func (m mockProductRepository) Update(updatedproduct db.Product) (db.Product, error) {
 	if (m.result.(db.Product) != db.Product{}) {
 		return updatedproduct, nil
 	}
