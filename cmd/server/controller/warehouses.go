@@ -13,16 +13,18 @@ type updateWarehouseRequest struct {
 	Code               string  `json:"warehouse_code"`
 	Address            string  `json:"address"`
 	Telephone          string  `json:"telephone"`
-	MinimunCapacity    uint32  `json:"minimun_capacity"`
-	MinimunTemperature float32 `json:"minimun_temperature"`
+	MinimumCapacity    uint32  `json:"minimum_capacity"`
+	MinimumTemperature float32 `json:"minimum_temperature"`
+	LocalityID         string  `json:"locality_id" binding:"required"`
 }
 
 type createWarehouseRequest struct {
 	Code               string  `json:"warehouse_code" binding:"required"`
 	Address            string  `json:"address" binding:"required"`
 	Telephone          string  `json:"telephone" binding:"required"`
-	MinimunCapacity    uint32  `json:"minimun_capacity" binding:"required"`
-	MinimunTemperature float32 `json:"minimun_temperature" binding:"required"`
+	MinimumCapacity    uint32  `json:"minimum_capacity" binding:"required"`
+	MinimumTemperature float32 `json:"minimum_temperature" binding:"required"`
+	LocalityID         string  `json:"locality_id" binding:"required"`
 }
 
 type warehouseController struct {
@@ -61,7 +63,7 @@ func (c *warehouseController) Create() gin.HandlerFunc {
 			return
 		}
 
-		addedWarehouse, err := c.warehouseService.Create(req.Code, req.Address, req.Telephone, req.MinimunCapacity, req.MinimunTemperature)
+		addedWarehouse, err := c.warehouseService.Create(req.Code, req.Address, req.Telephone, req.MinimumCapacity, req.MinimumTemperature, req.LocalityID)
 
 		if err != nil {
 			status := warehouseErrorHandler(err, ctx)
@@ -135,8 +137,8 @@ func (c *warehouseController) Update() gin.HandlerFunc {
 			request.Code,
 			request.Address,
 			request.Telephone,
-			request.MinimunCapacity,
-			request.MinimunTemperature,
+			request.MinimumCapacity,
+			request.MinimumTemperature,
 		)
 		if err != nil {
 			status := warehouseErrorHandler(err, ctx)
