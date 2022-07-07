@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controller"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
@@ -10,22 +12,20 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/gin-gonic/gin"
-	
 )
 
 func main() {
 
-	db.Init()
-
+	storageDB := db.Init()
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var sellersDB, warehousesDB, sectionsDB, productsDB, employeeDB, buyersDB = db.CreateDatabases()
+	var sellersDB, warehousesDB, sectionsDB, employeeDB, buyersDB = db.CreateDatabases()
 
 	sellersHandlers(sellersDB, server)
 	warehousesHandlers(warehousesDB, server)
 	sectionHandlers(sectionsDB, server)
-	productHandlers(productsDB, server)
+	productHandlers(storageDB, server)
 	buyerHandlers(buyersDB, server)
 	employeeHandlers(employeeDB, server)
 
@@ -58,9 +58,9 @@ func warehousesHandlers(warehousesDB []db.Warehouse, server *gin.Engine) {
 	warehouseGroup.DELETE("/:id", warehouseController.Delete())
 }
 
-func productHandlers(productsDB []db.Product, server *gin.Engine) {
+func productHandlers(storageDB *sql.DB, server *gin.Engine) {
 
-	productRepository := products.NewProductRepository(productsDB)
+	productRepository := products.NewProductRepository(storageDB)
 	productService := products.NewProductService(productRepository)
 	productHandler := controller.NewProductController(productService)
 

@@ -14,22 +14,24 @@ var (
 	StorageDB *sql.DB
 )
 
-func Init() {
+func Init() (*sql.DB) {
 	err := godotenv.Load("../../.env")
 	if err != nil {
 		log.Fatal("failed to load .env")
 	}
-	
-	datasource := os.Getenv("CONNECT_MYSQL")	
+
+	datasource := os.Getenv("CONNECT_MYSQL")
 
 	StorageDB, err = sql.Open("mysql", datasource)
 	if err != nil {
-		panic(err)		
+		panic(err)
 	}
 	if err = StorageDB.Ping(); err != nil {
 		panic(err)
 	}
 	log.Println("database configured")
+
+	return StorageDB
 }
 
 type Seller struct {
@@ -96,7 +98,6 @@ func CreateDatabases() (
 	sellers []Seller,
 	warehouses []Warehouse,
 	sections []Section,
-	products []Product,
 	employees []Employee,
 	buyers []Buyer,
 ) {
@@ -106,14 +107,12 @@ func CreateDatabases() (
 	sellers = []Seller{}
 	warehouses = []Warehouse{}
 	sections = []Section{}
-	products = []Product{}
 	employees = []Employee{}
 	buyers = []Buyer{}
 
 	fmt.Printf("\n sellers:%v", sellers)
 	fmt.Printf("\n warehouses:%v", warehouses)
 	fmt.Printf("\n sections:%v", sections)
-	fmt.Printf("\n products:%v", products)
 	fmt.Printf("\n employees:%v", employees)
 	fmt.Printf("\n buyers:%v", buyers)
 
