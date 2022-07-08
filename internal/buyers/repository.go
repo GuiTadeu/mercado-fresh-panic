@@ -1,7 +1,9 @@
 package buyers
 
 import (
+	"database/sql"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	"log"
 )
 
 type BuyerRepository interface {
@@ -16,7 +18,7 @@ type BuyerRepository interface {
 
 func NewBuyerRepository(buyers []db.Buyer) BuyerRepository {
 	return &buyerRepository{
-		buyers,
+		buyers: buyers,
 	}
 
 }
@@ -26,14 +28,28 @@ type buyerRepository struct {
 }
 
 func (r *buyerRepository) Create(cardNumberId, firstName, lastName string) (db.Buyer, error) {
-	b := db.Buyer{
-		Id:           r.getNextId(),
+	database := db.StorageDB
+
+	stmt, err := database.Prepare("INSERT INTO buyer(buyer_code,cardNumberId, firstName, lastName) VALUES(?, ?, ?, ?)")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer stmt.Close()
+	var result sql.Result
+	result, err = stmt.Exec(cardNumberId, firstName, lastName)
+	if err != nil {
+		return db.Buyer{}, err
+	}
+
+	insertedId, _ := result.LastInsertId()
+	buyer := db.Buyer{
+		Id:           uint64(insertedId),
 		CardNumberId: cardNumberId,
 		FirstName:    firstName,
 		LastName:     lastName,
 	}
-	r.buyers = append(r.buyers, b)
-	return b, nil
+	return buyer, nil
 }
 
 func (r *buyerRepository) getNextId() uint64 {
