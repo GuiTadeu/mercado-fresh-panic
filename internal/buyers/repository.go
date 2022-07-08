@@ -82,13 +82,18 @@ func (r *buyerRepository) GetAll() ([]db.Buyer, error) {
 }
 
 func (r *buyerRepository) Delete(id uint64) error {
-	for i := range r.buyers {
-		if r.buyers[i].Id == id {
-			r.buyers = append(r.buyers[:i], r.buyers[i+1:]...)
-			return nil
-		}
+	database := db.StorageDB
+	stmt, err := database.Prepare("DELETE FROM buyers WHERE id = ?")
+	if err != nil {
+		log.Fatal(err)
 	}
-	return BuyerNotFoundError
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(id); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *buyerRepository) Update(id uint64, cardNumberId string, firstName string, lastName string) (db.Buyer, error) {
