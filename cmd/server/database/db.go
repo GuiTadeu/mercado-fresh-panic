@@ -50,13 +50,8 @@ type Warehouse struct {
 	Code               string  `json:"warehouse_code" binding:"required"`
 	Address            string  `json:"address" binding:"required"`
 	Telephone          string  `json:"telephone" binding:"required"`
-<<<<<<< HEAD
-	MinimunCapacity    uint32  `json:"minimun_capacity" binding:"required"`
-	MinimumTemperature float32 `json:"minimun_temperature" binding:"required"`
-=======
 	MinimunCapacity    uint32  `json:"minimum_capacity" binding:"required"`
 	MinimumTemperature float32 `json:"minimum_temperature" binding:"required"`
->>>>>>> main
 	LocalityID         string  `json:"locality_id" binding:"required"`
 }
 
@@ -190,8 +185,7 @@ type OrderDetails struct {
 }
 
 func CreateDatabases() (
-	sellers []Seller,
-	warehouses []Warehouse,
+	sellers []Seller,	
 	sections []Section,
 	employees []Employee,
 	buyers []Buyer,
@@ -199,14 +193,12 @@ func CreateDatabases() (
 
 	fmt.Println("Create Databases - Starting...")
 
-	sellers = []Seller{}
-	warehouses = []Warehouse{}
+	sellers = []Seller{}	
 	sections = []Section{}
 	employees = []Employee{}
 	buyers = []Buyer{}
 
-	fmt.Printf("\n sellers:%v", sellers)
-	fmt.Printf("\n warehouses:%v", warehouses)
+	fmt.Printf("\n sellers:%v", sellers)	
 	fmt.Printf("\n sections:%v", sections)
 	fmt.Printf("\n employees:%v", employees)
 	fmt.Printf("\n buyers:%v", buyers)

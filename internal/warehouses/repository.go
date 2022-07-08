@@ -13,22 +13,21 @@ type WarehouseRepository interface {
 	Get(id uint64) (database.Warehouse, error)
 	Delete(id uint64) error
 	Update(warehouse database.Warehouse) (database.Warehouse, error)
-	FindByCode(code string) bool
+	ExistsWarehouseCode(code string) (bool, error)
 }
 
-func NewRepository(warehouse []database.Warehouse) WarehouseRepository {
+func NewRepository(db *sql.DB) WarehouseRepository {
 	return &warehouseRepository{
-		warehouses: warehouse,
+		db: db,
 	}
 }
 
 type warehouseRepository struct {
-	warehouses []database.Warehouse
+	db *sql.DB
 }
 
 func (r *warehouseRepository) GetAll() ([]database.Warehouse, error) {
-	db := database.StorageDB
-	stmt, err := db.Query("SELECT id, warehouse_code, address, telephone, minimum_capacity, minimum_temperature, locality_id FROM warehouses")
+	stmt, err := r.db.Query("SELECT id, warehouse_code, address, telephone, minimum_capacity, minimum_temperature, locality_id FROM warehouses")
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,7 @@ func (r *warehouseRepository) GetAll() ([]database.Warehouse, error) {
 			&warehouse.MinimumTemperature,
 			&warehouse.LocalityID,
 		); err != nil {
-			return r.warehouses, err
+			return nil, err
 		}
 
 		warehouses = append(warehouses, warehouse)
@@ -59,11 +58,9 @@ func (r *warehouseRepository) GetAll() ([]database.Warehouse, error) {
 }
 
 func (r *warehouseRepository) Create(code string, address string, telephone string, minimumCapacity uint32, minimumTemperature float32, localityId string) (database.Warehouse, error) {
-	db := database.StorageDB
-
-	stmt, err := db.Prepare("INSERT INTO warehouses(warehouse_code, address, telephone, minimum_capacity, minimum_temperature, locality_id) VALUES(?, ?, ?, ?, ?, ?)")
+	stmt, err := r.db.Prepare("INSERT INTO warehouses(warehouse_code, address, telephone, minimum_capacity, minimum_temperature, locality_id) VALUES(?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		log.Fatal(err)
+		return database.Warehouse{}, err
 	}
 
 	defer stmt.Close()
@@ -89,8 +86,7 @@ func (r *warehouseRepository) Create(code string, address string, telephone stri
 
 func (r *warehouseRepository) Get(id uint64) (database.Warehouse, error) {
 	var warehouse database.Warehouse
-	db := database.StorageDB
-	err := db.QueryRow("SELECT id, warehouse_code, address, telephone, minimum_capacity, minimum_temperature, locality_id FROM warehouses WHERE id = ?",
+	err := r.db.QueryRow("SELECT id, warehouse_code, address, telephone, minimum_capacity, minimum_temperature, locality_id FROM warehouses WHERE id = ?",
 		id).Scan(&warehouse.Id, &warehouse.Code, &warehouse.Address, &warehouse.Telephone, &warehouse.MinimunCapacity, &warehouse.MinimumTemperature, &warehouse.LocalityID)
 	if err != nil {
 		log.Println(err)
@@ -100,10 +96,9 @@ func (r *warehouseRepository) Get(id uint64) (database.Warehouse, error) {
 }
 
 func (r *warehouseRepository) Delete(id uint64) error {
-	db := database.StorageDB
-	stmt, err := db.Prepare("DELETE FROM warehouses WHERE id = ?")
+	stmt, err := r.db.Prepare("DELETE FROM warehouses WHERE id = ?")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer stmt.Close()
 
@@ -114,20 +109,31 @@ func (r *warehouseRepository) Delete(id uint64) error {
 	return nil
 }
 
-func (r *warehouseRepository) FindByCode(code string) bool {
+func (r *warehouseRepository) ExistsWarehouseCode(code string) (bool, error) {
 
 	var warehouse database.Warehouse
 
-	db := database.StorageDB
+	rows, err := r.db.Query("SELECT * FROM warehouses WHERE warehouse_code = ?", code)
 
-	err := db.QueryRow("SELECT warehouse_code FROM warehouses WHERE warehouse_code = ?", code).Scan(&warehouse.Code)
+	if err != nil {
+		return false, err
+	}
 
-	return err == nil
+	for rows.Next() {
+		err := rows.Scan(&warehouse.Id, &warehouse.Code, &warehouse.Address, &warehouse.Telephone, &warehouse.MinimunCapacity, &warehouse.MinimumTemperature, &warehouse.LocalityID)
+
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+	}
+
+	return false, nil	
 }
 
 func (r *warehouseRepository) Update(warehouse database.Warehouse) (database.Warehouse, error) {
-	db := database.StorageDB
-    stmt, err := db.Prepare(`
+	stmt, err := r.db.Prepare(`
         UPDATE
             warehouses
         SET
@@ -140,21 +146,24 @@ func (r *warehouseRepository) Update(warehouse database.Warehouse) (database.War
         WHERE
             id = ?
     `)
-    if err != nil {
-        log.Println(err)
-    }
-    defer stmt.Close()
-    _, err = stmt.Exec(
-        warehouse.Code,
-        warehouse.Address,
-        warehouse.Telephone,
-        warehouse.MinimunCapacity,
-        warehouse.MinimumTemperature,
-        warehouse.LocalityID,
+	if err != nil {
+		return database.Warehouse{}, err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(
+		warehouse.Code,
+		warehouse.Address,
+		warehouse.Telephone,
+		warehouse.MinimunCapacity,
+		warehouse.MinimumTemperature,
+		warehouse.LocalityID,
 		warehouse.Id,
-    )
-    if err != nil {
-        return database.Warehouse{}, err
-    }
-    return warehouse, nil
+	)
+	if err != nil {
+		return database.Warehouse{}, err
+	}
+
+	return warehouse, nil
 }

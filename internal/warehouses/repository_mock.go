@@ -35,11 +35,11 @@ func (m mockWarehouseRepository) Delete(id uint64) error {
 
 }
 
-func (m mockWarehouseRepository) FindByCode(code string) bool {
-	return m.findByCode
+func (m mockWarehouseRepository) ExistsWarehouseCode(code string) (bool, error) {
+	return m.findByCode, m.err
 }
 
-func (m mockWarehouseRepository) Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error) {
+func (m mockWarehouseRepository) Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32, localityId string) (database.Warehouse, error) {
 	if m.err != nil || m.findByCode {
 		return database.Warehouse{}, m.err
 	}

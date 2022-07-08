@@ -24,6 +24,7 @@ func Test_Warehouse_Create_201(t *testing.T) {
 		Telephone:          "1145674458",
 		MinimunCapacity:    4,
 		MinimumTemperature: 12,
+		LocalityID:         "1",
 	}
 
 	jsonValue, _ := json.Marshal(validWarehouse)
@@ -75,6 +76,7 @@ func Test_Warehouse_Create_409(t *testing.T) {
 		Telephone:          "1145674458",
 		MinimunCapacity:    4,
 		MinimumTemperature: 12,
+		LocalityID:         "1",
 	}
 
 	jsonValue, _ := json.Marshal(validWarehouse)
@@ -99,28 +101,31 @@ func Test_Warehouse_GetAll_200(t *testing.T) {
 
 	warehousesList := []database.Warehouse{
 		{
-			Id:                 2,
-			Code:               "HSC",
-			Address:            "Rua",
-			Telephone:          "1145674458",
-			MinimunCapacity:    4,
+			Id: 2,
+			Code: "HSC",
+			Address: "Rua",
+			Telephone: "1145674458",
+			MinimunCapacity: 4,
 			MinimumTemperature: 12,
+			LocalityID: "1",
 		},
 		{
-			Id:                 1,
-			Code:               "MARDUK",
-			Address:            "MDK",
-			Telephone:          "333888777",
-			MinimunCapacity:    6,
+			Id: 1,
+			Code: "MARDUK",
+			Address: "MDK",
+			Telephone: "333888777",
+			MinimunCapacity: 6,
 			MinimumTemperature: 2.7,
+			LocalityID: "1",
 		},
 		{
-			Id:                 3,
-			Code:               "MAIDEN",
-			Address:            "MDN",
-			Telephone:          "111222444",
-			MinimunCapacity:    2,
+			Id: 3,
+			Code: "MAIDEN",
+			Address: "MDN",
+			Telephone: "111222444",
+			MinimunCapacity: 2,
 			MinimumTemperature: 8.9,
+			LocalityID: "1",
 		},
 	}
 
@@ -151,6 +156,7 @@ func Test_Get_OneOk(t *testing.T) {
 		Telephone:          "1145674458",
 		MinimunCapacity:    4,
 		MinimumTemperature: 12,
+		LocalityID:         "1",
 	}
 
 	mockService := mockWarehouseService{
@@ -209,6 +215,7 @@ func Test_Warehouse_Update_200(t *testing.T) {
 		Telephone:          "1145674458",
 		MinimunCapacity:    4,
 		MinimumTemperature: 12,
+		LocalityID:         "1",
 	}
 
 	jsonValue, _ := json.Marshal(warehouseToUpdate)
@@ -221,6 +228,7 @@ func Test_Warehouse_Update_200(t *testing.T) {
 		Telephone:          "333888777",
 		MinimunCapacity:    6,
 		MinimumTemperature: 27,
+		LocalityID:         "1",
 	}
 
 	mockService := mockWarehouseService{
@@ -251,6 +259,7 @@ func Test_Warehouse_Update_404(t *testing.T) {
 		Telephone:          "1145674458",
 		MinimunCapacity:    4,
 		MinimumTemperature: 12,
+		LocalityID:         "1",
 	}
 
 	jsonValue, _ := json.Marshal(warehouseToUpdate)

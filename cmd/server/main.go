@@ -28,10 +28,10 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var sellersDB, warehousesDB, sectionsDB, employeeDB, buyersDB = db.CreateDatabases()
+	var sellersDB, sectionsDB, employeeDB, buyersDB = db.CreateDatabases()
 
 	sellersHandlers(sellersDB, server)
-	warehousesHandlers(warehousesDB, server)
+	warehousesHandlers(storageDB, server)
 	sectionHandlers(sectionsDB, server)
 	productHandlers(storageDB, server)
 	buyerHandlers(buyersDB, server)
@@ -54,12 +54,13 @@ func sellersHandlers(sellersDB []db.Seller, server *gin.Engine) {
 	sellerGroup.DELETE("/:id", sellerController.Delete())
 }
 
-func warehousesHandlers(warehousesDB []db.Warehouse, server *gin.Engine) {
-	warehouseRepository := warehouses.NewRepository(warehousesDB)
+func warehousesHandlers(storageDB *sql.DB, server *gin.Engine) {
+	warehouseRepository := warehouses.NewRepository(storageDB)
 	warehouseService := warehouses.NewService(warehouseRepository)
 	warehouseController := controller.NewWarehouseController(warehouseService)
 
 	warehouseGroup := server.Group("/api/v1/warehouses")
+	
 	warehouseGroup.GET("/", warehouseController.GetAll())
 	warehouseGroup.GET("/:id", warehouseController.Get())
 	warehouseGroup.POST("/", warehouseController.Create())
