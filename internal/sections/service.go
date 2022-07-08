@@ -16,7 +16,7 @@ type SectionService interface {
 	GetAll() ([]db.Section, error)
 	Get(id uint64) (db.Section, error)
 	Delete(id uint64) error
-	ExistsSectionNumber(number uint64) bool
+	ExistsSectionNumber(number uint64) (bool, error)
 
 	Create(number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32,
 		minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64) (db.Section, error)
@@ -49,7 +49,13 @@ func (s *sectionService) Create(
 	warehouseId uint64, productTypeId uint64,
 ) (db.Section, error) {
 
-	if s.ExistsSectionNumber(number) {
+	existsSection, err := s.ExistsSectionNumber(number)
+
+	if err != nil {
+		return db.Section{}, err
+	}
+
+	if existsSection {
 		return db.Section{}, ErrExistsSectionNumberError
 	}
 
@@ -75,8 +81,13 @@ func (s *sectionService) Update(
 	if err != nil {
 		return db.Section{}, ErrSectionNotFoundError
 	}
+	existsSection, err := s.ExistsSectionNumber(newNumber)
 
-	if s.ExistsSectionNumber(newNumber) {
+	if err != nil {
+		return db.Section{}, err
+	}
+
+	if existsSection {
 		return db.Section{}, ErrExistsSectionNumberError
 	}
 
@@ -95,7 +106,7 @@ func (s *sectionService) Update(
 		return db.Section{}, err
 	}
 
-	return s.sectionRepository.Update(id, foundSection)
+	return s.sectionRepository.Update(foundSection)
 }
 
 func (s *sectionService) Delete(id uint64) error {
@@ -108,6 +119,6 @@ func (s *sectionService) Delete(id uint64) error {
 	return s.sectionRepository.Delete(id)
 }
 
-func (s *sectionService) ExistsSectionNumber(number uint64) bool {
+func (s *sectionService) ExistsSectionNumber(number uint64) (bool, error) {
 	return s.sectionRepository.ExistsSectionNumber(number)
 }
