@@ -68,7 +68,7 @@ func (r *buyerRepository) getNextId() uint64 {
 func (r *buyerRepository) Get(id uint64) (db.Buyer, error) {
 	var buyer db.Buyer
 	database := db.StorageDB
-	err := database.QueryRow("SELECT id,(buyer_code,cardNumberId, firstName, lastName FROM buyers WHERE id = ?",
+	err := database.QueryRow("SELECT id,buyer_code,cardNumberId, firstName, lastName FROM buyers WHERE id = ?",
 		id).Scan(&buyer.Id, &buyer.CardNumberId, &buyer.FirstName, &buyer.LastName)
 	if err != nil {
 		log.Println(err)
@@ -78,7 +78,30 @@ func (r *buyerRepository) Get(id uint64) (db.Buyer, error) {
 }
 
 func (r *buyerRepository) GetAll() ([]db.Buyer, error) {
-	return r.buyers, nil
+
+	database := db.StorageDB
+	stmt, err := database.Query("SELECT id,buyer_code,cardNumberId, firstName, lastName FROM buyers")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	var buyers []db.Buyer
+
+	for stmt.Next() {
+		var buyer db.Buyer
+
+		if err = stmt.Scan(
+			&buyer.Id,
+			&buyer.CardNumberId,
+			&buyer.FirstName,
+			&buyer.LastName,
+		); err != nil {
+			return r.buyers, err
+		}
+		buyers = append(buyers, buyer)
+	}
+	return buyers, nil
 }
 
 func (r *buyerRepository) Delete(id uint64) error {
