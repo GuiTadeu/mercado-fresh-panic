@@ -66,12 +66,15 @@ func (r *buyerRepository) getNextId() uint64 {
 }
 
 func (r *buyerRepository) Get(id uint64) (db.Buyer, error) {
-	for _, buyer := range r.buyers {
-		if buyer.Id == id {
-			return buyer, nil
-		}
+	var buyer db.Buyer
+	database := db.StorageDB
+	err := database.QueryRow("SELECT id,(buyer_code,cardNumberId, firstName, lastName FROM buyers WHERE id = ?",
+		id).Scan(&buyer.Id, &buyer.CardNumberId, &buyer.FirstName, &buyer.LastName)
+	if err != nil {
+		log.Println(err)
+		return db.Buyer{}, err
 	}
-	return db.Buyer{}, BuyerNotFoundError
+	return buyer, nil
 }
 
 func (r *buyerRepository) GetAll() ([]db.Buyer, error) {
