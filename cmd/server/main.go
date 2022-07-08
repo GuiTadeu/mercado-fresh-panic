@@ -28,9 +28,9 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var sellersDB, warehousesDB, sectionsDB, employeeDB, buyersDB = db.CreateDatabases()
+	var warehousesDB, sectionsDB, employeeDB, buyersDB = db.CreateDatabases()
 
-	sellersHandlers(sellersDB, server)
+	sellersHandlers(storageDB, server)
 	warehousesHandlers(warehousesDB, server)
 	sectionHandlers(sectionsDB, server)
 	productHandlers(storageDB, server)
@@ -41,8 +41,8 @@ func main() {
 	server.Run(port)
 }
 
-func sellersHandlers(sellersDB []db.Seller, server *gin.Engine) {
-	sellerRepository := sellers.NewRepository(sellersDB)
+func sellersHandlers(storageDB *sql.DB, server *gin.Engine) {
+	sellerRepository := sellers.NewRepository(storageDB)
 	sellerService := sellers.NewService(sellerRepository)
 	sellerController := controller.NewSeller(sellerService)
 

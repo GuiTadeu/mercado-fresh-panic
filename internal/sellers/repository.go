@@ -38,18 +38,15 @@ type Repository interface {
 }
 
 type repository struct {
-	db []database.Seller
+	db *sql.DB
 }
 
 func (r *repository) FindAll() ([]database.Seller, error) {
 	var sellers []database.Seller
 
-	db := database.StorageDB
-
-	rows, err := db.Query(FindAllQuery)
+	rows, err := r.db.Query(FindAllQuery)
 
 	if err != nil {
-		log.Fatal(err)
 		return []database.Seller{}, err
 	}
 
@@ -69,9 +66,7 @@ func (r *repository) FindAll() ([]database.Seller, error) {
 func (r *repository) FindOne(id uint64) (database.Seller, error) {
 	var seller database.Seller
 
-	db := database.StorageDB
-
-	err := db.QueryRow(FindOneQuery, id).Scan(&seller.Id, &seller.Cid, &seller.CompanyName, &seller.Address, &seller.Telephone, &seller.LocalityId)
+	err := r.db.QueryRow(FindOneQuery, id).Scan(&seller.Id, &seller.Cid, &seller.CompanyName, &seller.Address, &seller.Telephone, &seller.LocalityId)
 
 	if err != nil {
 		log.Println(err)
@@ -82,11 +77,10 @@ func (r *repository) FindOne(id uint64) (database.Seller, error) {
 }
 
 func (r *repository) Create(cid uint64, companyName string, address string, telephone string, localityId string) (database.Seller, error) {
-	db := database.StorageDB
-	stmt, err := db.Prepare(CreateQuery)
+	stmt, err := r.db.Prepare(CreateQuery)
 
 	if err != nil {
-		log.Fatal(err)
+		return database.Seller{}, err
 	}
 
 	defer stmt.Close()
@@ -107,11 +101,11 @@ func (r *repository) Create(cid uint64, companyName string, address string, tele
 }
 
 func (r *repository) Update(seller database.Seller) (database.Seller, error) {
-	db := database.StorageDB
-	stmt, err := db.Prepare(UpdateQuery)
+	stmt, err := r.db.Prepare(UpdateQuery)
 
 	if err != nil {
 		log.Println(err)
+		return database.Seller{}, err
 	}
 
 	defer stmt.Close()
@@ -132,9 +126,8 @@ func (r *repository) Update(seller database.Seller) (database.Seller, error) {
 }
 
 func (r *repository) Delete(id uint64) error {
-	db := database.StorageDB
 
-	_, err := db.Exec(DeleteQuery, id)
+	_, err := r.db.Exec(DeleteQuery, id)
 
 	if err != nil {
 		log.Println(err)
@@ -148,9 +141,7 @@ func (r *repository) FindCid(cid uint64) bool {
 
 	var seller database.Seller
 
-	db := database.StorageDB
-
-	err := db.QueryRow(FindCidQuery, cid).Scan(&seller.Cid)
+	err := r.db.QueryRow(FindCidQuery, cid).Scan(&seller.Cid)
 
 	return err == nil
 }
@@ -166,7 +157,7 @@ func createSeller(id uint64, cid uint64, companyName string, address string, tel
 	}
 }
 
-func NewRepository(db []database.Seller) Repository {
+func NewRepository(db *sql.DB) Repository {
 	return &repository{
 		db: db,
 	}
