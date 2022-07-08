@@ -35,8 +35,8 @@ func (m mockSectionRepository) Delete(id uint64) error {
 	return nil
 }
 
-func (m mockSectionRepository) ExistsSectionNumber(number uint64) bool {
-	return m.existsSectionNumber
+func (m mockSectionRepository) ExistsSectionNumber(number uint64) (bool, error) {
+	return m.existsSectionNumber, m.err
 }
 
 func (m mockSectionRepository) Create(
@@ -49,7 +49,7 @@ func (m mockSectionRepository) Create(
 	return m.result.(db.Section), nil
 }
 
-func (m mockSectionRepository) Update(id uint64, updatedSection db.Section) (db.Section, error) {
+func (m mockSectionRepository) Update(updatedSection db.Section) (db.Section, error) {
 	if (reflect.DeepEqual(m.result.(db.Section), db.Section{}) == false) {
 		return updatedSection, nil
 	}

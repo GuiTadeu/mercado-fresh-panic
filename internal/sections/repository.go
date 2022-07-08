@@ -2,7 +2,6 @@ package sections
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
@@ -11,39 +10,41 @@ import (
 type SectionRepository interface {
 	GetAll() ([]database.Section, error)
 	Get(id uint64) (database.Section, error)
-	Update(id uint64, updatedSection database.Section) (database.Section, error)
+	Update(updatedSection database.Section) (database.Section, error)
 	Delete(id uint64) error
-	ExistsSectionNumber(number uint64) bool
+	ExistsSectionNumber(number uint64) (bool, error)
 
 	Create(number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32,
 		minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64) (database.Section, error)
 }
 
-func NewRepository(sections []database.Section) SectionRepository {
+type sectionRepository struct {
+	db *sql.DB
+}
+
+func NewRepository(db *sql.DB) SectionRepository {
 	return &sectionRepository{
-		sections: sections,
+		db: db,
 	}
 }
 
-type sectionRepository struct {
-	sections []database.Section
-}
-
 func (r *sectionRepository) GetAll() ([]database.Section, error) {
-	sections := []database.Section{}
-	db := database.StorageDB
 
-	rows, err := db.Query("SELECT * FROM sections")
+	rows, err := r.db.Query("SELECT * FROM sections")
+
 	if err != nil {
-		return sections, err
+		log.Println(err)
+		return nil, err
 	}
 
 	defer rows.Close()
 
+	var sections []database.Section
 	for rows.Next() {
+
 		var section database.Section
 
-		if err := rows.Scan(
+		err := rows.Scan(
 			&section.Id,
 			&section.Number,
 			&section.CurrentCapacity,
@@ -53,8 +54,11 @@ func (r *sectionRepository) GetAll() ([]database.Section, error) {
 			&section.MinimumTemperature,
 			&section.ProductTypeId,
 			&section.WarehouseId,
-		); err != nil {
-			return sections, err
+		)
+
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
 		}
 
 		sections = append(sections, section)
@@ -64,47 +68,63 @@ func (r *sectionRepository) GetAll() ([]database.Section, error) {
 }
 
 func (r *sectionRepository) Get(id uint64) (database.Section, error) {
-	row := database.StorageDB.QueryRow("SELECT * FROM sections WHERE ID = ?", id)
 
-	section := database.Section{}
+	var section database.Section
+	rows, err := r.db.Query("SELECT * FROM sections WHERE ID = ?", id)
 
-	err := row.Scan(
-		&section.Id,
-		&section.Number,
-		&section.CurrentCapacity,
-		&section.CurrentTemperature,
-		&section.MaximumCapacity,
-		&section.MinimumCapacity,
-		&section.MinimumTemperature,
-		&section.ProductTypeId,
-		&section.WarehouseId,
-	)
-	// ID not found
-	if errors.Is(err, sql.ErrNoRows) {
-		return section, ErrSectionNotFoundError
-	}
-
-	// Other errors
 	if err != nil {
+		log.Println(err)
 		return section, err
 	}
 
-	return section, nil
+	for rows.Next() {
+
+		err := rows.Scan(
+			&section.Id,
+			&section.Number,
+			&section.CurrentCapacity,
+			&section.CurrentTemperature,
+			&section.MaximumCapacity,
+			&section.MinimumCapacity,
+			&section.MinimumTemperature,
+			&section.ProductTypeId,
+			&section.WarehouseId,
+		)
+
+		if err != nil {
+			log.Println(err.Error())
+			return section, err
+		}
+
+		return section, nil
+	}
+
+	return section, ErrSectionNotFoundError
 
 }
 
 func (r *sectionRepository) Create(number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32, minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64,
 ) (database.Section, error) {
 
-	section := database.Section{}
-	db := database.StorageDB
+	stmt, err := r.db.Prepare(`
+	INSERT INTO sections(
+		section_number, 
+		current_temperature, 
+		minimum_temperature, 
+		current_capacity, 
+		minimum_capacity, 
+		maximum_capacity, 
+		warehouse_id, product_type
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		`)
 
-	query := `INSERT INTO sections 
-	(section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, 
-		maximum_capacity, warehouse_id, product_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	if err != nil {
+		return database.Section{}, err
+	}
 
-	result, err := db.Exec(
-		query,
+	defer stmt.Close()
+	var result sql.Result
+	result, err = stmt.Exec(
 		number,
 		currentTemperature,
 		minimumTemperature,
@@ -114,60 +134,62 @@ func (r *sectionRepository) Create(number uint64, currentTemperature float32, mi
 		warehouseId,
 		productTypeId,
 	)
+
 	if err != nil {
-		return section, err
+		return database.Section{}, err
 	}
 
-	lastID, err := result.LastInsertId()
-	if err != nil {
-		return section, err
+	insertedId, _ := result.LastInsertId()
+	section := database.Section{
+		Id:                 uint64(insertedId),
+		Number:             number,
+		CurrentTemperature: currentTemperature,
+		MinimumTemperature: minimumTemperature,
+		CurrentCapacity:    currentCapacity,
+		MinimumCapacity:    minimumCapacity,
+		MaximumCapacity:    maximumCapacity,
+		WarehouseId:        warehouseId,
+		ProductTypeId:      productTypeId,
 	}
-
-	section.Id = uint64(lastID)
-	section.Number = number
-	section.CurrentTemperature = currentTemperature
-	section.MinimumTemperature = minimumTemperature
-	section.CurrentCapacity = currentCapacity
-	section.MinimumCapacity = minimumCapacity
-	section.MaximumCapacity = maximumCapacity
-	section.WarehouseId = warehouseId
-	section.ProductTypeId = productTypeId
 
 	return section, nil
 }
 
-func (r *sectionRepository) Update(id uint64, updatedSection database.Section) (database.Section, error) {
-	db := database.StorageDB
+func (r *sectionRepository) Update(updatedSection database.Section) (database.Section, error) {
 
-	query := `UPDATE sections SET 
-	section_number=?, current_temperature=?, minimum_temperature=?, current_capacity=?, 
-	minimum_capacity=?, maximum_capacity=?, warehouse_id=?, product_type=? WHERE id=?`
+	stmt, err := r.db.Prepare(`
+	UPDATE sections SET 
+	section_number=?, 
+	current_temperature=?, 
+	minimum_temperature=?, 
+	current_capacity=?, 
+	minimum_capacity=?, 
+	maximum_capacity=?,
+	warehouse_id=?, 
+	product_type=? 
+	WHERE id=?
+	 `)
 
-	result, err := db.Exec(
-		query,
-		&updatedSection.Number,
-		&updatedSection.CurrentTemperature,
-		&updatedSection.MinimumTemperature,
-		&updatedSection.CurrentCapacity,
-		&updatedSection.MinimumCapacity,
-		&updatedSection.MaximumCapacity,
-		&updatedSection.WarehouseId,
-		&updatedSection.ProductTypeId,
-		&updatedSection.Id,
+	if err != nil {
+		return database.Section{}, err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(
+		updatedSection.Number,
+		updatedSection.CurrentTemperature,
+		updatedSection.MinimumTemperature,
+		updatedSection.CurrentCapacity,
+		updatedSection.MinimumCapacity,
+		updatedSection.MaximumCapacity,
+		updatedSection.WarehouseId,
+		updatedSection.ProductTypeId,
+		updatedSection.Id,
 	)
-	if err != nil {
-		return updatedSection, err
-	}
 
-	affectedRows, err := result.RowsAffected()
-	// ID not found
-	if affectedRows == 0 {
-		return updatedSection, ErrSectionNotFoundError
-	}
-
-	// Other errors
 	if err != nil {
-		return updatedSection, err
+		return database.Section{}, err
 	}
 
 	return updatedSection, nil
@@ -175,19 +197,15 @@ func (r *sectionRepository) Update(id uint64, updatedSection database.Section) (
 
 func (r *sectionRepository) Delete(id uint64) error {
 
-	result, err := database.StorageDB.Exec("DELETE FROM sections WHERE id=?", id)
+	stmt, err := r.db.Prepare("DELETE FROM sections WHERE id = ?")
+
 	if err != nil {
 		return err
 	}
 
-	affectedRows, err := result.RowsAffected()
+	defer stmt.Close()
 
-	// ID not found
-	if affectedRows == 0 {
-		return ErrSectionNotFoundError
-	}
-
-	// Other errors
+	_, err = stmt.Exec(id)
 	if err != nil {
 		return err
 	}
@@ -195,14 +213,14 @@ func (r *sectionRepository) Delete(id uint64) error {
 	return nil
 }
 
-func (r *sectionRepository) ExistsSectionNumber(number uint64) bool {
+func (r *sectionRepository) ExistsSectionNumber(number uint64) (bool, error) {
+
 	var section database.Section
-	db := database.StorageDB
-	rows, err := db.Query("SELECT * FROM sections WHERE section_number = ?", number)
+
+	rows, err := r.db.Query("SELECT section_number, current_temperature, minimum_temperature, current_capacity, minimum_capacity, maximum_capacity, warehouse_id, product_type from Sections where section_number = ?", number)
 
 	if err != nil {
-		log.Println(err)
-		return false
+		return false, err
 	}
 
 	for rows.Next() {
@@ -219,9 +237,11 @@ func (r *sectionRepository) ExistsSectionNumber(number uint64) bool {
 		)
 
 		if err != nil {
-			log.Println(err.Error())
-			return true
+			return false, err
 		}
+
+		return true, nil
 	}
-	return false
+
+	return false, nil
 }
