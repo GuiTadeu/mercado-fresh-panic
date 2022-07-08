@@ -17,7 +17,7 @@ type CreateSectionRequest struct {
 	MinimumCapacity    uint32  `json:"minimum_capacity" binding:"required"`
 	MaximumCapacity    uint32  `json:"maximum_capacity" binding:"required"`
 	WarehouseId        uint64  `json:"warehouse_id" binding:"required"`
-	ProductTypeId      uint64  `json:"product_type" binding:"required"`
+	ProductTypeId      uint64  `json:"product_type_id" binding:"required"`
 }
 
 type UpdateSectionRequest struct {
