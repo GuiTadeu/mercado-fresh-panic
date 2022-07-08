@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 )
@@ -19,12 +18,12 @@ func Init() {
 	if err != nil {
 		log.Fatal("failed to load .env")
 	}
-	
-	datasource := os.Getenv("CONNECT_MYSQL")	
+
+	datasource := os.Getenv("CONNECT_MYSQL")
 
 	StorageDB, err = sql.Open("mysql", datasource)
 	if err != nil {
-		panic(err)		
+		panic(err)
 	}
 	if err = StorageDB.Ping(); err != nil {
 		panic(err)
@@ -90,6 +89,15 @@ type Buyer struct {
 	CardNumberId string `json:"card_number_id"`
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
+}
+
+type InboundOrder struct {
+	Id             uint64 `json:"id"`
+	OrderDate      string `json:"order_date"`
+	OrderNumber    string `json:"order_number"`
+	EmployeeId     uint64 `json:"employee_id"`
+	ProductBatchId uint64 `json:"product_batch_id"`
+	WarehouseId    uint64 `json:"warehouse_id"`
 }
 
 func CreateDatabases() (

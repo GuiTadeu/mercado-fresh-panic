@@ -1,11 +1,12 @@
 package controller
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
 	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strconv"
 )
 
 type EmployeeController struct {
@@ -145,6 +146,12 @@ func (c *EmployeeController) Delete() gin.HandlerFunc {
 			return
 		}
 		ctx.JSON(http.StatusNoContent, web.NewResponse(http.StatusNoContent, nil, ""))
+	}
+}
+
+func (c *EmployeeController) ReportInboundOrders() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
 	}
 }
 

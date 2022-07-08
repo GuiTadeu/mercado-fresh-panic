@@ -5,12 +5,12 @@ import (
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	inboundorders "github.com/GuiTadeu/mercado-fresh-panic/internal/inboundOrders"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/gin-gonic/gin"
-	
 )
 
 func main() {
@@ -28,6 +28,7 @@ func main() {
 	productHandlers(productsDB, server)
 	buyerHandlers(buyersDB, server)
 	employeeHandlers(employeeDB, server)
+	inboundOrderHandlers(employeeDB, warehousesDB, server)
 
 	server.Run(":8080")
 }
@@ -102,6 +103,25 @@ func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
 	employeeRoutes.DELETE("/:id", employeeHandler.Delete())
 	employeeRoutes.GET("/:id", employeeHandler.Get())
 	employeeRoutes.PATCH("/:id", employeeHandler.Update())
+	employeeRoutes.GET("/reportInboundOrders", employeeHandler.ReportInboundOrders())
+}
+
+func inboundOrderHandlers(employeeDB []db.Employee, warehousesDB []db.Warehouse, server *gin.Engine) {
+
+	employeeRepository := employees.NewRepository(employeeDB)
+	employeeService := employees.NewEmployeeService(employeeRepository)
+
+	warehouseRepository := warehouses.NewRepository(warehousesDB)
+	warehouseService := warehouses.NewService(warehouseRepository)
+
+	inboundOrderRepository := inboundorders.NewRepository()
+	inboundOrderService := inboundorders.NewInboundOrderService(employeeService, warehouseService, inboundOrderRepository)
+
+	cInboundOrders := controller.NewInboundOrderController(inboundOrderService)
+
+	inboundOrderRoutes := server.Group("/api/v1/inboundOrders")
+
+	inboundOrderRoutes.POST("/", cInboundOrders.Create())
 }
 
 func buyerHandlers(buyersDB []db.Buyer, server *gin.Engine) {
