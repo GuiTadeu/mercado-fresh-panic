@@ -124,7 +124,7 @@ func (c *warehouseController) Delete() gin.HandlerFunc {
 func (c *warehouseController) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var request updateWarehouseRequest
-		err := ctx.ShouldBindJSON(&request)
+		ctx.ShouldBindJSON(&request)
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, "warehouses id binding error"))

@@ -10,10 +10,10 @@ import (
 
 type createInboundOrdersRequest struct {
 	OrderDate      string `json:"order_date" binding:"required"`
-	OrderNumber    string `json:"order_number" binding:"required"`
-	EmployeeId     uint64 `json:"employee_id" binding:"required"`
-	ProductBatchId uint64 `json:"product_batch_id" binding:"required"`
-	WarehouseId    uint64 `json:"warehouse_id" binding:"required"`
+	OrderNumber    string    `json:"order_number" binding:"required"`
+	EmployeeId     uint64    `json:"employee_id" binding:"required"`
+	ProductBatchId uint64    `json:"product_batch_id" binding:"required"`
+	WarehouseId    uint64    `json:"warehouse_id" binding:"required"`
 }
 
 type inboundOrderController struct {

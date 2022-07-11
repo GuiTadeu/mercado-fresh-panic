@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"	
 )
 

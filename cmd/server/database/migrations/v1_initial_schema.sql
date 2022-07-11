@@ -273,6 +273,22 @@ LOCK TABLES `purchase_orders` WRITE;
 
 UNLOCK TABLES;
 
+CREATE TABLE `order_details`(
+	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    clean_liness_status VARCHAR(255) NOT NULL,
+    quantity BIGINT NOT NULL,
+    temperature DECIMAL(19, 2) NOT NULL,
+    product_record_id BIGINT UNSIGNED NOT NULL,
+    purchase_order_id BIGINT UNSIGNED NOT NULL,
+    FOREIGN KEY (product_record_id) REFERENCES product_records(id),
+    FOREIGN KEY (purchase_order_id) REFERENCES purchase_orders(id),
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+LOCK TABLES `order_details` WRITE;
+
+UNLOCK TABLES;
+
 INSERT INTO countries(country_name) 
 VALUES  ("Brasil"),
         ("Argentina");
@@ -356,3 +372,8 @@ INSERT INTO purchase_orders(order_number, order_date, tracking_code, buyer_id, o
 VALUES	("1234", "2021-02-27 18:11:32", "ABCD", 1, 1, 1),
 		    ("5678", "2022-06-22 08:51:51", "EFGH", 1, 2, 3),
         ("9814", "2022-04-17 09:14:14", "GHIJ", 2, 1, 2);
+
+INSERT INTO order_details(clean_liness_status, quantity, temperature, product_record_id, purchase_order_id)
+VALUES  ("Aprovado", 1000, 12.5, 1, 1),
+        ("Aprovado", 2000, 11.5, 2, 2),
+        ("Rejeitado", 3000, 10.5, 1, 2);

@@ -1,0 +1,50 @@
+package inboundorders
+
+import (
+	"errors"
+	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
+)
+
+var (
+	WarehouseNotFoundError   = errors.New("warehouse not found")
+	EmployeeNotFoundError   = errors.New("employee not found")
+
+)
+
+type InboundOrderService interface {
+	Create(orderDate, orderNumber string, employeeId, productBatchId, warehouseId uint64) (db.InboundOrder, error)
+}
+
+type inboundOrderService struct {
+	employeeService employees.EmployeeService
+	warehouseService warehouses.WarehouseService
+	inboundOrderRepository InboundOrderRepository
+}
+
+func NewInboundOrderService(employeeService employees.EmployeeService, warehouseService warehouses.WarehouseService, inboundOrderRepository InboundOrderRepository) InboundOrderService {
+	return &inboundOrderService{
+		employeeService,
+		warehouseService,
+		inboundOrderRepository,
+	}
+}
+
+func (s *inboundOrderService) Create(orderDate, orderNumber string, employeeId, productBatchId, warehouseId uint64) (db.InboundOrder, error) {
+	// TODO adicionar validaçao se productBatchId existe
+	// if _, err := s.employeeService.Get(employeeId); err != nil {
+	// 	return db.InboundOrder{}, EmployeeNotFoundError
+	// }
+
+	// if _, err := s.warehouseService.Get(warehouseId); err != nil {
+	// 	return db.InboundOrder{}, WarehouseNotFoundError
+	// }
+
+	inboundOrder, err := s.inboundOrderRepository.Create(orderDate, orderNumber, employeeId, productBatchId, warehouseId)
+	if err != nil {
+		return db.InboundOrder{}, err
+	}
+
+	return inboundOrder, nil
+}
