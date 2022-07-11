@@ -32,7 +32,7 @@ func (m mockWarehouseService) Delete(id uint64) error {
 
 }
 
-func (m mockWarehouseService) Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32) (database.Warehouse, error) {
+func (m mockWarehouseService) Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32, localityId string) (database.Warehouse, error) {
 	if m.err != nil {
 		return database.Warehouse{}, m.err
 	}

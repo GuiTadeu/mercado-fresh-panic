@@ -68,7 +68,7 @@ func (control *SellersController) Create() gin.HandlerFunc {
 			return
 		}
 
-		s, err := control.service.Create(req.Cid, req.CompanyName, req.Address, req.Telephone)
+		s, err := control.service.Create(req.Cid, req.CompanyName, req.Address, req.Telephone, req.LocalityId)
 
 		if err != nil {
 			status := sellerErrorHandler(err, ctx)
@@ -99,7 +99,7 @@ func (control *SellersController) Update() gin.HandlerFunc {
 			return
 		}
 
-		s, err := control.service.Update(id, req.Cid, req.CompanyName, req.Address, req.Telephone)
+		s, err := control.service.Update(id, req.Cid, req.CompanyName, req.Address, req.Telephone, req.LocalityId)
 
 		if err != nil {
 			status := sellerErrorHandler(err, ctx)
@@ -154,6 +154,7 @@ type createSellerRequest struct {
 	CompanyName string `json:"company_name" binding:"required"`
 	Address     string `json:"address" binding:"required"`
 	Telephone   string `json:"telephone" binding:"required"`
+	LocalityId  string `json:"locality_id" binding:"required"`
 }
 
 type updateSellerRequest struct {
@@ -161,4 +162,5 @@ type updateSellerRequest struct {
 	CompanyName string `json:"company_name"`
 	Address     string `json:"address"`
 	Telephone   string `json:"telephone"`
+	LocalityId  string `json:"locality_id"`
 }

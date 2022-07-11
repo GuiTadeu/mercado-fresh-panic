@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func CreateDB() *sql.DB {
+func CreateDB() (*sql.DB) {
 
 	file, err := os.Create("db_test.db")
 	if err != nil {

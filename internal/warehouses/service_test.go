@@ -17,6 +17,7 @@ func Test_Create_ShouldReturnOK(t *testing.T) {
 		Telephone:          "45674458",
 		MinimunCapacity:    5,
 		MinimumTemperature: 1.1,
+		LocalityID:         "1",
 	}
 	mockRepository := mockWarehouseRepository{
 		result:   expectedResult,
@@ -25,7 +26,7 @@ func Test_Create_ShouldReturnOK(t *testing.T) {
 	}
 
 	service := NewService(mockRepository)
-	result, err := service.Create("SC", "psn", "45674458", 5, 1.1)
+	result, err := service.Create("SC", "psn", "45674458", 5, 1.1, "1")
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResult, result)
@@ -40,7 +41,7 @@ func Test_Create_ShouldReturnError(t *testing.T) {
 		findByCode: true,
 	}
 	service := NewService(mockRepository)
-	_, err := service.Create("SC", "psn", "45674458", 5, 1.1)
+	_, err := service.Create("SC", "psn", "45674458", 5, 1.1, "1")
 
 	assert.Equal(t, expectedError, err)
 }

@@ -35,14 +35,14 @@ func (m mockSellerService) ExistsSellerCode(code string) bool {
 	return m.err == sellers.ExistsSellerCodeError
 }
 
-func (m mockSellerService) Create(cid uint64, companyName string, address string, telephone string) (db.Seller, error) {
+func (m mockSellerService) Create(cid uint64, companyName string, address string, telephone string, localityId string) (db.Seller, error) {
 	if m.err != nil {
 		return db.Seller{}, m.err
 	}
 	return m.result.(db.Seller), nil
 }
 
-func (m mockSellerService) Update(id uint64, cid uint64, companyName string, address string, telephone string) (db.Seller, error) {
+func (m mockSellerService) Update(id uint64, cid uint64, companyName string, address string, telephone string, localityId string) (db.Seller, error) {
 	if m.err != nil {
 		return db.Seller{}, m.err
 	}

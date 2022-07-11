@@ -17,6 +17,7 @@ func Test_FindAll_OK(t *testing.T) {
 			CompanyName: "NIKE",
 			Telephone:   "13997780814",
 			Address:     "Rua Goiás, 37",
+			LocalityId:  "11065001",
 		},
 		{
 			Id:          2,
@@ -83,6 +84,7 @@ func Test_FindOne_Existent(t *testing.T) {
 		CompanyName: "NIKE",
 		Telephone:   "13997780814",
 		Address:     "Rua Goiás, 37",
+		LocalityId:  "11065001",
 	}
 
 	existentId := 1
@@ -108,6 +110,7 @@ func Test_Create_OK(t *testing.T) {
 		CompanyName: "NIKE",
 		Telephone:   "13997780814",
 		Address:     "Rua Goiás, 37",
+		LocalityId:  "11065001",
 	}
 
 	mockRepository := mockSellerRepository{
@@ -117,7 +120,7 @@ func Test_Create_OK(t *testing.T) {
 	}
 
 	service := NewService(mockRepository)
-	result, err := service.Create(expectedResult.Cid, expectedResult.CompanyName, expectedResult.Address, expectedResult.Telephone)
+	result, err := service.Create(expectedResult.Cid, expectedResult.CompanyName, expectedResult.Address, expectedResult.Telephone, expectedResult.LocalityId)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResult, result)
@@ -134,7 +137,7 @@ func Test_Create_Conflict(t *testing.T) {
 	}
 
 	service := NewService(mockRepository)
-	result, err := service.Create(expectedResult.Cid, expectedResult.CompanyName, expectedResult.Address, expectedResult.Telephone)
+	result, err := service.Create(expectedResult.Cid, expectedResult.CompanyName, expectedResult.Address, expectedResult.Telephone, expectedResult.LocalityId)
 
 	assert.Equal(t, err, ExistsSellerCodeError)
 	assert.Equal(t, expectedResult, result)
@@ -148,6 +151,7 @@ func Test_Update_OK(t *testing.T) {
 		CompanyName: "adidas",
 		Telephone:   "13997782222",
 		Address:     "Rua Goiania, 37",
+		LocalityId:  "11065001",
 	}
 
 	expectedResult := db.Seller{
@@ -156,6 +160,7 @@ func Test_Update_OK(t *testing.T) {
 		CompanyName: "NIKE",
 		Telephone:   "13997780814",
 		Address:     "Rua Goiás, 37",
+		LocalityId:  "11065001",
 	}
 
 	mockRepository := mockSellerRepository{
@@ -165,7 +170,7 @@ func Test_Update_OK(t *testing.T) {
 	}
 
 	service := NewService(mockRepository)
-	result, err := service.Update(expectedResult.Id, expectedResult.Cid, expectedResult.CompanyName, expectedResult.Address, expectedResult.Telephone)
+	result, err := service.Update(expectedResult.Id, expectedResult.Cid, expectedResult.CompanyName, expectedResult.Address, expectedResult.Telephone, expectedResult.LocalityId)
 
 	assert.Equal(t, nil, err)
 	assert.Equal(t, expectedResult, result)
@@ -183,7 +188,7 @@ func Test_Update_Non_Existent(t *testing.T) {
 	}
 
 	service := NewService(mockRepository)
-	result, err := service.Update(expectedResult.Id, expectedResult.Cid, expectedResult.CompanyName, expectedResult.Address, expectedResult.Telephone)
+	result, err := service.Update(expectedResult.Id, expectedResult.Cid, expectedResult.CompanyName, expectedResult.Address, expectedResult.Telephone, expectedResult.LocalityId)
 
 	assert.Equal(t, SellerNotFoundError, err)
 	assert.Equal(t, expectedResult, result)
@@ -199,6 +204,7 @@ func Test_Update_Cid_Existent_Error(t *testing.T) {
 		CompanyName: "NIKE",
 		Telephone:   "13997780814",
 		Address:     "Rua Goiás, 37",
+		LocalityId:  "11065001",
 	}
 
 	mockRepository := mockSellerRepository{
@@ -209,7 +215,7 @@ func Test_Update_Cid_Existent_Error(t *testing.T) {
 	}
 
 	service := NewService(mockRepository)
-	result, err := service.Update(sellerGetByID.Id, sellerGetByID.Cid, sellerGetByID.CompanyName, sellerGetByID.Address, expectedResult.Telephone)
+	result, err := service.Update(sellerGetByID.Id, sellerGetByID.Cid, sellerGetByID.CompanyName, sellerGetByID.Address, expectedResult.Telephone, expectedResult.LocalityId)
 
 	assert.Equal(t, ExistsSellerCodeError, err)
 	assert.Equal(t, expectedResult, result)
