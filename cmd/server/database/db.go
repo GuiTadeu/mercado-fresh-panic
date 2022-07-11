@@ -184,19 +184,16 @@ type OrderDetails struct {
 	PurchaseOrderId   uint64  `json:"purchase_order_id"`
 }
 
-func CreateDatabases() (
-	warehouses []Warehouse,
+func CreateDatabases() (	
 	employees []Employee,
 	buyers []Buyer,
 ) {
 
 	fmt.Println("Create Databases - Starting...")
-
-	warehouses = []Warehouse{}
+	
 	employees = []Employee{}
 	buyers = []Buyer{}
-
-	fmt.Printf("\n warehouses:%v", warehouses)
+	
 	fmt.Printf("\n employees:%v", employees)
 	fmt.Printf("\n buyers:%v", buyers)
 
