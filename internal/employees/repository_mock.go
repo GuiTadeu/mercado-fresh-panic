@@ -59,7 +59,7 @@ func (m mockEmployeeRepository) ReportInboundOrders(id uint64) (db.ReportInbound
 	return m.result.(db.ReportInboundOrders), nil
 }
 
-func (m mockEmployeeRepository) ReportsInboundOrders(id uint64) ([]db.ReportInboundOrders, error) {
+func (m mockEmployeeRepository) ReportsInboundOrders() ([]db.ReportInboundOrders, error) {
 	if m.err != nil {
 		return []db.ReportInboundOrders{}, m.err
 	}

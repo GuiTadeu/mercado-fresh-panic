@@ -8,6 +8,7 @@ import (
 type mockEmployeeService struct {
 	result any
 	err    error
+	employeeExists bool
 }
 
 func (m mockEmployeeService) GetAll() ([]db.Employee, error) {
@@ -51,5 +52,23 @@ func (m mockEmployeeService) Update(
 		return db.Employee{}, m.err
 	}
 	return m.result.(db.Employee), nil
+}
+
+func (m mockEmployeeService) ReportInboundOrders(id uint64) (db.ReportInboundOrders, error) {
+	if m.err != nil{
+		return db.ReportInboundOrders{}, m.err
+	}
+	return m.result.(db.ReportInboundOrders), nil
+}
+
+func (m mockEmployeeService) ReportsInboundOrders() ([]db.ReportInboundOrders, error) {
+	if m.err != nil {
+		return []db.ReportInboundOrders{}, m.err
+	}
+	return m.result.([]db.ReportInboundOrders), nil
+}
+
+func (m mockEmployeeService) ExistsEmployee(id uint64) (bool) {
+	return m.employeeExists
 }
 
