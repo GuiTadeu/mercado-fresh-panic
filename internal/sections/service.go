@@ -8,15 +8,15 @@ import (
 )
 
 var (
-	ExistsSectionNumberError = errors.New("section number already exists")
-	SectionNotFoundError     = errors.New("section not found")
+	ErrExistsSectionNumberError = errors.New("section number already exists")
+	ErrSectionNotFoundError     = errors.New("section not found")
 )
 
 type SectionService interface {
 	GetAll() ([]db.Section, error)
 	Get(id uint64) (db.Section, error)
 	Delete(id uint64) error
-	ExistsSectionNumber(number uint64) bool
+	ExistsSectionNumber(number uint64) (bool, error)
 
 	Create(number uint64, currentTemperature float32, minimumTemperature float32, currentCapacity uint32,
 		minimumCapacity uint32, maximumCapacity uint32, warehouseId uint64, productTypeId uint64) (db.Section, error)
@@ -49,8 +49,14 @@ func (s *sectionService) Create(
 	warehouseId uint64, productTypeId uint64,
 ) (db.Section, error) {
 
-	if s.ExistsSectionNumber(number) {
-		return db.Section{}, ExistsSectionNumberError
+	existsSection, err := s.ExistsSectionNumber(number)
+
+	if err != nil {
+		return db.Section{}, err
+	}
+
+	if existsSection {
+		return db.Section{}, ErrExistsSectionNumberError
 	}
 
 	section, err := s.sectionRepository.Create(
@@ -73,11 +79,16 @@ func (s *sectionService) Update(
 
 	foundSection, err := s.Get(id)
 	if err != nil {
-		return db.Section{}, SectionNotFoundError
+		return db.Section{}, ErrSectionNotFoundError
+	}
+	existsSection, err := s.ExistsSectionNumber(newNumber)
+
+	if err != nil {
+		return db.Section{}, err
 	}
 
-	if s.ExistsSectionNumber(newNumber) {
-		return db.Section{}, ExistsSectionNumberError
+	if existsSection {
+		return db.Section{}, ErrExistsSectionNumberError
 	}
 
 	updatedSection := db.Section{
@@ -95,19 +106,19 @@ func (s *sectionService) Update(
 		return db.Section{}, err
 	}
 
-	return s.sectionRepository.Update(id, foundSection)
+	return s.sectionRepository.Update(foundSection)
 }
 
 func (s *sectionService) Delete(id uint64) error {
 
 	_, err := s.Get(id)
 	if err != nil {
-		return SectionNotFoundError
+		return ErrSectionNotFoundError
 	}
 
 	return s.sectionRepository.Delete(id)
 }
 
-func (s *sectionService) ExistsSectionNumber(number uint64) bool {
+func (s *sectionService) ExistsSectionNumber(number uint64) (bool, error) {
 	return s.sectionRepository.ExistsSectionNumber(number)
 }
