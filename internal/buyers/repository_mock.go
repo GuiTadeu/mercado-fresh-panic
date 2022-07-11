@@ -37,17 +37,13 @@ func (m mockBuyerRepository) Create(cardNumberId, firstName, lastName string) (d
 	return m.result.(db.Buyer), nil
 }
 
-func (m mockBuyerRepository) getNextId() uint64 {
-	return m.result.(uint64)
-}
-
-func (m mockBuyerRepository) Update(id uint64, cardNumberId string, firstName string, lastName string) (db.Buyer, error) {
+func (m mockBuyerRepository) Update(Ubuyer db.Buyer) (db.Buyer, error) {
 	if (m.result.(db.Buyer) != db.Buyer{}) {
-		return db.Buyer{id, cardNumberId, firstName, lastName}, m.err
+		return Ubuyer, m.err
 	}
 	return db.Buyer{}, nil
 }
 
-func (m mockBuyerRepository) ExistsBuyerCardNumberId(cardNumberId string) bool {
-	return m.existsBuyerCardNumberId
+func (m mockBuyerRepository) ExistsBuyerCardNumberId(cardNumberId string) (bool, error) {
+	return m.existsBuyerCardNumberId, m.err
 }

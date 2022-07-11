@@ -11,7 +11,6 @@ type BuyerRepository interface {
 	Get(id uint64) (models.Buyer, error)
 	GetAll() ([]models.Buyer, error)
 	Delete(id uint64) error
-	getNextId() uint64
 	Update(updatedBuyer models.Buyer) (models.Buyer, error)
 	ExistsBuyerCardNumberId(cardNumberId string) (bool, error)
 }
@@ -28,9 +27,8 @@ func NewBuyerRepository(db *sql.DB) BuyerRepository {
 }
 
 func (r *buyerRepository) Create(cardNumberId, firstName, lastName string) (models.Buyer, error) {
-	database := models.StorageDB
 
-	stmt, err := database.Prepare("INSERT INTO buyer(buyer_code,card_number_d, first_name, last_name) VALUES(?, ?, ?, ?)")
+	stmt, err := r.db.Prepare("INSERT INTO buyers(id_card_number, first_name, last_name) VALUES(?, ?, ?)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,23 +50,10 @@ func (r *buyerRepository) Create(cardNumberId, firstName, lastName string) (mode
 	return buyer, nil
 }
 
-func (r *buyerRepository) getNextId() uint64 {
-	buyers, err := r.GetAll()
-	if err != nil {
-		return 1
-	}
-
-	if len(buyers) == 0 {
-		return 1
-	}
-
-	return buyers[len(buyers)-1].Id + 1
-}
-
 func (r *buyerRepository) Get(id uint64) (models.Buyer, error) {
 	var buyer models.Buyer
-	database := models.StorageDB
-	err := database.QueryRow("SELECT id,buyer_code,card_number_d, first_name, last_name FROM buyers WHERE id = ?",
+
+	err := r.db.QueryRow("SELECT id,id_card_number, first_name, last_name FROM buyers WHERE id = ?",
 		id).Scan(&buyer.Id, &buyer.CardNumberId, &buyer.FirstName, &buyer.LastName)
 	if err != nil {
 		log.Println(err)
@@ -79,8 +64,7 @@ func (r *buyerRepository) Get(id uint64) (models.Buyer, error) {
 
 func (r *buyerRepository) GetAll() ([]models.Buyer, error) {
 
-	database := models.StorageDB
-	stmt, err := database.Query("SELECT * FROM buyers")
+	stmt, err := r.db.Query("SELECT * FROM buyers")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -107,8 +91,8 @@ func (r *buyerRepository) GetAll() ([]models.Buyer, error) {
 }
 
 func (r *buyerRepository) Delete(id uint64) error {
-	database := models.StorageDB
-	stmt, err := database.Prepare("DELETE FROM buyers WHERE id = ?")
+
+	stmt, err := r.db.Prepare("DELETE FROM buyers WHERE id = ?")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -125,8 +109,7 @@ func (r *buyerRepository) Update(updatedBuyer models.Buyer) (models.Buyer, error
 
 	stmt, err := r.db.Prepare(`
 	UPDATE buyers SET 
-	buyers_code =?,
-	card_number_id =?,
+	id_card_number =?,
 	first_name =?,
 	last_name =?,
 	where id =?
@@ -152,9 +135,7 @@ func (r *buyerRepository) Update(updatedBuyer models.Buyer) (models.Buyer, error
 func (r *buyerRepository) ExistsBuyerCardNumberId(cardNumberId string) (bool, error) {
 	var buyer models.Buyer
 
-	database := models.StorageDB
-
-	stmt, err := database.Query("SELECT * FROM buyers WHERE card_number_id = ?", cardNumberId)
+	stmt, err := r.db.Query("SELECT * FROM buyers WHERE id_card_number = ?", cardNumberId)
 
 	if err != nil {
 		return false, err
