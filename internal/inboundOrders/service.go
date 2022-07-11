@@ -2,6 +2,7 @@ package inboundorders
 
 import (
 	"errors"
+
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
@@ -18,15 +19,15 @@ type InboundOrderService interface {
 }
 
 type inboundOrderService struct {
-	employeeService employees.EmployeeService
-	warehouseService warehouses.WarehouseService
+	employeeRepository employees.EmployeeRepository
+	warehouseRepository warehouses.WarehouseRepository
 	inboundOrderRepository InboundOrderRepository
 }
 
-func NewInboundOrderService(employeeService employees.EmployeeService, warehouseService warehouses.WarehouseService, inboundOrderRepository InboundOrderRepository) InboundOrderService {
+func NewInboundOrderService(employeeRepository employees.EmployeeRepository, warehouseRepository warehouses.WarehouseRepository, inboundOrderRepository InboundOrderRepository) InboundOrderService {
 	return &inboundOrderService{
-		employeeService,
-		warehouseService,
+		employeeRepository,
+		warehouseRepository,
 		inboundOrderRepository,
 	}
 }
