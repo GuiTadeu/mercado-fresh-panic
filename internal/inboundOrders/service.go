@@ -34,13 +34,13 @@ func NewInboundOrderService(employeeRepository employees.EmployeeRepository, war
 
 func (s *inboundOrderService) Create(orderDate, orderNumber string, employeeId, productBatchId, warehouseId uint64) (db.InboundOrder, error) {
 	// TODO adicionar validaçao se productBatchId existe
-	// if _, err := s.employeeService.Get(employeeId); err != nil {
-	// 	return db.InboundOrder{}, EmployeeNotFoundError
-	// }
+	 if !s.employeeRepository.ExistsEmployee(employeeId) {
+	 	return db.InboundOrder{}, EmployeeNotFoundError
+	 }
 
-	// if _, err := s.warehouseService.Get(warehouseId); err != nil {
-	// 	return db.InboundOrder{}, WarehouseNotFoundError
-	// }
+	 if _, err := s.warehouseRepository.Get(warehouseId); err != nil {
+	 	return db.InboundOrder{}, WarehouseNotFoundError
+	 }
 
 	inboundOrder, err := s.inboundOrderRepository.Create(orderDate, orderNumber, employeeId, productBatchId, warehouseId)
 	if err != nil {
