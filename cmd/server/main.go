@@ -28,14 +28,14 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var employeeDB, buyersDB = db.CreateDatabases()
+	var buyersDB = db.CreateDatabases()
 
 	sellersHandlers(storageDB, server)
 	warehousesHandlers(storageDB, server)
 	sectionHandlers(storageDB, server)
 	productHandlers(storageDB, server)
 	buyerHandlers(buyersDB, server)
-	employeeHandlers(employeeDB, server)
+	employeeHandlers(storageDB, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
@@ -60,7 +60,7 @@ func warehousesHandlers(storageDB *sql.DB, server *gin.Engine) {
 	warehouseController := controller.NewWarehouseController(warehouseService)
 
 	warehouseGroup := server.Group("/api/v1/warehouses")
-	
+
 	warehouseGroup.GET("/", warehouseController.GetAll())
 	warehouseGroup.GET("/:id", warehouseController.Get())
 	warehouseGroup.POST("/", warehouseController.Create())
@@ -99,9 +99,9 @@ func sectionHandlers(storageDB *sql.DB, server *gin.Engine) {
 
 }
 
-func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
+func employeeHandlers(storageDB *sql.DB, server *gin.Engine) {
 
-	employeeRepository := employees.NewRepository(employeeDB)
+	employeeRepository := employees.NewRepository(storageDB)
 	employeeService := employees.NewEmployeeService(employeeRepository)
 	employeeHandler := controller.NewEmployeeController(employeeService)
 
