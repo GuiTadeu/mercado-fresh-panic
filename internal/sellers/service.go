@@ -14,9 +14,9 @@ var (
 
 type Service interface {
 	FindAll() ([]database.Seller, error)
-	Create(cid uint64, companyName string, address string, telephone string) (database.Seller, error)
+	Create(cid uint64, companyName string, address string, telephone string, localityId string) (database.Seller, error)
 	FindOne(id uint64) (database.Seller, error)
-	Update(id uint64, cid uint64, companyName string, address string, telephone string) (database.Seller, error)
+	Update(id uint64, cid uint64, companyName string, address string, telephone string, localityId string) (database.Seller, error)
 	Delete(id uint64) error
 }
 
@@ -43,7 +43,7 @@ func (s service) FindOne(id uint64) (database.Seller, error) {
 	return db, err
 }
 
-func (s service) Create(cid uint64, companyName string, address string, telephone string) (database.Seller, error) {
+func (s service) Create(cid uint64, companyName string, address string, telephone string, localityId string) (database.Seller, error) {
 
 	isUsedCid := s.repo.FindCid(cid)
 
@@ -51,7 +51,7 @@ func (s service) Create(cid uint64, companyName string, address string, telephon
 		return database.Seller{}, ExistsSellerCodeError
 	}
 
-	sellerData, err := s.repo.Create(cid, companyName, address, telephone)
+	sellerData, err := s.repo.Create(cid, companyName, address, telephone, localityId)
 
 	if err != nil {
 		return database.Seller{}, err
@@ -59,7 +59,7 @@ func (s service) Create(cid uint64, companyName string, address string, telephon
 	return sellerData, nil
 }
 
-func (s service) Update(id uint64, cid uint64, companyName string, address string, telephone string) (database.Seller, error) {
+func (s service) Update(id uint64, cid uint64, companyName string, address string, telephone string, localityId string) (database.Seller, error) {
 	foundSeller, err := s.repo.FindOne(id)
 	if err != nil {
 		return database.Seller{}, SellerNotFoundError
@@ -90,11 +90,15 @@ func (s service) Update(id uint64, cid uint64, companyName string, address strin
 }
 
 func (s service) Delete(id uint64) error {
-	err := s.repo.Delete(id)
+
+	_, err := s.repo.FindOne(id)
 
 	if err != nil {
 		return SellerNotFoundError
 	}
+
+	err = s.repo.Delete(id)
+
 	return err
 }
 

@@ -12,7 +12,7 @@ import (
 
 var StorageDB *sql.DB
 
-func Init() (*sql.DB) {
+func Init() *sql.DB {
 
 	user := os.Getenv("MERCADO_FRESH_DATABASE_USER")
 	password := os.Getenv("MERCADO_FRESH_DATABASE_PASSWORD")
@@ -42,7 +42,7 @@ type Seller struct {
 	CompanyName string `json:"company_name" binding:"required"`
 	Address     string `json:"address" binding:"required"`
 	Telephone   string `json:"telephone" binding:"required"`
-	LocalityID  string `json:"locality_id" binding:"required"`
+	LocalityId  string `json:"locality_id" binding:"required"`
 }
 
 type Warehouse struct {
@@ -184,22 +184,16 @@ type OrderDetails struct {
 	PurchaseOrderId   uint64  `json:"purchase_order_id"`
 }
 
-func CreateDatabases() (
-	sellers []Seller,	
-	sections []Section,
+func CreateDatabases() (	
 	employees []Employee,
 	buyers []Buyer,
 ) {
 
 	fmt.Println("Create Databases - Starting...")
-
-	sellers = []Seller{}	
-	sections = []Section{}
+	
 	employees = []Employee{}
 	buyers = []Buyer{}
-
-	fmt.Printf("\n sellers:%v", sellers)	
-	fmt.Printf("\n sections:%v", sections)
+	
 	fmt.Printf("\n employees:%v", employees)
 	fmt.Printf("\n buyers:%v", buyers)
 

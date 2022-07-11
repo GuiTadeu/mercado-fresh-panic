@@ -86,7 +86,7 @@ func Test_Section_Create_409(t *testing.T) {
 
 	mockService := mockSectionService{
 		result: db.Section{},
-		err:    sections.ExistsSectionNumberError,
+		err:    sections.ErrExistsSectionNumberError,
 	}
 
 	router := setupSectionRouter(mockService)
@@ -186,7 +186,7 @@ func Test_Section_Get_404(t *testing.T) {
 
 	mockService := mockSectionService{
 		result: db.Section{},
-		err:    sections.SectionNotFoundError,
+		err:    sections.ErrSectionNotFoundError,
 	}
 
 	router := setupSectionRouter(mockService)
@@ -279,7 +279,7 @@ func Test_Section_Update_404(t *testing.T) {
 
 	mockService := mockSectionService{
 		result: db.Section{},
-		err:    sections.SectionNotFoundError,
+		err:    sections.ErrSectionNotFoundError,
 	}
 
 	router := setupSectionRouter(mockService)
@@ -314,7 +314,7 @@ func Test_Section_Delete_404(t *testing.T) {
 
 	mockService := mockSectionService{
 		result: db.Section{},
-		err:    sections.SectionNotFoundError,
+		err:    sections.ErrSectionNotFoundError,
 	}
 
 	router := setupSectionRouter(mockService)
