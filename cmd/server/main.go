@@ -9,6 +9,7 @@ import (
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/localities"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
@@ -36,6 +37,7 @@ func main() {
 	productHandlers(storageDB, server)
 	buyerHandlers(buyersDB, server)
 	employeeHandlers(storageDB, server)
+	localitiesHandlers(storageDB, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
@@ -127,4 +129,14 @@ func buyerHandlers(buyersDB []db.Buyer, server *gin.Engine) {
 	buyerRoutes.POST("/", cBuyers.Create())
 	buyerRoutes.PATCH("/:id", cBuyers.Update())
 	buyerRoutes.DELETE("/:id", cBuyers.Delete())
+}
+
+func localitiesHandlers(storageDB *sql.DB, server *gin.Engine) {
+	localityRepository := localities.NewRepository(storageDB)
+	localityService := localities.NewService(localityRepository)
+	localityController := controller.NewLocality(localityService)
+
+	localityGroup := server.Group("/api/v1/localities")
+	localityGroup.POST("/", localityController.Create())
+	localityGroup.GET("/reportSellers", localityController.GetLocalityInfo())
 }
