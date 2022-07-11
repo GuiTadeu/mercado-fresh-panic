@@ -32,8 +32,8 @@ func (m mockEmployeeRepository) Delete(id uint64) error {
 	return nil
 }
 
-func (m mockEmployeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) bool {
-	return m.existsEmployeeCode
+func (m mockEmployeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) (bool, error) {
+	return m.existsEmployeeCode, nil
 }
 
 func (m mockEmployeeRepository) Create(
@@ -45,15 +45,9 @@ func (m mockEmployeeRepository) Create(
 	return m.result.(db.Employee), nil
 }
 
-func (m mockEmployeeRepository) Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error) {
+func (m mockEmployeeRepository) Update(updatedEmployee db.Employee) (db.Employee, error) {
 	if (m.result.(db.Employee) != db.Employee{}) {
-		return db.Employee{
-			Id: id,
-			CardNumberId: cardNumberId,
-			FirstName: firstName,
-			LastName: lastName,
-			WarehouseId: wareHouseId,
-		}, nil
+		return updatedEmployee, nil
 	}
 	return db.Employee{}, m.err
 }
