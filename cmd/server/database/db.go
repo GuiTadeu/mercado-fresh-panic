@@ -42,7 +42,7 @@ type Seller struct {
 	CompanyName string `json:"company_name" binding:"required"`
 	Address     string `json:"address" binding:"required"`
 	Telephone   string `json:"telephone" binding:"required"`
-	LocalityID  string `json:"locality_id" binding:"required"`
+	LocalityId  string `json:"locality_id" binding:"required"`
 }
 
 type Warehouse struct {
@@ -185,7 +185,6 @@ type OrderDetails struct {
 }
 
 func CreateDatabases() (
-	sellers []Seller,
 	warehouses []Warehouse,
 	employees []Employee,
 	buyers []Buyer,
@@ -193,12 +192,10 @@ func CreateDatabases() (
 
 	fmt.Println("Create Databases - Starting...")
 
-	sellers = []Seller{}
 	warehouses = []Warehouse{}
 	employees = []Employee{}
 	buyers = []Buyer{}
 
-	fmt.Printf("\n sellers:%v", sellers)
 	fmt.Printf("\n warehouses:%v", warehouses)
 	fmt.Printf("\n employees:%v", employees)
 	fmt.Printf("\n buyers:%v", buyers)

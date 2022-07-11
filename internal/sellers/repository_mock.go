@@ -33,7 +33,7 @@ func (m mockSellerRepository) FindCid(cid uint64) bool {
 	return m.err != nil
 }
 
-func (m mockSellerRepository) Create(cid uint64, companyName string, address string, telephone string) (database.Seller, error) {
+func (m mockSellerRepository) Create(cid uint64, companyName string, address string, telephone string, localityId string) (database.Seller, error) {
 	if m.err != nil || m.existsSellerCid {
 		return database.Seller{}, m.err
 	}
