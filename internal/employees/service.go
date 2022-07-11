@@ -32,8 +32,13 @@ func NewEmployeeService(r EmployeeRepository) EmployeeService {
 func (s *employeeService) Create(
 	cardNumberId string, firstName string,
 	lastName string, wareHouseId uint64) (db.Employee, error) {
-	if s.existsEmployeeCardNumberId(cardNumberId) {
+	existEmployee, err := s.existsEmployeeCardNumberId(cardNumberId)
+	if existEmployee {
 		return db.Employee{}, ExistsCardNumberIdError
+	}
+
+	if err != nil {
+		return db.Employee{}, err
 	}
 
 	employee, err := s.employeeRepository.Create(cardNumberId, firstName, lastName, wareHouseId)
@@ -43,7 +48,7 @@ func (s *employeeService) Create(
 	return employee, nil
 }
 
-func (s *employeeService) existsEmployeeCardNumberId(cardNumberId string) bool {
+func (s *employeeService) existsEmployeeCardNumberId(cardNumberId string) (bool, error) {
 	return s.employeeRepository.ExistsEmployeeCardNumberId(cardNumberId)
 }
 
@@ -54,11 +59,16 @@ func (s *employeeService) Get(id uint64) (db.Employee, error) {
 func (s *employeeService) Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error) {
 	employee, err := s.Get(id)
 	if err != nil {
-		return db.Employee{}, err
+		return db.Employee{}, EmployeeNotFoundError
 	}
 
-	if s.existsEmployeeCardNumberId(cardNumberId) {
+	existEmployee, err := s.existsEmployeeCardNumberId(cardNumberId)
+	if existEmployee {
 		return db.Employee{}, ExistsCardNumberIdError
+	}
+
+	if err != nil {
+		return db.Employee{}, err
 	}
 
 	data := db.Employee{Id: id, CardNumberId: cardNumberId, FirstName: firstName, LastName: lastName, WarehouseId: wareHouseId}
@@ -68,7 +78,7 @@ func (s *employeeService) Update(id uint64, cardNumberId string, firstName strin
 		return db.Employee{}, err
 	}
 
-	return s.employeeRepository.Update(employee.Id, employee.CardNumberId, employee.FirstName, employee.LastName, employee.WarehouseId)
+	return s.employeeRepository.Update(employee)
 
 }
 

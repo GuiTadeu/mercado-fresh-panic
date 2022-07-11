@@ -29,17 +29,17 @@ func main() {
 	server := gin.Default()
 
 	// sellers, warehouses, sections, products, employees, buyers
-	var employeeDB, buyersDB = db.CreateDatabases()
+	var buyersDB = db.CreateDatabases()
 
-	sellerRepository, warehouseRepository, sectionRepository, productRepository, inboundOrderRepository := buildRepositories(storageDB)
+	sellerRepository, warehouseRepository, sectionRepository, productRepository, employeeRepository, inboundOrderRepository := buildRepositories(storageDB)
 
 	sellersHandlers(sellerRepository, server)
 	warehousesHandlers(warehouseRepository, server)
 	sectionHandlers(sectionRepository, server)
 	productHandlers(productRepository, server)
 	buyerHandlers(buyersDB, server)
-	employeeHandlers(employeeDB, server)
-	inboundOrderHandlers(inboundOrderRepository, employeeDB, warehouseRepository, server)
+	employeeHandlers(employeeRepository, server)
+	inboundOrderHandlers(inboundOrderRepository, employeeRepository, warehouseRepository, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
@@ -98,9 +98,8 @@ func sectionHandlers(sectionRepository sections.SectionRepository, server *gin.E
 
 }
 
-func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
+func employeeHandlers(employeeRepository employees.EmployeeRepository, server *gin.Engine) {
 
-	employeeRepository := employees.NewRepository(employeeDB)
 	employeeService := employees.NewEmployeeService(employeeRepository)
 	employeeHandler := controller.NewEmployeeController(employeeService)
 
@@ -114,9 +113,7 @@ func employeeHandlers(employeeDB []db.Employee, server *gin.Engine) {
 	employeeRoutes.GET("/reportInboundOrders", employeeHandler.ReportInboundOrders())
 }
 
-func inboundOrderHandlers(inboundOrderRepository inboundorders.InboundOrderRepository, employeeDB []db.Employee, warehouseRepository warehouses.WarehouseRepository, server *gin.Engine) {
-
-	employeeRepository := employees.NewRepository(employeeDB)
+func inboundOrderHandlers(inboundOrderRepository inboundorders.InboundOrderRepository, employeeRepository employees.EmployeeRepository, warehouseRepository warehouses.WarehouseRepository, server *gin.Engine) {
 
 	inboundOrderService := inboundorders.NewInboundOrderService(employeeRepository, warehouseRepository, inboundOrderRepository)
 
@@ -146,14 +143,16 @@ func buildRepositories(storageDB *sql.DB) (
 	sellers.Repository,
 	warehouses.WarehouseRepository,
 	sections.SectionRepository,
-	products.ProductRepository, 
+	products.ProductRepository,
+	employees.EmployeeRepository,
 	inboundorders.InboundOrderRepository) {
 
 	sellerRepository := sellers.NewRepository(storageDB)
 	warehouseRepository := warehouses.NewRepository(storageDB)
 	sectionRepository := sections.NewRepository(storageDB)
 	productRepository := products.NewProductRepository(storageDB)
+	employeeRepository := employees.NewRepository(storageDB)
 	inboundOrderRepository := inboundorders.NewRepository(storageDB)
-	return sellerRepository, warehouseRepository, sectionRepository, productRepository, inboundOrderRepository
+	return sellerRepository, warehouseRepository, sectionRepository, productRepository, employeeRepository, inboundOrderRepository
 }
 
