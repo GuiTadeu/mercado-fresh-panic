@@ -28,16 +28,13 @@ func main() {
 	storageDB := db.Init()
 	server := gin.Default()
 
-	// sellers, warehouses, sections, products, employees, buyers
-	var buyersDB = db.CreateDatabases()
-
-	sellerRepository, warehouseRepository, sectionRepository, productRepository, employeeRepository, inboundOrderRepository := buildRepositories(storageDB)
+	sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository := buildRepositories(storageDB)
 
 	sellersHandlers(sellerRepository, server)
 	warehousesHandlers(warehouseRepository, server)
 	sectionHandlers(sectionRepository, server)
 	productHandlers(productRepository, server)
-	buyerHandlers(buyersDB, server)
+	buyerHandlers(buyerRepository, server)
 	employeeHandlers(employeeRepository, server)
 	inboundOrderHandlers(inboundOrderRepository, employeeRepository, warehouseRepository, server)
 
@@ -124,10 +121,9 @@ func inboundOrderHandlers(inboundOrderRepository inboundorders.InboundOrderRepos
 	inboundOrderRoutes.POST("/", cInboundOrders.Create())
 }
 
-func buyerHandlers(buyersDB []db.Buyer, server *gin.Engine) {
+func buyerHandlers(buyerRepository buyers.BuyerRepository, server *gin.Engine) {
 
-	rBuyers := buyers.NewBuyerRepository(buyersDB)
-	sBuyers := buyers.NewBuyerService(rBuyers)
+	sBuyers := buyers.NewBuyerService(buyerRepository)
 	cBuyers := controller.NewBuyerController(sBuyers)
 
 	buyerRoutes := server.Group("/api/v1/buyers")
@@ -144,6 +140,7 @@ func buildRepositories(storageDB *sql.DB) (
 	warehouses.WarehouseRepository,
 	sections.SectionRepository,
 	products.ProductRepository,
+	buyers.BuyerRepository,
 	employees.EmployeeRepository,
 	inboundorders.InboundOrderRepository) {
 
@@ -151,8 +148,9 @@ func buildRepositories(storageDB *sql.DB) (
 	warehouseRepository := warehouses.NewRepository(storageDB)
 	sectionRepository := sections.NewRepository(storageDB)
 	productRepository := products.NewProductRepository(storageDB)
+	buyerRepository := buyers.NewBuyerRepository(storageDB)
 	employeeRepository := employees.NewRepository(storageDB)
 	inboundOrderRepository := inboundorders.NewRepository(storageDB)
-	return sellerRepository, warehouseRepository, sectionRepository, productRepository, employeeRepository, inboundOrderRepository
+	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository
 }
 

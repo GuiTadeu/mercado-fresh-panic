@@ -191,17 +191,3 @@ type ReportInboundOrders struct {
 	WarehouseId        uint64 `json:"warehouse_id" binding:"required"`
 	InboundOrdersCount uint64 `json:"inbound_orders_count" binding:"required"`
 }
-
-func CreateDatabases() (
-	buyers []Buyer,
-) {
-
-	fmt.Println("Create Databases - Starting...")
-
-	buyers = []Buyer{}
-
-	fmt.Printf("\n buyers:%v", buyers)
-
-	fmt.Println("\n Create Databases - Done!")
-	return
-}
