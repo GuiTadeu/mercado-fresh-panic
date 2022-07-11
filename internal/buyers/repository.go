@@ -94,7 +94,7 @@ func (r *buyerRepository) Delete(id uint64) error {
 
 	stmt, err := r.db.Prepare("DELETE FROM buyers WHERE id = ?")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer stmt.Close()
 
@@ -111,8 +111,8 @@ func (r *buyerRepository) Update(updatedBuyer models.Buyer) (models.Buyer, error
 	UPDATE buyers SET 
 	id_card_number =?,
 	first_name =?,
-	last_name =?,
-	where id =?
+	last_name =?
+	WHERE id =?
 `)
 	if err != nil {
 		return models.Buyer{}, err
@@ -149,9 +149,10 @@ func (r *buyerRepository) ExistsBuyerCardNumberId(cardNumberId string) (bool, er
 			&buyer.FirstName,
 			&buyer.LastName,
 		)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
 	}
-	if err != nil {
-		return false, err
-	}
-	return true, err
+	return false, nil
 }
