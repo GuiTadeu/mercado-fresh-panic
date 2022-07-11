@@ -186,7 +186,6 @@ type OrderDetails struct {
 
 func CreateDatabases() (
 	warehouses []Warehouse,
-	sections []Section,
 	employees []Employee,
 	buyers []Buyer,
 ) {
@@ -194,12 +193,10 @@ func CreateDatabases() (
 	fmt.Println("Create Databases - Starting...")
 
 	warehouses = []Warehouse{}
-	sections = []Section{}
 	employees = []Employee{}
 	buyers = []Buyer{}
 
 	fmt.Printf("\n warehouses:%v", warehouses)
-	fmt.Printf("\n sections:%v", sections)
 	fmt.Printf("\n employees:%v", employees)
 	fmt.Printf("\n buyers:%v", buyers)
 
