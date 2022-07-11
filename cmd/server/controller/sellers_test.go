@@ -23,6 +23,7 @@ func Test_Seller_Create_201(t *testing.T) {
 		CompanyName: "Nike",
 		Address:     "Avenida Paulista, 202",
 		Telephone:   "13997780890",
+		LocalityId:  "11065001",
 	}
 
 	jsonValue, _ := json.Marshal(validSeller)
@@ -71,6 +72,7 @@ func Test_Seller_Create_409(t *testing.T) {
 		CompanyName: "Nike",
 		Address:     "Avenida Paulista, 202",
 		Telephone:   "13997780890",
+		LocalityId:  "11065001",
 	}
 
 	jsonValue, _ := json.Marshal(validSeller)
@@ -99,6 +101,7 @@ func Test_Seller_GetAll_200(t *testing.T) {
 			CompanyName: "Nike",
 			Address:     "Avenida Paulista, 202",
 			Telephone:   "13997780890",
+			LocalityId:  "11065001",
 		},
 		{
 			Id:          2,
@@ -106,6 +109,7 @@ func Test_Seller_GetAll_200(t *testing.T) {
 			CompanyName: "adidas",
 			Address:     "Avenida Mineira, 202",
 			Telephone:   "13927180890",
+			LocalityId:  "11065001",
 		},
 		{
 			Id:          3,
@@ -113,6 +117,7 @@ func Test_Seller_GetAll_200(t *testing.T) {
 			CompanyName: "Puma",
 			Address:     "Avenida Goiás, 202",
 			Telephone:   "13997780112",
+			LocalityId:  "11065001",
 		},
 	}
 
@@ -142,6 +147,7 @@ func Test_Seller_Get_200(t *testing.T) {
 		CompanyName: "Nike",
 		Address:     "Avenida Paulista, 202",
 		Telephone:   "13997780890",
+		LocalityId:  "11065001",
 	}
 
 	mockSellerService := mockSellerService{
@@ -166,6 +172,7 @@ func Test_Seller_Get_Error_500(t *testing.T) {
 		CompanyName: "Nike",
 		Address:     "Avenida Paulista, 202",
 		Telephone:   "13997780890",
+		LocalityId:  "11065001",
 	}
 
 	mockSellerService := mockSellerService{
@@ -206,6 +213,7 @@ func Test_Seller_Update_200(t *testing.T) {
 		CompanyName: "Nike",
 		Address:     "Avenida Paulista, 202",
 		Telephone:   "13997780890",
+		LocalityId:  "11065001",
 	}
 
 	jsonValue, _ := json.Marshal(sellerToUpdate)
@@ -217,6 +225,7 @@ func Test_Seller_Update_200(t *testing.T) {
 		CompanyName: "Nike",
 		Address:     "Avenida Paulista, 202",
 		Telephone:   "13997780890",
+		LocalityId:  "11065001",
 	}
 
 	mockSellerService := mockSellerService{
@@ -245,6 +254,7 @@ func Test_Seller_Update_404(t *testing.T) {
 		CompanyName: "Nike",
 		Address:     "Avenida Paulista, 202",
 		Telephone:   "13997780890",
+		LocalityId:  "11065001",
 	}
 
 	jsonValue, _ := json.Marshal(SellerToUpdate)
