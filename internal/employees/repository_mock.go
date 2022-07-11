@@ -51,3 +51,21 @@ func (m mockEmployeeRepository) Update(updatedEmployee db.Employee) (db.Employee
 	}
 	return db.Employee{}, m.err
 }
+
+func (m mockEmployeeRepository) ReportInboundOrders(id uint64) (db.ReportInboundOrders, error) {
+	if m.err != nil{
+		return db.ReportInboundOrders{}, m.err
+	}
+	return m.result.(db.ReportInboundOrders), nil
+}
+
+func (m mockEmployeeRepository) ReportsInboundOrders(id uint64) ([]db.ReportInboundOrders, error) {
+	if m.err != nil {
+		return []db.ReportInboundOrders{}, m.err
+	}
+	return m.result.([]db.ReportInboundOrders), nil
+}
+
+func (m mockEmployeeRepository) ExistsEmployee(id uint64) (bool) {
+	return m.existsEmployeeCode
+}

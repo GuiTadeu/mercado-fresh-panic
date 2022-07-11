@@ -151,6 +151,27 @@ func (c *EmployeeController) Delete() gin.HandlerFunc {
 
 func (c *EmployeeController) ReportInboundOrders() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		id, ok := ctx.GetQuery("id")
+		if ok {
+			id, _ := strconv.ParseUint(id, 10, 64)
+			report, err := c.employeeService.ReportInboundOrders(id)
+			if err != nil {
+				status := employeeErrorHandler(err)
+				ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+				return
+			}
+
+			ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, report, ""))
+		} else {
+			reports, err := c.employeeService.ReportsInboundOrders()
+			if err != nil {
+				status := employeeErrorHandler(err)
+				ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+				return
+			}
+
+			ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, reports, ""))
+		}
 
 	}
 }
