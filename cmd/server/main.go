@@ -8,13 +8,14 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controller"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/carries"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	"github.com/joho/godotenv"	
 )
 
 func main() {
@@ -36,9 +37,22 @@ func main() {
 	productHandlers(storageDB, server)
 	buyerHandlers(buyersDB, server)
 	employeeHandlers(storageDB, server)
+	carriersHandlers(storageDB, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
+}
+
+func carriersHandlers(storageDB *sql.DB, server *gin.Engine) {
+	carrierRepository := carries.NewCarrierRepository(storageDB)
+	carrierService := carries.NewCarrierService(carrierRepository)
+	carrierController := controller.NewCarrierController(carrierService)
+
+	CarrierGroup := server.Group("/api/v1/carries")
+	CarrierGroup.GET("/", carrierController.GetAllCarrierInfo())
+//	CarrierGroup.GET("/:id", carrierController.FindOne())
+	CarrierGroup.POST("/", carrierController.Create())	
+
 }
 
 func sellersHandlers(storageDB *sql.DB, server *gin.Engine) {
