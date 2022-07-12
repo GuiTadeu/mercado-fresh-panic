@@ -2,53 +2,52 @@ package warehouses
 
 import (
 	database "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
-	
 )
 
-type mockWarehouseRepository struct {
-	result any	
-	err error
-	findByCode bool
-	getById database.Warehouse	
+type MockWarehouseRepository struct {
+	Result     any
+	Err        error
+	FindByCode bool
+	GetById    database.Warehouse
 }
 
-func (m mockWarehouseRepository) GetAll() ([]database.Warehouse, error) {
-	if m.err != nil {
-		return []database.Warehouse{}, m.err
+func (m MockWarehouseRepository) GetAll() ([]database.Warehouse, error) {
+	if m.Err != nil {
+		return []database.Warehouse{}, m.Err
 	}
 
-	return m.result.([]database.Warehouse), nil
+	return m.Result.([]database.Warehouse), nil
 }
 
-func (m mockWarehouseRepository) Get(id uint64) (database.Warehouse, error) {
-	if (m.getById == database.Warehouse{} && m.err != nil) {
-		return database.Warehouse{}, m.err
+func (m MockWarehouseRepository) Get(id uint64) (database.Warehouse, error) {
+	if (m.GetById == database.Warehouse{} && m.Err != nil) {
+		return database.Warehouse{}, m.Err
 	}
-	return m.getById, nil
+	return m.GetById, nil
 }
 
-func (m mockWarehouseRepository) Delete(id uint64) error {
-	if m.err != nil {
-		return m.err
+func (m MockWarehouseRepository) Delete(id uint64) error {
+	if m.Err != nil {
+		return m.Err
 	}
 	return nil
 
 }
 
-func (m mockWarehouseRepository) ExistsWarehouseCode(code string) (bool, error) {
-	return m.findByCode, m.err
+func (m MockWarehouseRepository) ExistsWarehouseCode(code string) (bool, error) {
+	return m.FindByCode, m.Err
 }
 
-func (m mockWarehouseRepository) Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32, localityId string) (database.Warehouse, error) {
-	if m.err != nil || m.findByCode {
-		return database.Warehouse{}, m.err
+func (m MockWarehouseRepository) Create(Code string, address string, telephone string, minimunCapacity uint32, minimunTemperature float32, localityId string) (database.Warehouse, error) {
+	if m.Err != nil || m.FindByCode {
+		return database.Warehouse{}, m.Err
 	}
-	return m.result.(database.Warehouse), nil
+	return m.Result.(database.Warehouse), nil
 }
 
-func (m mockWarehouseRepository) Update(warehouse database.Warehouse) (database.Warehouse, error) {
-	if m.err != nil {
-		return database.Warehouse{}, m.err
+func (m MockWarehouseRepository) Update(warehouse database.Warehouse) (database.Warehouse, error) {
+	if m.Err != nil {
+		return database.Warehouse{}, m.Err
 	}
-	return m.result.(database.Warehouse), nil
+	return m.Result.(database.Warehouse), nil
 }

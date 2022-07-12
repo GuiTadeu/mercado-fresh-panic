@@ -12,6 +12,9 @@ type EmployeeRepository interface {
 	Update(updatedEmployee models.Employee) (models.Employee, error)
 	Delete(id uint64) error
 	ExistsEmployeeCardNumberId(cardNumberId string) (bool, error)
+	CountInboundOrdersByEmployeeId(id uint64) (models.ReportInboundOrders, error)
+	CountInboundOrders() ([]models.ReportInboundOrders, error)
+	ExistsEmployee(uint64) (bool)
 }
 
 type employeeRepository struct {
@@ -215,15 +218,90 @@ func (r *employeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) (bo
 	return false, nil
 }
 
-func (r *employeeRepository) getNextId() uint64 {
-	employees, err := r.GetAll()
+func (r *employeeRepository) CountInboundOrdersByEmployeeId(id uint64) (models.ReportInboundOrders, error) {
+	var report models.ReportInboundOrders
+
+	stmt := r.db.QueryRow(`
+	SELECT 	employees.id, 
+			id_card_number, 
+			first_name, 
+			last_name, 
+			employees.warehouse_id, 
+	COUNT(inbound_orders.id) AS inbound_orders_count
+	FROM employees
+	LEFT JOIN inbound_orders
+	ON employees.id = inbound_orders.employee_id
+	WHERE employees.id = ?
+	GROUP BY employees.id;
+		`, id)
+
+
+	err := stmt.Scan(
+		&report.Id,
+		&report.CardNumberId,
+		&report.FirstName,
+		&report.LastName,
+		&report.WarehouseId,
+		&report.InboundOrdersCount,
+	)
 	if err != nil {
-		return 1
+		return models.ReportInboundOrders{}, err
 	}
 
-	if len(employees) == 0 {
-		return 1
-	}
-
-	return employees[len(employees)-1].Id + 1
+	return report, nil
 }
+
+func (r *employeeRepository) CountInboundOrders() ([]models.ReportInboundOrders, error) {
+	var reports []models.ReportInboundOrders
+
+	stmt, err := r.db.Query(`
+	SELECT 	employees.id, 
+			id_card_number, 
+			first_name, 
+			last_name, 
+			employees.warehouse_id, 
+	COUNT(inbound_orders.id) AS inbound_orders_count
+	FROM employees
+	LEFT JOIN inbound_orders
+	ON employees.id = inbound_orders.employee_id
+	GROUP BY employees.id;
+		`)
+	if err != nil {
+		return nil, err
+	}
+
+	defer stmt.Close()
+
+	for stmt.Next() {
+		var oneReport models.ReportInboundOrders
+		err := stmt.Scan(
+			&oneReport.Id,
+			&oneReport.CardNumberId,
+			&oneReport.FirstName,
+			&oneReport.LastName,
+			&oneReport.WarehouseId,
+			&oneReport.InboundOrdersCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+		reports = append(reports, oneReport)
+	}
+
+	return reports, nil
+}
+
+func (r *employeeRepository) ExistsEmployee(id uint64) (bool) {
+
+	stmt := r.db.QueryRow(`SELECT EXISTS(SELECT ID from employees WHERE id = ?)`, id)
+	var result uint64
+	stmt.Scan(
+		&result,
+	)
+
+	if result == 0 {
+        return false
+    }
+    return true
+}
+

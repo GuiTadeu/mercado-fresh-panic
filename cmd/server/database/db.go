@@ -3,11 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
 	"time"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 var StorageDB *sql.DB
@@ -117,7 +116,7 @@ type Locality struct {
 
 type Carrier struct {
 	Id          uint64 `json:"id"`
-	Cid         uint64 `json:"cid" binding:"required"`
+	Cid         string `json:"cid" binding:"required"`
 	CompanyName string `json:"company_name" binding:"required"`
 	Address     string `json:"address" binding:"required"`
 	Telephone   string `json:"telephone" binding:"required"`
@@ -158,12 +157,12 @@ type ProductRecord struct {
 }
 
 type InboundOrder struct {
-	Id             uint64    `json:"id"`
-	OrderDate      time.Time `json:"order_date"`
-	OrderNumber    string    `json:"order_number"`
-	EmployeeId     uint64    `json:"employee_id"`
-	ProductBatchId uint64    `json:"product_batch_id"`
-	WarehouseId    uint64    `json:"warehouse_id"`
+	Id             uint64 `json:"id"`
+	OrderDate      string `json:"order_date"`
+	OrderNumber    string `json:"order_number"`
+	EmployeeId     uint64 `json:"employee_id"`
+	ProductBatchId uint64 `json:"product_batch_id"`
+	WarehouseId    uint64 `json:"warehouse_id"`
 }
 
 type OrderStatus struct {
@@ -190,16 +189,11 @@ type OrderDetails struct {
 	PurchaseOrderId   uint64  `json:"purchase_order_id"`
 }
 
-func CreateDatabases() (
-	buyers []Buyer,
-) {
-
-	fmt.Println("Create Databases - Starting...")
-
-	buyers = []Buyer{}
-
-	fmt.Printf("\n buyers:%v", buyers)
-
-	fmt.Println("\n Create Databases - Done!")
-	return
+type ReportInboundOrders struct {
+	Id                uint64  `json:"id"`
+	CardNumberId       string `json:"card_number_id" binding:"required"`
+	FirstName          string `json:"first_name" binding:"required"`
+	LastName           string `json:"last_name" binding:"required"`
+	WarehouseId        uint64 `json:"warehouse_id" binding:"required"`
+	InboundOrdersCount uint64 `json:"inbound_orders_count" binding:"required"`
 }

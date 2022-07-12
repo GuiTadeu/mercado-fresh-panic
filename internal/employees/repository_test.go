@@ -279,6 +279,76 @@ func Test_Repo_ExistsProductCode_ConnectionError(t *testing.T) {
 	util.DropDB(database)
 }
 
+func Test_Repo_Count_Inbound_Orders_By_Employee_OK(t *testing.T) {
+
+	expectedReport := models.ReportInboundOrders{
+		Id:           1,
+		CardNumberId: "1111222233334444",
+		FirstName:    "José",
+		LastName:     "Neto",
+		WarehouseId:  1,
+		InboundOrdersCount: 2,
+	}
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_EMPLOYEE_TABLE)
+	util.QueryExec(database, CREATE_INBOUND_ORDERS_TABLE)
+	util.QueryExec(database, INSERT_EMPLOYEE)
+	util.QueryExec(database, INSERT_INBOUND_ORDERS)
+
+	repository := NewRepository(database)
+	result, err := repository.CountInboundOrdersByEmployeeId(1)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedReport, result)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_Count_Inbound_Orders_OK(t *testing.T) {
+
+	expectedReport := []models.ReportInboundOrders{
+		{
+			Id:           1,
+			CardNumberId: "1111222233334444",
+			FirstName:    "José",
+			LastName:     "Neto",
+			WarehouseId:  1,
+			InboundOrdersCount: 2,
+		},
+		{
+			Id:           2,
+			CardNumberId: "1456542642455555",
+			FirstName:    "Fernando",
+			LastName:     "Diniz",
+			WarehouseId:  1,
+			InboundOrdersCount: 2,
+		},
+		{
+			Id:           3,
+			CardNumberId: "2543542532354543",
+			FirstName:    "Paulo",
+			LastName:     "Souza",
+			WarehouseId:  2,
+			InboundOrdersCount: 0,
+		},
+	}
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_EMPLOYEE_TABLE)
+	util.QueryExec(database, CREATE_INBOUND_ORDERS_TABLE)
+	util.QueryExec(database, INSERT_EMPLOYEE)
+	util.QueryExec(database, INSERT_INBOUND_ORDERS)
+
+	repository := NewRepository(database)
+	result, err := repository.CountInboundOrders()
+	assert.Nil(t, err)
+	assert.Equal(t, expectedReport, result)
+
+	util.DropDB(database)
+}
+
+
+
 const CREATE_EMPLOYEE_TABLE = `
 	CREATE TABLE "employees"(
 	  id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -288,4 +358,33 @@ const CREATE_EMPLOYEE_TABLE = `
 	  warehouse_id BIGINT NOT NULL,
 	  FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
 	);
+`
+
+const CREATE_INBOUND_ORDERS_TABLE = `
+	CREATE TABLE "inbound_orders"(
+		id INTEGER PRIMARY KEY AUTOINCREMENT ,
+		order_date TEXT NOT NULL,
+		order_number TEXT NOT NULL,
+		employee_id BIGINT  NOT NULL,
+		product_batch_id BIGINT  NOT NULL,
+		warehouse_id BIGINT  NOT NULL,
+		FOREIGN KEY (employee_id) REFERENCES employees(id),
+		FOREIGN KEY (product_batch_id) REFERENCES product_batches(id),
+		FOREIGN KEY (warehouse_id) REFERENCES warehouses(id)
+	);
+`
+
+const INSERT_INBOUND_ORDERS = `
+	INSERT INTO inbound_orders(order_date, order_number, employee_id, product_batch_id, warehouse_id)
+	VALUES	("2022-03-21 12:11:21", "1234", 1, 1, 1),
+		("2022-04-21 13:11:21", "2134", 1, 2, 2),
+		("2022-05-21 14:11:21", "3543", 2, 2, 2),
+		("2022-06-21 15:11:21", "3561", 2, 1, 1);
+`
+
+const INSERT_EMPLOYEE = `
+	INSERT INTO employees(id_card_number, first_name, last_name, warehouse_id)
+	VALUES	("1111222233334444", "José", "Neto", 1),
+			("1456542642455555", "Fernando", "Diniz", 1),
+			("2543542532354543", "Paulo", "Souza", 2);
 `
