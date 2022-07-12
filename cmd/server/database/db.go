@@ -130,17 +130,23 @@ type ProductType struct {
 }
 
 type ProductBatch struct {
-	Id                 uint64    `json:"id"`
-	Number             uint64    `json:"batch_number"`
-	CurrentQuantity    uint64    `json:"current_quantity"`
-	CurrentTemperature float32   `json:"current_temperature"`
-	DueDate            time.Time `json:"due_date"`
-	InitialQuantity    uint64    `json:"initial_quantity"`
-	ManufacturingDate  time.Time `json:"manufacturing_date"`
-	ManufacturingHour  time.Time `json:"manufacturing_hour"`
-	MinimumTemperature float32   `json:"minimum_temperature"`
-	ProductId          uint64    `json:"product_id"`
-	SectionId          uint64    `json:"section_id"`
+	Id                 uint64  `json:"id"`
+	Number             uint64  `json:"batch_number"`
+	CurrentQuantity    uint64  `json:"current_quantity"`
+	CurrentTemperature float32 `json:"current_temperature"`
+	DueDate            string  `json:"due_date"`
+	InitialQuantity    uint64  `json:"initial_quantity"`
+	ManufacturingDate  string  `json:"manufacturing_date"`
+	ManufacturingHour  string  `json:"manufacturing_hour"`
+	MinimumTemperature float32 `json:"minimum_temperature"`
+	ProductId          uint64  `json:"product_id"`
+	SectionId          uint64  `json:"section_id"`
+}
+
+type CountProductsBySectionIdReport struct {
+	SectionId     uint64 `json:"section_id"`
+	SectionNumber uint64 `json:"section_number"`
+	ProductsCount uint64 `json:"products_count"`
 }
 
 type ProductRecord struct {
