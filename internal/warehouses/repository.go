@@ -3,7 +3,6 @@ package warehouses
 import (
 	"database/sql"
 	"log"
-
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 )
 
