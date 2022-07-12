@@ -9,6 +9,7 @@ import (
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	inboundorders "github.com/GuiTadeu/mercado-fresh-panic/internal/inboundOrders"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
@@ -27,22 +28,21 @@ func main() {
 	storageDB := db.Init()
 	server := gin.Default()
 
-	// sellers, warehouses, sections, products, employees, buyers
-	var buyersDB = db.CreateDatabases()
+	sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository := buildRepositories(storageDB)
 
-	sellersHandlers(storageDB, server)
-	warehousesHandlers(storageDB, server)
-	sectionHandlers(storageDB, server)
-	productHandlers(storageDB, server)
-	buyerHandlers(buyersDB, server)
-	employeeHandlers(storageDB, server)
+	sellersHandlers(sellerRepository, server)
+	warehousesHandlers(warehouseRepository, server)
+	sectionHandlers(sectionRepository, server)
+	productHandlers(productRepository, server)
+	buyerHandlers(buyerRepository, server)
+	employeeHandlers(employeeRepository, server)
+	inboundOrderHandlers(inboundOrderRepository, employeeRepository, warehouseRepository, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
 }
 
-func sellersHandlers(storageDB *sql.DB, server *gin.Engine) {
-	sellerRepository := sellers.NewRepository(storageDB)
+func sellersHandlers(sellerRepository sellers.Repository, server *gin.Engine) {
 	sellerService := sellers.NewService(sellerRepository)
 	sellerController := controller.NewSeller(sellerService)
 
@@ -54,13 +54,11 @@ func sellersHandlers(storageDB *sql.DB, server *gin.Engine) {
 	sellerGroup.DELETE("/:id", sellerController.Delete())
 }
 
-func warehousesHandlers(storageDB *sql.DB, server *gin.Engine) {
-	warehouseRepository := warehouses.NewRepository(storageDB)
+func warehousesHandlers(warehouseRepository warehouses.WarehouseRepository, server *gin.Engine) {
 	warehouseService := warehouses.NewService(warehouseRepository)
 	warehouseController := controller.NewWarehouseController(warehouseService)
 
 	warehouseGroup := server.Group("/api/v1/warehouses")
-
 	warehouseGroup.GET("/", warehouseController.GetAll())
 	warehouseGroup.GET("/:id", warehouseController.Get())
 	warehouseGroup.POST("/", warehouseController.Create())
@@ -68,9 +66,8 @@ func warehousesHandlers(storageDB *sql.DB, server *gin.Engine) {
 	warehouseGroup.DELETE("/:id", warehouseController.Delete())
 }
 
-func productHandlers(storageDB *sql.DB, server *gin.Engine) {
+func productHandlers(productRepository products.ProductRepository, server *gin.Engine) {
 
-	productRepository := products.NewProductRepository(storageDB)
 	productService := products.NewProductService(productRepository)
 	productHandler := controller.NewProductController(productService)
 
@@ -83,9 +80,8 @@ func productHandlers(storageDB *sql.DB, server *gin.Engine) {
 	productRoutes.DELETE("/:id", productHandler.Delete())
 }
 
-func sectionHandlers(storageDB *sql.DB, server *gin.Engine) {
+func sectionHandlers(sectionRepository sections.SectionRepository, server *gin.Engine) {
 
-	sectionRepository := sections.NewRepository(storageDB)
 	sectionService := sections.NewService(sectionRepository)
 	sectionHandler := controller.NewSectionController(sectionService)
 
@@ -99,9 +95,8 @@ func sectionHandlers(storageDB *sql.DB, server *gin.Engine) {
 
 }
 
-func employeeHandlers(storageDB *sql.DB, server *gin.Engine) {
+func employeeHandlers(employeeRepository employees.EmployeeRepository, server *gin.Engine) {
 
-	employeeRepository := employees.NewRepository(storageDB)
 	employeeService := employees.NewEmployeeService(employeeRepository)
 	employeeHandler := controller.NewEmployeeController(employeeService)
 
@@ -112,12 +107,23 @@ func employeeHandlers(storageDB *sql.DB, server *gin.Engine) {
 	employeeRoutes.DELETE("/:id", employeeHandler.Delete())
 	employeeRoutes.GET("/:id", employeeHandler.Get())
 	employeeRoutes.PATCH("/:id", employeeHandler.Update())
+	employeeRoutes.GET("/reportInboundOrders", employeeHandler.CountInboundOrders())
 }
 
-func buyerHandlers(buyersDB []db.Buyer, server *gin.Engine) {
+func inboundOrderHandlers(inboundOrderRepository inboundorders.InboundOrderRepository, employeeRepository employees.EmployeeRepository, warehouseRepository warehouses.WarehouseRepository, server *gin.Engine) {
 
-	rBuyers := buyers.NewBuyerRepository(buyersDB)
-	sBuyers := buyers.NewBuyerService(rBuyers)
+	inboundOrderService := inboundorders.NewInboundOrderService(employeeRepository, warehouseRepository, inboundOrderRepository)
+
+	cInboundOrders := controller.NewInboundOrderController(inboundOrderService)
+
+	inboundOrderRoutes := server.Group("/api/v1/inboundOrders")
+
+	inboundOrderRoutes.POST("/", cInboundOrders.Create())
+}
+
+func buyerHandlers(buyerRepository buyers.BuyerRepository, server *gin.Engine) {
+
+	sBuyers := buyers.NewBuyerService(buyerRepository)
 	cBuyers := controller.NewBuyerController(sBuyers)
 
 	buyerRoutes := server.Group("/api/v1/buyers")
@@ -127,4 +133,23 @@ func buyerHandlers(buyersDB []db.Buyer, server *gin.Engine) {
 	buyerRoutes.POST("/", cBuyers.Create())
 	buyerRoutes.PATCH("/:id", cBuyers.Update())
 	buyerRoutes.DELETE("/:id", cBuyers.Delete())
+}
+
+func buildRepositories(storageDB *sql.DB) (
+	sellers.Repository,
+	warehouses.WarehouseRepository,
+	sections.SectionRepository,
+	products.ProductRepository,
+	buyers.BuyerRepository,
+	employees.EmployeeRepository,
+	inboundorders.InboundOrderRepository) {
+
+	sellerRepository := sellers.NewRepository(storageDB)
+	warehouseRepository := warehouses.NewRepository(storageDB)
+	sectionRepository := sections.NewRepository(storageDB)
+	productRepository := products.NewProductRepository(storageDB)
+	buyerRepository := buyers.NewBuyerRepository(storageDB)
+	employeeRepository := employees.NewRepository(storageDB)
+	inboundOrderRepository := inboundorders.NewRepository(storageDB)
+	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository
 }
