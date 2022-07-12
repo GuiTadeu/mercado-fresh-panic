@@ -8,7 +8,7 @@ import (
 
 type CarrierInfo struct {
 	LocalityId   string `json:"locality_id"`
-	CarriesCount string `json:"carries_count"`
+	CarriesCount uint64 `json:"carries_count"`
 	LocalityName string `json:"locality_name"`
 }
 
