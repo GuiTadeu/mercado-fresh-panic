@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func Test_Create_Ok(t *testing.T) {
+func Test_Repo_Create_Ok(t *testing.T) {
 	expectedInboundOrders := models.InboundOrder{
 		Id:             1,
 		OrderDate:      "2021-04-04",
@@ -33,7 +33,7 @@ func Test_Create_Ok(t *testing.T) {
 	util.DropDB(database)
 }
 
-func Test_Create_ConnectionError(t *testing.T) {
+func Test_Repo_Create_ConnectionError(t *testing.T) {
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_INBOUND_ORDERS_TABLE)
 	
@@ -45,6 +45,21 @@ func Test_Create_ConnectionError(t *testing.T) {
 
 	util.DropDB(database)
 }
+
+func Test_Repo_Get_ConnectionError(t *testing.T) {
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_INBOUND_ORDERS_TABLE)
+	
+	repository := NewRepository(database)
+
+	database.Close()
+	_, err := repository.Get(1)
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
+
 
 const CREATE_INBOUND_ORDERS_TABLE = `
 	CREATE TABLE "inbound_orders"(

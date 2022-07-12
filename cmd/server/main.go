@@ -107,7 +107,7 @@ func employeeHandlers(employeeRepository employees.EmployeeRepository, server *g
 	employeeRoutes.DELETE("/:id", employeeHandler.Delete())
 	employeeRoutes.GET("/:id", employeeHandler.Get())
 	employeeRoutes.PATCH("/:id", employeeHandler.Update())
-	employeeRoutes.GET("/reportInboundOrders", employeeHandler.ReportInboundOrders())
+	employeeRoutes.GET("/reportInboundOrders", employeeHandler.CountInboundOrders())
 }
 
 func inboundOrderHandlers(inboundOrderRepository inboundorders.InboundOrderRepository, employeeRepository employees.EmployeeRepository, warehouseRepository warehouses.WarehouseRepository, server *gin.Engine) {
@@ -153,4 +153,3 @@ func buildRepositories(storageDB *sql.DB) (
 	inboundOrderRepository := inboundorders.NewRepository(storageDB)
 	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository
 }
-

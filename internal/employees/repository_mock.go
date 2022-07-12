@@ -4,68 +4,68 @@ import (
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 )
 
-type mockEmployeeRepository struct {
-	result             any
-	err                error
-	existsEmployeeCode bool
-	getById            db.Employee
+type MockEmployeeRepository struct {
+	Result             any
+	Err                error
+	ExistsEmployeeCode bool
+	GetById            db.Employee
 }
 
-func (m mockEmployeeRepository) GetAll() ([]db.Employee, error) {
-	if m.err != nil {
-		return []db.Employee{}, m.err
+func (m MockEmployeeRepository) GetAll() ([]db.Employee, error) {
+	if m.Err != nil {
+		return []db.Employee{}, m.Err
 	}
-	return m.result.([]db.Employee), nil
+	return m.Result.([]db.Employee), nil
 }
 
-func (m mockEmployeeRepository) Get(id uint64) (db.Employee, error) {
-	if (m.getById == db.Employee{} && m.err != nil) {
-		return db.Employee{}, m.err
+func (m MockEmployeeRepository) Get(id uint64) (db.Employee, error) {
+	if (m.GetById == db.Employee{} && m.Err != nil) {
+		return db.Employee{}, m.Err
 	}
-	return m.getById, nil
+	return m.GetById, nil
 }
 
-func (m mockEmployeeRepository) Delete(id uint64) error {
-	if m.err != nil {
-		return m.err
+func (m MockEmployeeRepository) Delete(id uint64) error {
+	if m.Err != nil {
+		return m.Err
 	}
 	return nil
 }
 
-func (m mockEmployeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) (bool, error) {
-	return m.existsEmployeeCode, nil
+func (m MockEmployeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) (bool, error) {
+	return m.ExistsEmployeeCode, nil
 }
 
-func (m mockEmployeeRepository) Create(
+func (m MockEmployeeRepository) Create(
 	cardNumberId string, firstName string,
 	lastName string, wareHouseId uint64) (db.Employee, error) {
-	if m.err != nil || m.existsEmployeeCode {
-		return db.Employee{}, m.err
+	if m.Err != nil || m.ExistsEmployeeCode {
+		return db.Employee{}, m.Err
 	}
-	return m.result.(db.Employee), nil
+	return m.Result.(db.Employee), nil
 }
 
-func (m mockEmployeeRepository) Update(updatedEmployee db.Employee) (db.Employee, error) {
-	if (m.result.(db.Employee) != db.Employee{}) {
+func (m MockEmployeeRepository) Update(updatedEmployee db.Employee) (db.Employee, error) {
+	if (m.Result.(db.Employee) != db.Employee{}) {
 		return updatedEmployee, nil
 	}
-	return db.Employee{}, m.err
+	return db.Employee{}, m.Err
 }
 
-func (m mockEmployeeRepository) ReportInboundOrders(id uint64) (db.ReportInboundOrders, error) {
-	if m.err != nil{
-		return db.ReportInboundOrders{}, m.err
+func (m MockEmployeeRepository) CountInboundOrdersByEmployeeId(id uint64) (db.ReportInboundOrders, error) {
+	if m.Err != nil{
+		return db.ReportInboundOrders{}, m.Err
 	}
-	return m.result.(db.ReportInboundOrders), nil
+	return m.Result.(db.ReportInboundOrders), nil
 }
 
-func (m mockEmployeeRepository) ReportsInboundOrders() ([]db.ReportInboundOrders, error) {
-	if m.err != nil {
-		return []db.ReportInboundOrders{}, m.err
+func (m MockEmployeeRepository) CountInboundOrders() ([]db.ReportInboundOrders, error) {
+	if m.Err != nil {
+		return []db.ReportInboundOrders{}, m.Err
 	}
-	return m.result.([]db.ReportInboundOrders), nil
+	return m.Result.([]db.ReportInboundOrders), nil
 }
 
-func (m mockEmployeeRepository) ExistsEmployee(id uint64) (bool) {
-	return m.existsEmployeeCode
+func (m MockEmployeeRepository) ExistsEmployee(id uint64) (bool) {
+	return m.ExistsEmployeeCode
 }

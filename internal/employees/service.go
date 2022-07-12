@@ -2,6 +2,7 @@ package employees
 
 import (
 	"errors"
+
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/imdario/mergo"
 )
@@ -17,8 +18,8 @@ type EmployeeService interface {
 	Get(id uint64) (db.Employee, error)
 	Update(id uint64, cardNumberId string, firstName string, lastName string, wareHouseId uint64) (db.Employee, error)
 	Delete(id uint64) error
-	ReportInboundOrders(id uint64) (db.ReportInboundOrders, error)
-	ReportsInboundOrders() ([]db.ReportInboundOrders, error)
+	CountInboundOrdersByEmployeeId(id uint64) (db.ReportInboundOrders, error)
+	CountInboundOrders() ([]db.ReportInboundOrders, error)
 }
 
 type employeeService struct {
@@ -96,13 +97,13 @@ func (s *employeeService) Delete(id uint64) error {
 	return s.employeeRepository.Delete(id)
 }
 
-func (s *employeeService) ReportInboundOrders(id uint64) (db.ReportInboundOrders, error) {
+func (s *employeeService) CountInboundOrdersByEmployeeId(id uint64) (db.ReportInboundOrders, error) {
 	if s.employeeRepository.ExistsEmployee(id) {
-		return s.employeeRepository.ReportInboundOrders(id)
+		return s.employeeRepository.CountInboundOrdersByEmployeeId(id)
 	}
 	return db.ReportInboundOrders{}, EmployeeNotFoundError
 }
 
-func (s *employeeService) ReportsInboundOrders() ([]db.ReportInboundOrders, error) {
-	return s.employeeRepository.ReportsInboundOrders()
+func (s *employeeService) CountInboundOrders() ([]db.ReportInboundOrders, error) {
+	return s.employeeRepository.CountInboundOrders()
 }

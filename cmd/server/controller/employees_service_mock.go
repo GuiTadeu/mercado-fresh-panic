@@ -54,14 +54,14 @@ func (m mockEmployeeService) Update(
 	return m.result.(db.Employee), nil
 }
 
-func (m mockEmployeeService) ReportInboundOrders(id uint64) (db.ReportInboundOrders, error) {
+func (m mockEmployeeService) CountInboundOrdersByEmployeeId(id uint64) (db.ReportInboundOrders, error) {
 	if m.err != nil{
 		return db.ReportInboundOrders{}, m.err
 	}
 	return m.result.(db.ReportInboundOrders), nil
 }
 
-func (m mockEmployeeService) ReportsInboundOrders() ([]db.ReportInboundOrders, error) {
+func (m mockEmployeeService) CountInboundOrders() ([]db.ReportInboundOrders, error) {
 	if m.err != nil {
 		return []db.ReportInboundOrders{}, m.err
 	}

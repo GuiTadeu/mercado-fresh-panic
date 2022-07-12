@@ -12,8 +12,8 @@ type EmployeeRepository interface {
 	Update(updatedEmployee models.Employee) (models.Employee, error)
 	Delete(id uint64) error
 	ExistsEmployeeCardNumberId(cardNumberId string) (bool, error)
-	ReportInboundOrders(id uint64) (models.ReportInboundOrders, error)
-	ReportsInboundOrders() ([]models.ReportInboundOrders, error)
+	CountInboundOrdersByEmployeeId(id uint64) (models.ReportInboundOrders, error)
+	CountInboundOrders() ([]models.ReportInboundOrders, error)
 	ExistsEmployee(uint64) (bool)
 }
 
@@ -218,7 +218,7 @@ func (r *employeeRepository) ExistsEmployeeCardNumberId(cardNumberId string) (bo
 	return false, nil
 }
 
-func (r *employeeRepository) ReportInboundOrders(id uint64) (models.ReportInboundOrders, error) {
+func (r *employeeRepository) CountInboundOrdersByEmployeeId(id uint64) (models.ReportInboundOrders, error) {
 	var report models.ReportInboundOrders
 
 	stmt := r.db.QueryRow(`
@@ -251,7 +251,7 @@ func (r *employeeRepository) ReportInboundOrders(id uint64) (models.ReportInboun
 	return report, nil
 }
 
-func (r *employeeRepository) ReportsInboundOrders() ([]models.ReportInboundOrders, error) {
+func (r *employeeRepository) CountInboundOrders() ([]models.ReportInboundOrders, error) {
 	var reports []models.ReportInboundOrders
 
 	stmt, err := r.db.Query(`
