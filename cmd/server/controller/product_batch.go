@@ -10,7 +10,6 @@ import (
 )
 
 type CreateProductBatchRequest struct {
-	Id                 uint64  `json:"id"`
 	Number             uint64  `json:"batch_number"`
 	CurrentQuantity    uint64  `json:"current_quantity"`
 	CurrentTemperature float32 `json:"current_temperature"`
