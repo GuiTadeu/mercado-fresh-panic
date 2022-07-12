@@ -49,10 +49,9 @@ func carriersHandlers(storageDB *sql.DB, server *gin.Engine) {
 	carrierController := controller.NewCarrierController(carrierService)
 
 	CarrierGroup := server.Group("/api/v1/carries")
-	CarrierGroup.GET("/", carrierController.GetAllCarrierInfo())
+	CarrierGroup.GET("/reportCarries", carrierController.GetAllCarrierInfo())
 //	CarrierGroup.GET("/:id", carrierController.FindOne())
-	CarrierGroup.POST("/", carrierController.Create())	
-
+	CarrierGroup.POST("/", carrierController.Create())
 }
 
 func sellersHandlers(storageDB *sql.DB, server *gin.Engine) {

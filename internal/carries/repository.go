@@ -6,10 +6,17 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 )
 
+type CarrierInfo struct {
+	LocalityId   string `json:"locality_id"`
+	CarriesCount string `json:"carries_count"`
+	LocalityName string `json:"locality_name"`
+}
+
 type CarrierRepository interface {
 	Create(cid string, companyName string, address string, telephone string, localityId string) (database.Carrier, error)
-	ExistsCarrierCid(cid string) (bool, error)	
-	GetAllCarrierInfo() ([]database.Carrier, error)
+	ExistsCarrierCid(cid string) (bool, error)
+	GetAllCarrierInfo(id string) ([]CarrierInfo, error)
+	FindLocalityId(localityId string) bool
 }
 
 type carrierRepository struct {
@@ -52,7 +59,7 @@ func (r *carrierRepository) ExistsCarrierCid(cid string) (bool, error) {
 
 	var carrier database.Carrier
 
-	rows, err := r.db.Query("SELECT * FROM carriers WHERE cid = ?", )
+	rows, err := r.db.Query("SELECT * FROM carriers WHERE cid = ?", cid)
 
 	if err != nil {
 		return false, err
@@ -68,35 +75,46 @@ func (r *carrierRepository) ExistsCarrierCid(cid string) (bool, error) {
 		return true, nil
 	}
 
-	return false, nil	
+	return false, nil
 }
 
-func (r *carrierRepository) GetAllCarrierInfo() ([]database.Carrier, error) {
-	stmt, err := r.db.Query("SELECT id, cid, company_name, address, telephone, locality_id FROM carriers")
+func (r *carrierRepository) GetAllCarrierInfo(id string) ([]CarrierInfo, error) {
+	var carrierInfo []CarrierInfo	
+
+	stmt, err := r.db.Query(` SELECT localities.id, locality_name, COUNT(carriers.id)
+	FROM localities
+	LEFT JOIN carriers
+	ON localities.id = carriers.locality_id
+	WHERE localities.id = ?
+	GROUP BY (localities.id);`, id)
 	if err != nil {
 		return nil, err
 	}
 
 	defer stmt.Close()
 
-	var carriers []database.Carrier
-
 	for stmt.Next() {
-		var carrier database.Carrier
+		var carrier CarrierInfo
 
 		if err = stmt.Scan(
-			&carrier.Id,
-			&carrier.Cid,
-			&carrier.CompanyName,
-			&carrier.Address,
-			&carrier.Telephone,
-			&carrier.LocalityID,
+			&carrier.LocalityId,
+			&carrier.LocalityName,
+			&carrier.CarriesCount,						
 		); err != nil {
-			return nil, err
+			return []CarrierInfo{}, err
 		}
 
-		carriers = append(carriers, carrier)
+		carrierInfo = append(carrierInfo, carrier)
 	}
 
-	return carriers, nil
+	return carrierInfo, nil
+}
+
+func (r *carrierRepository) FindLocalityId(localityId string) bool {
+
+    var locality database.Locality
+
+    err := r.db.QueryRow("SELECT id FROM localities WHERE id = ?", localityId).Scan(&locality.Id)
+
+    return err == nil
 }

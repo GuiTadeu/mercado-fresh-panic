@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"net/http"
+	"net/http"	
 
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/carries"
 	"github.com/GuiTadeu/mercado-fresh-panic/pkg/web"
@@ -51,8 +51,9 @@ func (c *carrierController) Create() gin.HandlerFunc {
 func (c *carrierController) GetAllCarrierInfo() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		carrier, err := c.carrierService.GetAllCarrierInfo()
-
+		localityId := ctx.Query("id")
+		
+		carrier, err := c.carrierService.GetAllCarrierInfo(localityId)
 		if err != nil {
 			status := carrierErrorHandler(err)
 			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
@@ -68,6 +69,8 @@ func carrierErrorHandler(err error) int {
 	case carries.CarrierNotFoundError:
 		return http.StatusNotFound
 	case carries.ExistsCarrierCidError:
+		return http.StatusConflict
+	case carries.LocalityIdNotExistsError:
 		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
