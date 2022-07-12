@@ -44,6 +44,20 @@ func (m mockProductRepository) Create(
 	return m.result.(db.Product), nil
 }
 
+func (m mockProductRepository) GetReportRecords(id uint64) (db.ProductReportRecords, error) {
+	if m.err != nil {
+		return db.ProductReportRecords{}, m.err
+	}
+	return m.result.(db.ProductReportRecords), nil
+}
+
+func (m mockProductRepository) GetAllReportRecords() ([]db.ProductReportRecords, error) {
+	if m.err != nil {
+		return []db.ProductReportRecords{}, m.err
+	}
+	return m.result.([]db.ProductReportRecords), nil
+}
+
 func (m mockProductRepository) Update(updatedproduct db.Product) (db.Product, error) {
 	if (m.result.(db.Product) != db.Product{}) {
 		return updatedproduct, nil

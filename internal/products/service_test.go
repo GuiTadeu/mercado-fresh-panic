@@ -40,7 +40,7 @@ func Test_Create_Ok(t *testing.T) {
 
 func Test_Create_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 
-	expectedError := ExistsProductCodeError
+	expectedError := ErrExistsProductCodeError
 
 	mockRepository := mockProductRepository{
 		result:            db.Product{},
@@ -72,7 +72,7 @@ func Test_Get_OK(t *testing.T) {
 
 func Test_Get_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
-	expectedError := ProductNotFoundError
+	expectedError := ErrProductNotFoundError
 
 	mockProductRepository := mockProductRepository{
 		err: expectedError,
@@ -163,7 +163,7 @@ func Test_Update_OK(t *testing.T) {
 
 func Test_Update_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
-	expectedError := ProductNotFoundError
+	expectedError := ErrProductNotFoundError
 
 	mockProductRepository := mockProductRepository{
 		err:               expectedError,
@@ -179,7 +179,7 @@ func Test_Update_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
 func Test_Update_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 
-	expectedError := ExistsProductCodeError
+	expectedError := ErrExistsProductCodeError
 
 	getById := db.Product{
 		Id:                      13,
@@ -223,7 +223,7 @@ func Test_Delete_Ok(t *testing.T) {
 
 func Test_Delete_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
-	expectedError := ProductNotFoundError
+	expectedError := ErrProductNotFoundError
 
 	mockRepository := mockProductRepository{
 		result: db.Product{},
