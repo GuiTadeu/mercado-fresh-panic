@@ -99,6 +99,43 @@ func (c *productController) GetAll() gin.HandlerFunc {
 	}
 }
 
+func (c *productController) GetAllReportRecords() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		products, err := c.productService.GetAllReportRecords()
+		if err != nil {
+			status := productErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+			return
+		}
+
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, products, ""))
+	}
+}
+
+func (c *productController) GetReportRecords() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+		if err != nil {
+			ctx.JSON(http.StatusNotAcceptable, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		product, err := c.productService.GetReportRecords(id)
+
+		if err != nil {
+			status := productErrorHandler(err)
+			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+			return
+		}
+
+		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, product, ""))
+	}
+}
+
 func (c *productController) Get() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
@@ -130,7 +167,7 @@ func (c *productController) Update() gin.HandlerFunc {
 		err := ctx.ShouldBindJSON(&request)
 		if err != nil {
 			ctx.JSON(
-				http.StatusUnprocessableEntity, 
+				http.StatusUnprocessableEntity,
 				web.NewResponse(http.StatusUnprocessableEntity, nil, err.Error()),
 			)
 			return
@@ -192,14 +229,17 @@ func (c *productController) Delete() gin.HandlerFunc {
 	}
 }
 
-func productErrorHandler(err error) (int) {
+func productErrorHandler(err error) int {
 	switch err {
 
-	case products.ProductNotFoundError:
+	case products.ErrProductNotFoundError:
 		return http.StatusNotFound
 
-	case products.ExistsProductCodeError:
+	case products.ErrExistsProductCodeError:
 		return http.StatusConflict
+
+	case products.ErrParameterNotAcceptableError:
+		return http.StatusNotAcceptable
 
 	default:
 		return http.StatusInternalServerError
