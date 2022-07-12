@@ -71,7 +71,7 @@ func (c *productBatchController) Create() gin.HandlerFunc {
 	}
 }
 
-func (c *productBatchController) CountProductsBySectionId() gin.HandlerFunc {
+func (c *productBatchController) CountProductsBySections() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		
 		var report any
