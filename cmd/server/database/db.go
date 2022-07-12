@@ -83,6 +83,12 @@ type Product struct {
 	SellerId                uint64  `json:"seller_id" binding:"required"`
 }
 
+type ProductReportRecords struct {
+	Id           uint64 `json:"product_id"`
+	Description  string `json:"description"`
+	RecordsCount uint64 `json:"records_count"`
+}
+
 type Employee struct {
 	Id           uint64 `json:"id"`
 	CardNumberId string `json:"card_number_id"`
@@ -144,11 +150,11 @@ type ProductBatch struct {
 }
 
 type ProductRecord struct {
-	Id             uint64    `json:"id"`
-	LastUpdateDate time.Time `json:"last_update_date"`
-	PurchasePrice  float32   `json:"purchase_price"`
-	SalePrice      float32   `json:"sale_price"`
-	ProductId      uint64    `json:"product_id"`
+	Id             uint64  `json:"id"`
+	LastUpdateDate string  `json:"last_update_date"`
+	PurchasePrice  float32 `json:"purchase_price"`
+	SalePrice      float32 `json:"sale_price"`
+	ProductId      uint64  `json:"product_id"`
 }
 
 type InboundOrder struct {

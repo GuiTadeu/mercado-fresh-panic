@@ -9,6 +9,7 @@ import (
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
+	productrecords "github.com/GuiTadeu/mercado-fresh-panic/internal/product_records"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
@@ -21,7 +22,7 @@ func main() {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error to load .env")
+		log.Fatal("Error to load .env", err)
 	}
 
 	storageDB := db.Init()
@@ -36,6 +37,7 @@ func main() {
 	productHandlers(storageDB, server)
 	buyerHandlers(buyersDB, server)
 	employeeHandlers(storageDB, server)
+	productRecordsHandlers(storageDB, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
@@ -78,9 +80,23 @@ func productHandlers(storageDB *sql.DB, server *gin.Engine) {
 
 	productRoutes.GET("/", productHandler.GetAll())
 	productRoutes.GET("/:id", productHandler.Get())
+	productRoutes.GET("/reportrecords", productHandler.GetAllReportRecords())
+	productRoutes.GET("/reportrecords/:id", productHandler.GetReportRecords())
 	productRoutes.POST("/", productHandler.Create())
 	productRoutes.PATCH("/:id", productHandler.Update())
 	productRoutes.DELETE("/:id", productHandler.Delete())
+}
+
+func productRecordsHandlers(storageDB *sql.DB, server *gin.Engine) {
+
+	productRecordsRepository := productrecords.NewProductRecordsRepository(storageDB)
+	productRepository := products.NewProductRepository(storageDB)
+	productRecordsService := productrecords.NewProductRecordsService(productRecordsRepository, productRepository)
+	productRecordsHandler := controller.NewProductRecordsController(productRecordsService)
+
+	productRecordsRoutes := server.Group("/api/v1/productRecords")
+
+	productRecordsRoutes.POST("/", productRecordsHandler.Create())
 }
 
 func sectionHandlers(storageDB *sql.DB, server *gin.Engine) {
