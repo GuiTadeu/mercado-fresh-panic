@@ -116,7 +116,7 @@ type Locality struct {
 
 type Carrier struct {
 	Id          uint64 `json:"id"`
-	Cid         uint64 `json:"cid" binding:"required"`
+	Cid         string `json:"cid" binding:"required"`
 	CompanyName string `json:"company_name" binding:"required"`
 	Address     string `json:"address" binding:"required"`
 	Telephone   string `json:"telephone" binding:"required"`

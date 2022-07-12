@@ -8,6 +8,7 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controller"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/carries"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
 	inboundorders "github.com/GuiTadeu/mercado-fresh-panic/internal/inboundOrders"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/localities"
@@ -16,7 +17,7 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/warehouses"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	"github.com/joho/godotenv"	
 )
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
 	storageDB := db.Init()
 	server := gin.Default()
 
-	sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository := buildRepositories(storageDB)
+	sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository, carrieRepository := buildRepositories(storageDB)
 
 	sellersHandlers(sellerRepository, server)
 	warehousesHandlers(warehouseRepository, server)
@@ -39,9 +40,19 @@ func main() {
 	employeeHandlers(employeeRepository, server)
 	inboundOrderHandlers(inboundOrderRepository, employeeRepository, warehouseRepository, server)
 	localitiesHandlers(localityRepository, server)
+	carriersHandlers(carrieRepository, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
+}
+
+func carriersHandlers(carrierRepository carries.CarrierRepository, server *gin.Engine) {	
+	carrierService := carries.NewCarrierService(carrierRepository)
+	carrierController := controller.NewCarrierController(carrierService)
+
+	CarrierGroup := server.Group("/api/v1/carries")
+	CarrierGroup.GET("/reportCarries", carrierController.GetAllCarrierInfo())
+	CarrierGroup.POST("/", carrierController.Create())
 }
 
 func sellersHandlers(sellerRepository sellers.Repository, server *gin.Engine) {
@@ -154,7 +165,8 @@ func buildRepositories(storageDB *sql.DB) (
 	buyers.BuyerRepository,
 	employees.EmployeeRepository,
 	inboundorders.InboundOrderRepository,
-	localities.Repository) {
+	localities.Repository, 
+	carries.CarrierRepository) {
 
 	sellerRepository := sellers.NewRepository(storageDB)
 	warehouseRepository := warehouses.NewRepository(storageDB)
@@ -164,6 +176,7 @@ func buildRepositories(storageDB *sql.DB) (
 	employeeRepository := employees.NewRepository(storageDB)
 	inboundOrderRepository := inboundorders.NewRepository(storageDB)
 	localityRepository := localities.NewRepository(storageDB)
+	carrieRepository := carries.NewCarrierRepository(storageDB)
 
-	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository
+	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository, carrieRepository
 }
