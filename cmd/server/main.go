@@ -42,7 +42,7 @@ func main() {
 	inboundOrderHandlers(inboundOrderRepository, employeeRepository, warehouseRepository, server)
 	localitiesHandlers(localityRepository, server)
 	carriersHandlers(carrieRepository, server)
-	productBatchesHandlers(batchesRepository, server)
+	productBatchesHandlers(batchesRepository, sectionRepository, productRepository, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)

@@ -78,12 +78,8 @@ func (s *productBatchService) Create(
 		return models.ProductBatch{}, ProductNotFoundError
 	}
 
-	foundSection, err := s.sectionRepository.Get(sectionId)
+	_, err = s.sectionRepository.Get(sectionId)
 	if err != nil {
-		return models.ProductBatch{}, err
-	}
-
-	if foundSection.Id == NOT_FOUND_ID {
 		return models.ProductBatch{}, SectionNotFoundError
 	}
 
