@@ -59,14 +59,14 @@ func (r *carrierRepository) ExistsCarrierCid(cid string) (bool, error) {
 
 	var carrier database.Carrier
 
-	rows, err := r.db.Query("SELECT * FROM carriers WHERE cid = ?", cid)
+	rows, err := r.db.Query("SELECT id FROM carriers WHERE cid = ?", cid)
 
 	if err != nil {
 		return false, err
 	}
 
 	for rows.Next() {
-		err := rows.Scan(&carrier.Id, &carrier.Cid, &carrier.CompanyName, &carrier.Address, &carrier.Telephone, &carrier.LocalityID)
+		err := rows.Scan(&carrier.Id)
 
 		if err != nil {
 			return false, err
