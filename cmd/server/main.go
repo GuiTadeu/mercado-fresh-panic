@@ -169,8 +169,8 @@ func productBatchesHandlers(
 
 	batchesGroup := server.Group("/api/v1/productBatches")
 	batchesGroup.POST("/", batchesController.Create())
-	
-	server.GET("/reportProducts", batchesController.CountProductsBySections())
+
+	server.GET("/api/v1/sections/reportProducts", batchesController.CountProductsBySections())
 }
 
 func buildRepositories(storageDB *sql.DB) (
