@@ -10,6 +10,7 @@ import (
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/employees"
 	inboundorders "github.com/GuiTadeu/mercado-fresh-panic/internal/inboundOrders"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/localities"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/products"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sections"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/sellers"
@@ -28,7 +29,7 @@ func main() {
 	storageDB := db.Init()
 	server := gin.Default()
 
-	sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository := buildRepositories(storageDB)
+	sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository := buildRepositories(storageDB)
 
 	sellersHandlers(sellerRepository, server)
 	warehousesHandlers(warehouseRepository, server)
@@ -37,6 +38,7 @@ func main() {
 	buyerHandlers(buyerRepository, server)
 	employeeHandlers(employeeRepository, server)
 	inboundOrderHandlers(inboundOrderRepository, employeeRepository, warehouseRepository, server)
+	localitiesHandlers(localityRepository, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
@@ -135,6 +137,15 @@ func buyerHandlers(buyerRepository buyers.BuyerRepository, server *gin.Engine) {
 	buyerRoutes.DELETE("/:id", cBuyers.Delete())
 }
 
+func localitiesHandlers(localityRepository localities.Repository, server *gin.Engine) {
+	localityService := localities.NewService(localityRepository)
+	localityController := controller.NewLocality(localityService)
+
+	localityGroup := server.Group("/api/v1/localities")
+	localityGroup.POST("/", localityController.Create())
+	localityGroup.GET("/reportSellers", localityController.GetLocalityInfo())
+}
+
 func buildRepositories(storageDB *sql.DB) (
 	sellers.Repository,
 	warehouses.WarehouseRepository,
@@ -142,7 +153,8 @@ func buildRepositories(storageDB *sql.DB) (
 	products.ProductRepository,
 	buyers.BuyerRepository,
 	employees.EmployeeRepository,
-	inboundorders.InboundOrderRepository) {
+	inboundorders.InboundOrderRepository,
+	localities.Repository) {
 
 	sellerRepository := sellers.NewRepository(storageDB)
 	warehouseRepository := warehouses.NewRepository(storageDB)
@@ -151,5 +163,7 @@ func buildRepositories(storageDB *sql.DB) (
 	buyerRepository := buyers.NewBuyerRepository(storageDB)
 	employeeRepository := employees.NewRepository(storageDB)
 	inboundOrderRepository := inboundorders.NewRepository(storageDB)
-	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository
+	localityRepository := localities.NewRepository(storageDB)
+
+	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository
 }
