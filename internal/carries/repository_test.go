@@ -139,8 +139,6 @@ func Test_Repo_GetCarrierInfo_InternalError(t *testing.T) {
     util.DropDB(database)
 }
 
-
-
 const CREATE_LOCALITY_TABLE = `
     CREATE TABLE "localities" (
         id TEXT NOT NULL,
@@ -150,7 +148,6 @@ const CREATE_LOCALITY_TABLE = `
     );
     
 `
-
 const CREATE_PROVINCE_TABLE = `
     CREATE TABLE "provinces"(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -158,11 +155,9 @@ const CREATE_PROVINCE_TABLE = `
         id_country_fk BIGINT  NOT NULL
     );  
 `
-
 const INSERT_PROVINCE = `
     INSERT INTO provinces(province_name, id_country_fk) VALUES ("São Paulo", 1);
 `
-
 const CREATE_CARRIERS_TABLE = `
     CREATE TABLE "carriers" (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -174,7 +169,6 @@ const CREATE_CARRIERS_TABLE = `
         FOREIGN KEY (locality_id) REFERENCES localities(id)
     );
 `
-
 const INSERT_LOCALITY = `
 	INSERT INTO localities(id, locality_name, province_id)
 	VALUES  ("11065001", "Santos", 1);
