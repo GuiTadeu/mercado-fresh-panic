@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/purchaseOrders"
 	"log"
 	"os"
 
@@ -49,7 +50,7 @@ func main() {
 	server.Run(port)
 }
 
-func carriersHandlers(carrierRepository carries.CarrierRepository, server *gin.Engine) {	
+func carriersHandlers(carrierRepository carries.CarrierRepository, server *gin.Engine) {
 	carrierService := carries.NewCarrierService(carrierRepository)
 	carrierController := controller.NewCarrierController(carrierService)
 
@@ -186,7 +187,7 @@ func buildRepositories(storageDB *sql.DB) (
 	localities.Repository,
 	carries.CarrierRepository,
 	batches.ProductBatchRepository,
-	db.PurchaseOrder.PurchaseOrdersRepository) {
+	purchaseOrders.PurchaseOrdersRepository) {
 
 	sellerRepository := sellers.NewRepository(storageDB)
 	warehouseRepository := warehouses.NewRepository(storageDB)
@@ -198,9 +199,9 @@ func buildRepositories(storageDB *sql.DB) (
 	localityRepository := localities.NewRepository(storageDB)
 	carrieRepository := carries.NewCarrierRepository(storageDB)
 	productBatchesRepository := batches.NewProductBatchRepository(storageDB)
-	purchaseOrdersRepository := purchas.NewPurchaseOrdersRepository(storageDB)
+	purchaseOrdersRepository := purchaseOrders.NewPurchaseOrdersRepository(storageDB)
 
-	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository, carrieRepository, purchaseOrdersRepository, purchaseOrdersRepository
+	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository, carrieRepository, productBatchesRepository, purchaseOrdersRepository
 }
 
 func purchaseOrdersHandlers(purchaseOrdersRepository purchaseOrders.PurchaseOrdersRepository, server *gin.Engine) {
