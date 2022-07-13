@@ -168,6 +168,7 @@ func (r *productBatchRepository) ExistsBatchNumber(number uint64) (bool, error) 
 
 		// Fields must be in the same order as in the database
 		err := rows.Scan(
+			&productBatch.Id,
 			&productBatch.Number,
 			&productBatch.CurrentQuantity,
 			&productBatch.CurrentTemperature,

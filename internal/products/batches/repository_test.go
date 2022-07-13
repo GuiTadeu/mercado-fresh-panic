@@ -85,7 +85,7 @@ func Test_Repo_Get_OK(t *testing.T) {
 	util.DropDB(database)
 }
 
-func Test_Repo_Get_ShouldReturnEmptyProductWhenIdNotExists(t *testing.T) {
+func Test_Repo_Get_ShouldReturnEmptyProductBatchWhenIdNotExists(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCT_BATCHES_TABLE)
@@ -136,6 +136,20 @@ func Test_Repo_CountProductsBySections_Ok(t *testing.T) {
 	util.DropDB(database)
 }
 
+func Test_Repo_CountProductsBySections_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCT_BATCHES_TABLE)
+
+	repository := NewProductBatchRepository(database)
+
+	database.Close()
+	_, err := repository.CountProductsBySections()
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
 func Test_Repo_CountProductsBySectionId_Ok(t *testing.T) {
 
 	expectedReport := models.CountProductsBySectionIdReport{
@@ -161,6 +175,67 @@ func Test_Repo_CountProductsBySectionId_Ok(t *testing.T) {
 	report, err := batchRepository.CountProductsBySectionId(1)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedReport, report)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_CountProductsBySectionId_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCT_BATCHES_TABLE)
+
+	repository := NewProductBatchRepository(database)
+
+	database.Close()
+	_, err := repository.CountProductsBySectionId(1)
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_ExistsBatchNumber_ShouldReturnTrue(t *testing.T) {
+
+	expectedBatchNumber := uint64(666)
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCT_BATCHES_TABLE)
+
+	repository := NewProductBatchRepository(database)
+	_, err := repository.Create(expectedBatchNumber, 666, 666, "2012", 666, "2012", "16:20", 666, 1, 1)
+	assert.Nil(t, err)
+
+	existsBatchNumber, err := repository.ExistsBatchNumber(expectedBatchNumber)
+	assert.Nil(t, err)
+	assert.True(t, existsBatchNumber)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_ExistsBatchNumber_ShouldReturnFalse(t *testing.T) {
+
+	expectedBatchNumber := uint64(666)
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCT_BATCHES_TABLE)
+
+	repository := NewProductBatchRepository(database)
+	_, err := repository.Create(expectedBatchNumber, 666, 666, "2012", 666, "2012", "16:20", 666, 1, 1)
+	assert.Nil(t, err)
+
+	existsBatchNumber, err := repository.ExistsBatchNumber(2345678)
+	assert.False(t, existsBatchNumber)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_ExistsBatchNumber_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCT_BATCHES_TABLE)
+
+	repository := NewProductBatchRepository(database)
+
+	database.Close()
+	_, err := repository.ExistsBatchNumber(1)
+	assert.NotNil(t, err)
 
 	util.DropDB(database)
 }

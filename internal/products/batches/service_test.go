@@ -86,10 +86,46 @@ func Test_Create_ShouldReturnErrorWhenNumberAlreadyExists(t *testing.T) {
 	assert.Equal(t, expectedError, err)
 }
 
+func Test_Create_ShouldReturnErrorWhenNotFoundProduct(t *testing.T) {
+
+	expectedError := ProductNotFoundError
+
+	mockProductBatchesRepository := MockProductBatchesRepository{
+		err:           expectedError,
+		result:        models.ProductBatch{},
+	}
+
+	mockSectionRepository := sections.MockSectionRepository{}
+	mockProductRepository := products.MockProductRepository{}
+
+	service := NewProductBatchesService(mockProductBatchesRepository, mockSectionRepository, mockProductRepository)
+	_, err := service.Create(666, 666, 666, "2012", 666, "2012", "16:20", 666, 1, 1)
+
+	assert.Equal(t, expectedError, err)
+}
+
+func Test_Create_ShouldReturnErrorWhenNotFoundSection(t *testing.T) {
+
+	expectedError := SectionNotFoundError
+
+	mockProductBatchesRepository := MockProductBatchesRepository{
+		err:           expectedError,
+		result:        models.ProductBatch{},
+	}
+
+	mockSectionRepository := sections.MockSectionRepository{}
+	mockProductRepository := products.MockProductRepository{}
+
+	service := NewProductBatchesService(mockProductBatchesRepository, mockSectionRepository, mockProductRepository)
+	_, err := service.Create(666, 666, 666, "2012", 666, "2012", "16:20", 666, 1, 1)
+
+	assert.Equal(t, expectedError, err)
+}
+
 func Test_CountProductsBySectionId_Ok(t *testing.T) {
-	
+
 	expectedResult := models.CountProductsBySectionIdReport{
-		SectionId: 1,
+		SectionId:     1,
 		SectionNumber: 1,
 		ProductsCount: 666,
 	}
@@ -114,13 +150,13 @@ func Test_CountProductsBySections_Ok(t *testing.T) {
 
 	expectedResult := []models.CountProductsBySectionIdReport{
 		{
-			SectionId: 1,
+			SectionId:     1,
 			SectionNumber: 123,
 			ProductsCount: 666,
 		},
 
 		{
-			SectionId: 2,
+			SectionId:     2,
 			SectionNumber: 456,
 			ProductsCount: 100,
 		},

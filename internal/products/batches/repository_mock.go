@@ -16,10 +16,7 @@ func (m MockProductBatchesRepository) Create(
 	dueDate string, initialQuantity uint64, manufacturingDate string, manufacturingHour string,
 	minimumTemperature float32, productId uint64, sectionId uint64,
 ) (models.ProductBatch, error) {
-	if m.err != nil || m.existsBatchNumber {
-		return models.ProductBatch{}, m.err
-	}
-	return m.result.(models.ProductBatch), nil
+	return m.result.(models.ProductBatch), m.err
 }
 
 func (m MockProductBatchesRepository) CountProductsBySections() ([]models.CountProductsBySectionIdReport, error) {
@@ -35,9 +32,5 @@ func (m MockProductBatchesRepository) ExistsBatchNumber(number uint64) (bool, er
 }
 
 func (m MockProductBatchesRepository) Get(id uint64) (models.ProductBatch, error) {
-	if (m.getById == models.ProductBatch{} && m.err != nil) {
-		return models.ProductBatch{}, m.err
-	}
-
-	return m.getById, nil
+	return m.getById, m.err
 }
