@@ -25,8 +25,8 @@ func Test_Create_Ok(t *testing.T) {
 		SellerId:                666,
 	}
 
-	mockRepository := mockProductRepository{
-		result:            expectedResult,
+	mockRepository := MockProductRepository{
+		Result:            expectedResult,
 		err:               nil,
 		existsProductCode: false,
 	}
@@ -42,8 +42,8 @@ func Test_Create_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 
 	expectedError := ExistsProductCodeError
 
-	mockRepository := mockProductRepository{
-		result:            db.Product{},
+	mockRepository := MockProductRepository{
+		Result:            db.Product{},
 		err:               expectedError,
 		existsProductCode: true,
 	}
@@ -58,8 +58,8 @@ func Test_Get_OK(t *testing.T) {
 
 	expectedResult := db.Product{}
 
-	mockProductRepository := mockProductRepository{
-		getById: expectedResult,
+	mockProductRepository := MockProductRepository{
+		GetById: expectedResult,
 		err:     nil,
 	}
 
@@ -74,7 +74,7 @@ func Test_Get_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
 	expectedError := ProductNotFoundError
 
-	mockProductRepository := mockProductRepository{
+	mockProductRepository := MockProductRepository{
 		err: expectedError,
 	}
 
@@ -88,8 +88,8 @@ func Test_GetAll_OK(t *testing.T) {
 
 	expectedResult := []db.Product{{}, {}, {}}
 
-	mockRepository := mockProductRepository{
-		result: expectedResult,
+	mockRepository := MockProductRepository{
+		Result: expectedResult,
 		err:    nil,
 	}
 
@@ -105,8 +105,8 @@ func Test_GetAll_ShouldReturnErrorWhenDatabaseFails(t *testing.T) {
 	expectedResult := []db.Product{}
 	expectedError := errors.New("Deu ruim no banco!")
 
-	mockRepository := mockProductRepository{
-		result: expectedResult,
+	mockRepository := MockProductRepository{
+		Result: expectedResult,
 		err:    expectedError,
 	}
 
@@ -149,9 +149,9 @@ func Test_Update_OK(t *testing.T) {
 		SellerId:                666,
 	}
 
-	mockProductRepository := mockProductRepository{
-		result:            expectedResult,
-		getById:           getById,
+	mockProductRepository := MockProductRepository{
+		Result:            expectedResult,
+		GetById:           getById,
 		existsProductCode: false,
 	}
 
@@ -165,9 +165,9 @@ func Test_Update_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
 	expectedError := ProductNotFoundError
 
-	mockProductRepository := mockProductRepository{
+	mockProductRepository := MockProductRepository{
 		err:               expectedError,
-		getById:           db.Product{},
+		GetById:           db.Product{},
 		existsProductCode: false,
 	}
 
@@ -196,9 +196,9 @@ func Test_Update_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 		SellerId:                666,
 	}
 
-	mockProductRepository := mockProductRepository{
+	mockProductRepository := MockProductRepository{
 		err:               expectedError,
-		getById:           getById,
+		GetById:           getById,
 		existsProductCode: true,
 	}
 
@@ -210,8 +210,8 @@ func Test_Update_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 
 func Test_Delete_Ok(t *testing.T) {
 
-	mockRepository := mockProductRepository{
-		result: db.Product{},
+	mockRepository := MockProductRepository{
+		Result: db.Product{},
 		err:    nil,
 	}
 
@@ -225,8 +225,8 @@ func Test_Delete_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
 	expectedError := ProductNotFoundError
 
-	mockRepository := mockProductRepository{
-		result: db.Product{},
+	mockRepository := MockProductRepository{
+		Result: db.Product{},
 		err:    expectedError,
 	}
 

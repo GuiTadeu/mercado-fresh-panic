@@ -70,7 +70,7 @@ func (r *sectionRepository) GetAll() ([]database.Section, error) {
 func (r *sectionRepository) Get(id uint64) (database.Section, error) {
 
 	var section database.Section
-	rows, err := r.db.Query("SELECT * FROM sections WHERE ID = ?", id)
+	rows, err := r.db.Query("SELECT * FROM sections WHERE id = ?", id)
 
 	if err != nil {
 		log.Println(err)
