@@ -26,9 +26,9 @@ func Test_Create_Ok(t *testing.T) {
 	}
 
 	mockRepository := MockProductRepository{
-		Result:            expectedResult,
-		err:               nil,
-		existsProductCode: false,
+		Result:             expectedResult,
+		Err:                nil,
+		ExistsProductsCode: false,
 	}
 
 	service := NewProductService(mockRepository)
@@ -40,12 +40,12 @@ func Test_Create_Ok(t *testing.T) {
 
 func Test_Create_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 
-	expectedError := ExistsProductCodeError
+	expectedError := ErrExistsProductCodeError
 
 	mockRepository := MockProductRepository{
-		Result:            db.Product{},
-		err:               expectedError,
-		existsProductCode: true,
+		Result:             db.Product{},
+		Err:                expectedError,
+		ExistsProductsCode: true,
 	}
 
 	service := NewProductService(mockRepository)
@@ -60,7 +60,7 @@ func Test_Get_OK(t *testing.T) {
 
 	mockProductRepository := MockProductRepository{
 		GetById: expectedResult,
-		err:     nil,
+		Err:     nil,
 	}
 
 	service := NewProductService(mockProductRepository)
@@ -72,10 +72,10 @@ func Test_Get_OK(t *testing.T) {
 
 func Test_Get_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
-	expectedError := ProductNotFoundError
+	expectedError := ErrProductNotFoundError
 
 	mockProductRepository := MockProductRepository{
-		err: expectedError,
+		Err: expectedError,
 	}
 
 	service := NewProductService(mockProductRepository)
@@ -90,11 +90,57 @@ func Test_GetAll_OK(t *testing.T) {
 
 	mockRepository := MockProductRepository{
 		Result: expectedResult,
-		err:    nil,
+		Err:    nil,
 	}
 
 	service := NewProductService(mockRepository)
 	result, err := service.GetAll()
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResult, result)
+}
+
+func Test_GetReportRecords_OK(t *testing.T) {
+
+	expectedResult := db.ProductReportRecords{
+		Id:           0,
+		Description:  "",
+		RecordsCount: 0,
+	}
+
+	mockRepository := MockProductRepository{
+		Result:             expectedResult,
+		ExistsProductsCode: true,
+	}
+
+	service := NewProductService(mockRepository)
+	result, err := service.GetReportRecords(0)
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResult, result)
+}
+
+func Test_GetAllReportRecords_OK(t *testing.T) {
+
+	expectedResult := []db.ProductReportRecords{
+		{
+			Id:           1,
+			Description:  "tenis",
+			RecordsCount: 2,
+		},
+		{
+			Id:           2,
+			Description:  "tenis",
+			RecordsCount: 2,
+		},
+	}
+
+	mockRepository := MockProductRepository{
+		Result: expectedResult,
+	}
+
+	service := NewProductService(mockRepository)
+	result, err := service.GetAllReportRecords()
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedResult, result)
@@ -107,7 +153,7 @@ func Test_GetAll_ShouldReturnErrorWhenDatabaseFails(t *testing.T) {
 
 	mockRepository := MockProductRepository{
 		Result: expectedResult,
-		err:    expectedError,
+		Err:    expectedError,
 	}
 
 	service := NewProductService(mockRepository)
@@ -150,9 +196,9 @@ func Test_Update_OK(t *testing.T) {
 	}
 
 	mockProductRepository := MockProductRepository{
-		Result:            expectedResult,
-		GetById:           getById,
-		existsProductCode: false,
+		Result:             expectedResult,
+		GetById:            getById,
+		ExistsProductsCode: false,
 	}
 
 	service := NewProductService(mockProductRepository)
@@ -163,12 +209,12 @@ func Test_Update_OK(t *testing.T) {
 
 func Test_Update_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
-	expectedError := ProductNotFoundError
+	expectedError := ErrProductNotFoundError
 
 	mockProductRepository := MockProductRepository{
-		err:               expectedError,
-		GetById:           db.Product{},
-		existsProductCode: false,
+		Err:                expectedError,
+		GetById:            db.Product{},
+		ExistsProductsCode: false,
 	}
 
 	service := NewProductService(mockProductRepository)
@@ -179,7 +225,7 @@ func Test_Update_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
 func Test_Update_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 
-	expectedError := ExistsProductCodeError
+	expectedError := ErrExistsProductCodeError
 
 	getById := db.Product{
 		Id:                      13,
@@ -197,9 +243,9 @@ func Test_Update_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 	}
 
 	mockProductRepository := MockProductRepository{
-		err:               expectedError,
-		GetById:           getById,
-		existsProductCode: true,
+		Err:                expectedError,
+		GetById:            getById,
+		ExistsProductsCode: true,
 	}
 
 	service := NewProductService(mockProductRepository)
@@ -212,7 +258,7 @@ func Test_Delete_Ok(t *testing.T) {
 
 	mockRepository := MockProductRepository{
 		Result: db.Product{},
-		err:    nil,
+		Err:    nil,
 	}
 
 	service := NewProductService(mockRepository)
@@ -223,11 +269,11 @@ func Test_Delete_Ok(t *testing.T) {
 
 func Test_Delete_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
-	expectedError := ProductNotFoundError
+	expectedError := ErrProductNotFoundError
 
 	mockRepository := MockProductRepository{
 		Result: db.Product{},
-		err:    expectedError,
+		Err:    expectedError,
 	}
 
 	service := NewProductService(mockRepository)

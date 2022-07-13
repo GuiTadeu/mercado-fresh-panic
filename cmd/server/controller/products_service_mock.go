@@ -6,8 +6,9 @@ import (
 )
 
 type mockProductService struct {
-	result any
-	err    error
+	result         any
+	err            error
+	productsExists bool
 }
 
 func (m mockProductService) GetAll() ([]db.Product, error) {
@@ -24,6 +25,20 @@ func (m mockProductService) Get(id uint64) (db.Product, error) {
 	return m.result.(db.Product), nil
 }
 
+func (m mockProductService) GetReportRecords(id uint64) (db.ProductReportRecords, error) {
+	if m.err != nil {
+		return db.ProductReportRecords{}, m.err
+	}
+	return m.result.(db.ProductReportRecords), nil
+}
+
+func (m mockProductService) GetAllReportRecords() ([]db.ProductReportRecords, error) {
+	if m.err != nil {
+		return []db.ProductReportRecords{}, m.err
+	}
+	return m.result.([]db.ProductReportRecords), nil
+}
+
 func (m mockProductService) Delete(id uint64) error {
 	if m.err != nil {
 		return m.err
@@ -32,7 +47,7 @@ func (m mockProductService) Delete(id uint64) error {
 }
 
 func (m mockProductService) ExistsProductCode(code string) (bool, error) {
-	return m.err == products.ExistsProductCodeError, m.err
+	return m.err == products.ErrExistsProductCodeError, m.err
 }
 
 func (m mockProductService) Create(
@@ -53,4 +68,8 @@ func (m mockProductService) Update(
 		return db.Product{}, m.err
 	}
 	return m.result.(db.Product), nil
+}
+
+func (m mockProductService) ExistsProduct(id uint64) bool {
+	return m.productsExists
 }

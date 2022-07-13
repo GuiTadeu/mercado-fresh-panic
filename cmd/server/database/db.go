@@ -3,10 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
-	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var StorageDB *sql.DB
@@ -80,6 +80,12 @@ type Product struct {
 	FreezingRate            float32 `json:"freezing_rate" binding:"required"`
 	ProductTypeId           uint64  `json:"product_type_id" binding:"required"`
 	SellerId                uint64  `json:"seller_id" binding:"required"`
+}
+
+type ProductReportRecords struct {
+	Id           uint64 `json:"product_id"`
+	Description  string `json:"description"`
+	RecordsCount uint64 `json:"records_count"`
 }
 
 type Employee struct {
@@ -157,11 +163,11 @@ type CountProductsBySectionIdReport struct {
 }
 
 type ProductRecord struct {
-	Id             uint64    `json:"id"`
-	LastUpdateDate time.Time `json:"last_update_date"`
-	PurchasePrice  float32   `json:"purchase_price"`
-	SalePrice      float32   `json:"sale_price"`
-	ProductId      uint64    `json:"product_id"`
+	Id             uint64  `json:"id"`
+	LastUpdateDate string  `json:"last_update_date"`
+	PurchasePrice  float32 `json:"purchase_price"`
+	SalePrice      float32 `json:"sale_price"`
+	ProductId      uint64  `json:"product_id"`
 }
 
 type InboundOrder struct {
@@ -198,7 +204,7 @@ type OrderDetails struct {
 }
 
 type ReportInboundOrders struct {
-	Id                uint64  `json:"id"`
+	Id                 uint64 `json:"id"`
 	CardNumberId       string `json:"card_number_id" binding:"required"`
 	FirstName          string `json:"first_name" binding:"required"`
 	LastName           string `json:"last_name" binding:"required"`

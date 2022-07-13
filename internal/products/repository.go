@@ -14,6 +14,9 @@ type ProductRepository interface {
 	Delete(id uint64) error
 	ExistsProductCode(code string) (bool, error)
 
+	GetReportRecords(id uint64) (models.ProductReportRecords, error)
+	GetAllReportRecords() ([]models.ProductReportRecords, error)
+
 	Create(code string, description string, width float32, height float32, length float32, netWeight float32, expirationRate float32,
 		recommendedFreezingTemp float32, freezingRate float32, productTypeId uint64, sellerId uint64) (models.Product, error)
 }
@@ -26,6 +29,73 @@ func NewProductRepository(db *sql.DB) ProductRepository {
 	return &productRepository{
 		db: db,
 	}
+}
+
+func (r *productRepository) GetAllReportRecords() ([]models.ProductReportRecords, error) {
+	rows, err := r.db.Query(`SELECT p.id product_id, p.description, count(pr.product_id) records_count FROM products p
+		left join product_records pr on pr.product_id = p.id
+		group by p.id, p.description`)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	var products []models.ProductReportRecords
+	for rows.Next() {
+
+		var product models.ProductReportRecords
+
+		// Fields must be in the same order as in the database
+		err := rows.Scan(
+			&product.Id,
+			&product.Description,
+			&product.RecordsCount,
+		)
+
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+
+		products = append(products, product)
+	}
+
+	return products, nil
+
+}
+
+func (r *productRepository) GetReportRecords(id uint64) (models.ProductReportRecords, error) {
+	rows, err := r.db.Query(`SELECT p.id product_id, p.description, count(pr.product_id) records_count FROM products p
+		left join product_records pr on pr.product_id = p.id
+		where p.id = ?
+		group by p.id, p.description`, id)
+
+	var product models.ProductReportRecords
+
+	if err != nil {
+		log.Println(err)
+		return product, err
+	}
+
+	for rows.Next() {
+
+		// Fields must be in the same order as in the database
+		err := rows.Scan(
+			&product.Id,
+			&product.Description,
+			&product.RecordsCount,
+		)
+
+		if err != nil {
+			log.Fatal(err)
+			return product, err
+		}
+
+	}
+
+	return product, nil
+
 }
 
 func (r *productRepository) GetAll() ([]models.Product, error) {

@@ -13,23 +13,23 @@ import (
 func Test_Repo_Create_Ok(t *testing.T) {
 
 	expectedProduct := models.Product{
-		Id: 1,
-		Code: "dvd",
-		Description: "Pirata",
-		Width: 1,
-		Height: 1,
-		Length: 1,
-		NetWeight: 1,
-		ExpirationRate: 1,
+		Id:                      1,
+		Code:                    "dvd",
+		Description:             "Pirata",
+		Width:                   1,
+		Height:                  1,
+		Length:                  1,
+		NetWeight:               1,
+		ExpirationRate:          1,
 		RecommendedFreezingTemp: 1,
-		FreezingRate: 1,
-		ProductTypeId: 1,
-		SellerId: 1,
+		FreezingRate:            1,
+		ProductTypeId:           1,
+		SellerId:                1,
 	}
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
 	assert.Nil(t, err)
@@ -45,7 +45,7 @@ func Test_Repo_Create_ConnectionError(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 
 	database.Close()
@@ -58,23 +58,23 @@ func Test_Repo_Create_ConnectionError(t *testing.T) {
 func Test_Repo_Get_OK(t *testing.T) {
 
 	expectedProduct := models.Product{
-		Id: 1,
-		Code: "dvd",
-		Description: "Pirata",
-		Width: 1,
-		Height: 1,
-		Length: 1,
-		NetWeight: 1,
-		ExpirationRate: 1,
+		Id:                      1,
+		Code:                    "dvd",
+		Description:             "Pirata",
+		Width:                   1,
+		Height:                  1,
+		Length:                  1,
+		NetWeight:               1,
+		ExpirationRate:          1,
 		RecommendedFreezingTemp: 1,
-		FreezingRate: 1,
-		ProductTypeId: 1,
-		SellerId: 1,
+		FreezingRate:            1,
+		ProductTypeId:           1,
+		SellerId:                1,
 	}
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
 	assert.Nil(t, err)
@@ -90,7 +90,7 @@ func Test_Repo_Get_ShouldReturnEmptyProductWhenIdNotExists(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
 	assert.Nil(t, err)
@@ -105,7 +105,7 @@ func Test_Repo_Get_ConnectionError(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 
 	database.Close()
@@ -119,7 +119,7 @@ func Test_Repo_GetAll_OK(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 
 	expectedCountRows := 2
@@ -136,11 +136,94 @@ func Test_Repo_GetAll_OK(t *testing.T) {
 	util.DropDB(database)
 }
 
+func Test_Repo_GetAllReportRecords_OK(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	util.QueryExec(database, CREATE_PRODUCT_RECORDS_TABLE)
+	util.QueryExec(database, INSERT_PRODUCT_RECORDS)
+
+	repository := NewProductRepository(database)
+	expectedRecords := []models.ProductReportRecords{
+		{
+			Id:           1,
+			Description:  "Pirata",
+			RecordsCount: 3,
+		},
+		{
+			Id:           2,
+			Description:  "Original",
+			RecordsCount: 2,
+		},
+	}
+
+	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	_, err = repository.Create("cd", "Original", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	foundProducts, err := repository.GetAllReportRecords()
+	assert.Equal(t, expectedRecords, foundProducts)
+	assert.Nil(t, err)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_GetReportRecords_OK(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	util.QueryExec(database, CREATE_PRODUCT_RECORDS_TABLE)
+	util.QueryExec(database, INSERT_PRODUCT_RECORDS)
+
+	repository := NewProductRepository(database)
+	expectedRecords := models.ProductReportRecords{
+		Id:           2,
+		Description:  "Original",
+		RecordsCount: 2,
+	}
+
+	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	_, err = repository.Create("cd", "Original", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	foundProducts, err := repository.GetReportRecords(2)
+	assert.Equal(t, expectedRecords, foundProducts)
+	assert.Nil(t, err)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_GetReportRecords_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	util.QueryExec(database, CREATE_PRODUCT_RECORDS_TABLE)
+	util.QueryExec(database, INSERT_PRODUCT_RECORDS)
+
+	repository := NewProductRepository(database)
+
+	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	_, err = repository.Create("cd", "Original", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	database.Close()
+	_, err = repository.GetReportRecords(2)
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
 func Test_Repo_GetAll_ConnectionError(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 
 	database.Close()
@@ -153,38 +236,38 @@ func Test_Repo_GetAll_ConnectionError(t *testing.T) {
 func Test_Repo_Update_OK(t *testing.T) {
 
 	expectedOldProduct := models.Product{
-		Id: 1,
-		Code: "dvd",
-		Description: "Pirata",
-		Width: 1,
-		Height: 1,
-		Length: 1,
-		NetWeight: 1,
-		ExpirationRate: 1,
+		Id:                      1,
+		Code:                    "dvd",
+		Description:             "Pirata",
+		Width:                   1,
+		Height:                  1,
+		Length:                  1,
+		NetWeight:               1,
+		ExpirationRate:          1,
 		RecommendedFreezingTemp: 1,
-		FreezingRate: 1,
-		ProductTypeId: 1,
-		SellerId: 1,
+		FreezingRate:            1,
+		ProductTypeId:           1,
+		SellerId:                1,
 	}
 
 	expectedUpdatedProduct := models.Product{
-		Id: 1,
-		Code: "almanaque",
-		Description: "Deep Web",
-		Width: 2,
-		Height: 2,
-		Length: 2,
-		NetWeight: 2,
-		ExpirationRate: 2,
+		Id:                      1,
+		Code:                    "almanaque",
+		Description:             "Deep Web",
+		Width:                   2,
+		Height:                  2,
+		Length:                  2,
+		NetWeight:               2,
+		ExpirationRate:          2,
 		RecommendedFreezingTemp: 2,
-		FreezingRate: 2,
-		ProductTypeId: 1,
-		SellerId: 1,
+		FreezingRate:            2,
+		ProductTypeId:           1,
+		SellerId:                1,
 	}
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 
 	_, err := repository.Create(
@@ -218,7 +301,7 @@ func Test_Repo_Update_ConnectionError(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 
 	database.Close()
@@ -231,23 +314,23 @@ func Test_Repo_Update_ConnectionError(t *testing.T) {
 func Test_Repo_Delete_Ok(t *testing.T) {
 
 	expectedProduct := models.Product{
-		Id: 1,
-		Code: "dvd",
-		Description: "Pirata",
-		Width: 1,
-		Height: 1,
-		Length: 1,
-		NetWeight: 1,
-		ExpirationRate: 1,
+		Id:                      1,
+		Code:                    "dvd",
+		Description:             "Pirata",
+		Width:                   1,
+		Height:                  1,
+		Length:                  1,
+		NetWeight:               1,
+		ExpirationRate:          1,
 		RecommendedFreezingTemp: 1,
-		FreezingRate: 1,
-		ProductTypeId: 1,
-		SellerId: 1,
+		FreezingRate:            1,
+		ProductTypeId:           1,
+		SellerId:                1,
 	}
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
 	assert.Nil(t, err)
@@ -269,7 +352,7 @@ func Test_Repo_Delete_ConnectionError(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 
 	database.Close()
@@ -283,7 +366,7 @@ func Test_Repo_ExistsProductCode_OK(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
 	assert.Nil(t, err)
@@ -299,7 +382,7 @@ func Test_Repo_ExistsProductCode_NotFound(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
 	assert.Nil(t, err)
@@ -315,7 +398,7 @@ func Test_Repo_ExistsProductCode_ConnectionError(t *testing.T) {
 
 	database := util.CreateDB()
 	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
-	
+
 	repository := NewProductRepository(database)
 
 	database.Close()
@@ -343,3 +426,21 @@ const CREATE_PRODUCTS_TABLE = `
 		FOREIGN KEY (seller_id) REFERENCES sellers(id)
 	);
 `
+
+const CREATE_PRODUCT_RECORDS_TABLE = `
+	CREATE TABLE "product_records"(
+		id INTEGER PRIMARY KEY AUTOINCREMENT ,
+		last_update_date TEXT NOT NULL,
+		purchase_price TEXT NOT NULL,
+		sale_price BIGINT  NOT NULL,
+		product_id BIGINT NOT NULL,
+		FOREIGN KEY (product_id) REFERENCES products(id)
+	);
+	`
+const INSERT_PRODUCT_RECORDS = `
+	INSERT INTO product_records (last_update_date, purchase_price, sale_price, product_id)
+	VALUES ("2022-07-01", 10.35, 15.00, 1),
+	("2022-07-01", 11.35, 15.00, 1),
+	("2022-07-02", 12.24, 16.00, 1),
+	("2022-07-03", 13.13, 17.00, 2),
+	("2022-07-02", 14.02, 18.00, 2)`

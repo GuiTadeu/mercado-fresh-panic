@@ -3,6 +3,7 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -92,7 +93,7 @@ func Test_Create_409(t *testing.T) {
 
 	mockService := mockProductService{
 		result: db.Product{},
-		err:    products.ExistsProductCodeError,
+		err:    products.ErrExistsProductCodeError,
 	}
 
 	router := setupRouter(mockService)
@@ -168,6 +169,81 @@ func Test_GetAll_200(t *testing.T) {
 	assert.Equal(t, 200, response.Code)
 	assert.Equal(t, productsList, responseData)
 }
+func Test_GetReportRecords_200(t *testing.T) {
+
+	foundProduct := db.ProductReportRecords{
+		Id:           1,
+		Description:  "paints",
+		RecordsCount: 10,
+	}
+
+	mockService := mockProductService{
+		result: foundProduct,
+		err:    nil,
+	}
+
+	router := setupRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/products/reportrecords?id=1", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, 200, response.Code)
+}
+
+func Test_GetReportRecords_406(t *testing.T) {
+
+	mockService := mockProductService{
+		result: db.ProductReportRecords{},
+		err:    products.ErrParameterNotAcceptableError,
+	}
+
+	router := setupRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/products/reportrecords?id=999", nil)
+	router.ServeHTTP(response, request)
+
+	assert.Equal(t, http.StatusNotAcceptable, response.Code)
+}
+
+func Test_GetAllReportRecords_200(t *testing.T) {
+
+	productsList := []db.ProductReportRecords{
+		{
+			Id:           1,
+			Description:  "paints",
+			RecordsCount: 10,
+		},
+		{
+			Id:           2,
+			Description:  "shoes",
+			RecordsCount: 115,
+		},
+		{
+			Id:           3,
+			Description:  "notebooks",
+			RecordsCount: 8,
+		},
+	}
+
+	mockService := mockProductService{
+		result: productsList,
+		err:    nil,
+	}
+
+	router := setupRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/products/reportrecords", nil)
+	router.ServeHTTP(response, request)
+
+	responseData := []db.ProductReportRecords{}
+	decodeWebResponse(response, &responseData)
+
+	assert.Equal(t, 200, response.Code)
+	assert.Equal(t, productsList, responseData)
+}
 
 func Test_Get_200(t *testing.T) {
 
@@ -204,7 +280,7 @@ func Test_Get_404(t *testing.T) {
 
 	mockService := mockProductService{
 		result: db.Product{},
-		err:    products.ProductNotFoundError,
+		err:    products.ErrProductNotFoundError,
 	}
 
 	router := setupRouter(mockService)
@@ -291,7 +367,7 @@ func Test_Update_404(t *testing.T) {
 
 	mockService := mockProductService{
 		result: db.Product{},
-		err:    products.ProductNotFoundError,
+		err:    products.ErrProductNotFoundError,
 	}
 
 	router := setupRouter(mockService)
@@ -304,6 +380,43 @@ func Test_Update_404(t *testing.T) {
 	decodeWebResponse(response, &responseData)
 
 	assert.Equal(t, 404, response.Code)
+}
+
+func Test_Update_500(t *testing.T) {
+
+	productToUpdate := db.Product{
+		Id:                      1,
+		Code:                    "ABC",
+		Description:             "ABC",
+		Width:                   1.0,
+		Height:                  1.0,
+		Length:                  1.0,
+		NetWeight:               1.0,
+		ExpirationRate:          1.0,
+		RecommendedFreezingTemp: 1.0,
+		FreezingRate:            1.0,
+		ProductTypeId:           1,
+		SellerId:                1,
+	}
+
+	jsonValue, _ := json.Marshal(productToUpdate)
+	requestBody := bytes.NewBuffer(jsonValue)
+
+	mockService := mockProductService{
+		result: db.Product{},
+		err:    errors.New("product id binding error"),
+	}
+
+	router := setupRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("PATCH", "/api/v1/products/1", requestBody)
+	router.ServeHTTP(response, request)
+
+	responseData := db.Product{}
+	decodeWebResponse(response, &responseData)
+
+	assert.Equal(t, http.StatusInternalServerError, response.Code)
 }
 
 func Test_Delete_204(t *testing.T) {
@@ -326,7 +439,7 @@ func Test_Delete_404(t *testing.T) {
 
 	mockService := mockProductService{
 		result: db.Product{},
-		err:    products.ProductNotFoundError,
+		err:    products.ErrProductNotFoundError,
 	}
 
 	router := setupRouter(mockService)
@@ -355,6 +468,7 @@ func setupRouter(mockService mockProductService) *gin.Engine {
 	router.GET("/api/v1/products/:id", controller.Get())
 	router.PATCH("/api/v1/products/:id", controller.Update())
 	router.DELETE("/api/v1/products/:id", controller.Delete())
+	router.GET("/api/v1/products/reportrecords", controller.GetAllReportRecords())
 
 	return router
 }
