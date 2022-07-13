@@ -185,7 +185,7 @@ func Test_GetReportRecords_200(t *testing.T) {
 	router := setupRouter(mockService)
 
 	response := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "/api/v1/products/reportrecords/1", nil)
+	request, _ := http.NewRequest("GET", "/api/v1/products/reportrecords?id=1", nil)
 	router.ServeHTTP(response, request)
 
 	assert.Equal(t, 200, response.Code)

@@ -6,8 +6,9 @@ import (
 )
 
 type mockProductService struct {
-	result any
-	err    error
+	result         any
+	err            error
+	productsExists bool
 }
 
 func (m mockProductService) GetAll() ([]db.Product, error) {
@@ -67,4 +68,8 @@ func (m mockProductService) Update(
 		return db.Product{}, m.err
 	}
 	return m.result.(db.Product), nil
+}
+
+func (m mockProductService) ExistsProduct(id uint64) bool {
+	return m.productsExists
 }

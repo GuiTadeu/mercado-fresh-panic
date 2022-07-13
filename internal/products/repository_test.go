@@ -136,6 +136,89 @@ func Test_Repo_GetAll_OK(t *testing.T) {
 	util.DropDB(database)
 }
 
+func Test_Repo_GetAllReportRecords_OK(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	util.QueryExec(database, CREATE_PRODUCT_RECORDS_TABLE)
+	util.QueryExec(database, INSERT_PRODUCT_RECORDS)
+
+	repository := NewProductRepository(database)
+	expectedRecords := []models.ProductReportRecords{
+		{
+			Id:           1,
+			Description:  "Pirata",
+			RecordsCount: 3,
+		},
+		{
+			Id:           2,
+			Description:  "Original",
+			RecordsCount: 2,
+		},
+	}
+
+	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	_, err = repository.Create("cd", "Original", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	foundProducts, err := repository.GetAllReportRecords()
+	assert.Equal(t, expectedRecords, foundProducts)
+	assert.Nil(t, err)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_GetReportRecords_OK(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	util.QueryExec(database, CREATE_PRODUCT_RECORDS_TABLE)
+	util.QueryExec(database, INSERT_PRODUCT_RECORDS)
+
+	repository := NewProductRepository(database)
+	expectedRecords := models.ProductReportRecords{
+		Id:           2,
+		Description:  "Original",
+		RecordsCount: 2,
+	}
+
+	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	_, err = repository.Create("cd", "Original", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	foundProducts, err := repository.GetReportRecords(2)
+	assert.Equal(t, expectedRecords, foundProducts)
+	assert.Nil(t, err)
+
+	util.DropDB(database)
+}
+
+func Test_Repo_GetReportRecords_ConnectionError(t *testing.T) {
+
+	database := util.CreateDB()
+	util.QueryExec(database, CREATE_PRODUCTS_TABLE)
+	util.QueryExec(database, CREATE_PRODUCT_RECORDS_TABLE)
+	util.QueryExec(database, INSERT_PRODUCT_RECORDS)
+
+	repository := NewProductRepository(database)
+
+	_, err := repository.Create("dvd", "Pirata", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	_, err = repository.Create("cd", "Original", 1, 1, 1, 1, 1, 1, 1, 1, 1)
+	assert.Nil(t, err)
+
+	database.Close()
+	_, err = repository.GetReportRecords(2)
+	assert.NotNil(t, err)
+
+	util.DropDB(database)
+}
+
 func Test_Repo_GetAll_ConnectionError(t *testing.T) {
 
 	database := util.CreateDB()
@@ -343,3 +426,21 @@ const CREATE_PRODUCTS_TABLE = `
 		FOREIGN KEY (seller_id) REFERENCES sellers(id)
 	);
 `
+
+const CREATE_PRODUCT_RECORDS_TABLE = `
+	CREATE TABLE "product_records"(
+		id INTEGER PRIMARY KEY AUTOINCREMENT ,
+		last_update_date TEXT NOT NULL,
+		purchase_price TEXT NOT NULL,
+		sale_price BIGINT  NOT NULL,
+		product_id BIGINT NOT NULL,
+		FOREIGN KEY (product_id) REFERENCES products(id)
+	);
+	`
+const INSERT_PRODUCT_RECORDS = `
+	INSERT INTO product_records (last_update_date, purchase_price, sale_price, product_id)
+	VALUES ("2022-07-01", 10.35, 15.00, 1),
+	("2022-07-01", 11.35, 15.00, 1),
+	("2022-07-02", 12.24, 16.00, 1),
+	("2022-07-03", 13.13, 17.00, 2),
+	("2022-07-02", 14.02, 18.00, 2)`
