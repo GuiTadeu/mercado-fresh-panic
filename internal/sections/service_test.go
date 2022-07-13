@@ -20,8 +20,8 @@ func Test_Create_Ok(t *testing.T) {
 		ProductTypeId:      2,
 	}
 
-	mockRepository := mockSectionRepository{
-		result:              expectedResult,
+	mockRepository := MockSectionRepository{
+		Result:              expectedResult,
 		err:                 nil,
 		existsSectionNumber: false,
 	}
@@ -37,8 +37,8 @@ func Test_Create_Conflict(t *testing.T) {
 
 	expectedResult := ErrExistsSectionNumberError
 
-	mockRepository := mockSectionRepository{
-		result:              db.Section{},
+	mockRepository := MockSectionRepository{
+		Result:              db.Section{},
 		err:                 expectedResult,
 		existsSectionNumber: true,
 	}
@@ -53,8 +53,8 @@ func Test_GetAll_FindAll(t *testing.T) {
 
 	expectedResult := []db.Section{{}, {}, {}}
 
-	mockRepository := mockSectionRepository{
-		result: expectedResult,
+	mockRepository := MockSectionRepository{
+		Result: expectedResult,
 		err:    nil,
 	}
 
@@ -68,8 +68,8 @@ func Test_Get_FindByIdExistent(t *testing.T) {
 
 	expectedResult := db.Section{}
 
-	mockRepository := mockSectionRepository{
-		result: expectedResult,
+	mockRepository := MockSectionRepository{
+		Result: expectedResult,
 		err:    nil,
 	}
 
@@ -84,7 +84,7 @@ func Test_Get_FindByIdNonExistent(t *testing.T) {
 
 	expectedError := ErrSectionNotFoundError
 
-	mockRepository := mockSectionRepository{
+	mockRepository := MockSectionRepository{
 		err: expectedError,
 	}
 
@@ -119,9 +119,9 @@ func Test_Update_Ok(t *testing.T) {
 		ProductTypeId:      2,
 	}
 
-	mockRepository := mockSectionRepository{
-		result:              expectedResult,
-		getById:             getById,
+	mockRepository := MockSectionRepository{
+		Result:              expectedResult,
+		GetById:             getById,
 		existsSectionNumber: false,
 	}
 
@@ -135,9 +135,9 @@ func Test_Update_NonExistent(t *testing.T) {
 
 	expectedError := ErrSectionNotFoundError
 
-	mockRepository := mockSectionRepository{
+	mockRepository := MockSectionRepository{
 		err:                 expectedError,
-		getById:             db.Section{},
+		GetById:             db.Section{},
 		existsSectionNumber: false,
 	}
 
@@ -163,9 +163,9 @@ func Test_Update_ShouldReturnErrWhenCodeAlreadyExists(t *testing.T) {
 		ProductTypeId:      2,
 	}
 
-	mockRepository := mockSectionRepository{
+	mockRepository := MockSectionRepository{
 		err:                 expectedError,
-		getById:             getById,
+		GetById:             getById,
 		existsSectionNumber: true,
 	}
 
@@ -177,8 +177,8 @@ func Test_Update_ShouldReturnErrWhenCodeAlreadyExists(t *testing.T) {
 
 func Test_Delete_Ok(t *testing.T) {
 
-	mockRepository := mockSectionRepository{
-		result: db.Section{},
+	mockRepository := MockSectionRepository{
+		Result: db.Section{},
 		err:    nil,
 	}
 
@@ -192,7 +192,7 @@ func Test_Delete_NonExistent(t *testing.T) {
 
 	expectedError := ErrSectionNotFoundError
 
-	mockRepository := mockSectionRepository{
+	mockRepository := MockSectionRepository{
 		err: expectedError,
 	}
 

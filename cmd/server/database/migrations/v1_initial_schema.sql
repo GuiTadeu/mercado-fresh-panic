@@ -160,17 +160,17 @@ CREATE TABLE `product_batches`(
   batch_number BIGINT NOT NULL,
   current_quantity BIGINT UNSIGNED NOT NULL,
   current_temperature DECIMAL(19, 2) NOT NULL,
-  due_date DATETIME(6) NOT NULL,
+  due_date VARCHAR(255) NOT NULL,
   initial_quantity BIGINT UNSIGNED NOT NULL,
-  manufacturing_date DATE NOT NULL,
-  manufacturing_hour TIME NOT NULL,
+  manufacturing_date VARCHAR(255) NOT NULL,
+  manufacturing_hour VARCHAR(255) NOT NULL,
   minimum_temperature DECIMAL(19, 2) NOT NULL,
   product_id BIGINT UNSIGNED NOT NULL,
   section_id BIGINT UNSIGNED NOT NULL,
   FOREIGN KEY (product_id) REFERENCES products(id),
   FOREIGN KEY (section_id) REFERENCES sections(id),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 LOCK TABLES `product_batches` WRITE;
 
