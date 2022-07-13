@@ -47,3 +47,17 @@ func (m mockBuyerRepository) Update(Ubuyer db.Buyer) (db.Buyer, error) {
 func (m mockBuyerRepository) ExistsBuyerCardNumberId(cardNumberId string) (bool, error) {
 	return m.existsBuyerCardNumberId, m.err
 }
+
+func (m mockBuyerRepository) CountPurchaseOrdersByBuyer(id uint64) (db.CountBuyer, error) {
+	if m.err != nil {
+		return db.CountBuyer{}, m.err
+	}
+	return m.result.(db.CountBuyer), nil
+}
+
+func (m mockBuyerRepository) CountPurchaseOrdersByBuyers() ([]db.CountBuyer, error) {
+	if m.err != nil {
+		return []db.CountBuyer{}, m.err
+	}
+	return m.result.([]db.CountBuyer), nil
+}
