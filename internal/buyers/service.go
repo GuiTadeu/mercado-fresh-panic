@@ -15,6 +15,8 @@ type BuyerService interface {
 	Create(cardNumberId, firstName, lastName string) (models.Buyer, error)
 	Get(id uint64) (models.Buyer, error)
 	GetAll() ([]models.Buyer, error)
+	CountPurchaseOrdersByBuyer(id uint64) (models.CountBuyer, error)
+	CountPurchaseOrdersByBuyers() ([]models.CountBuyer, error)
 	Update(id uint64, cardNumberId, firstName, lastName string) (models.Buyer, error)
 	Delete(id uint64) error
 }
@@ -48,6 +50,14 @@ func (s *buyerService) Get(id uint64) (models.Buyer, error) {
 
 func (s *buyerService) GetAll() ([]models.Buyer, error) {
 	return s.buyerRepository.GetAll()
+}
+
+func (s *buyerService) CountPurchaseOrdersByBuyer(id uint64) (models.CountBuyer, error) {
+	return s.buyerRepository.CountPurchaseOrdersByBuyer(id)
+}
+
+func (s *buyerService) CountPurchaseOrdersByBuyers() ([]models.CountBuyer, error) {
+	return s.buyerRepository.CountPurchaseOrdersByBuyers()
 }
 
 func (s *buyerService) Update(id uint64, cardNumberId, firstName, lastName string) (models.Buyer, error) {

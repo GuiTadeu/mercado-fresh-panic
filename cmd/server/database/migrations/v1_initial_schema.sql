@@ -258,7 +258,7 @@ DROP TABLE IF EXISTS `purchase_orders`;
 CREATE TABLE `purchase_orders`(
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   order_number VARCHAR(255) NOT NULL,
-  order_date DATETIME(6) NOT NULL,
+  order_date VARCHAR(255) NOT NULL,
   tracking_code VARCHAR(255) NOT NULL,
   buyer_id BIGINT UNSIGNED NOT NULL,
   order_status_id BIGINT UNSIGNED NOT NULL,

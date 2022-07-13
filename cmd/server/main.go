@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/GuiTadeu/mercado-fresh-panic/internal/purchaseOrders"
+
 	"github.com/GuiTadeu/mercado-fresh-panic/cmd/server/controller"
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/GuiTadeu/mercado-fresh-panic/internal/buyers"
@@ -32,7 +34,7 @@ func main() {
 	storageDB := db.Init()
 	server := gin.Default()
 
-	sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository, carrieRepository, productRecordsRepository, batchesRepository := buildRepositories(storageDB)
+	sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository, carrieRepository, batchesRepository, productRecordsRepository, purchaseOrdersRepository := buildRepositories(storageDB)
 
 	sellersHandlers(sellerRepository, server)
 	warehousesHandlers(warehouseRepository, server)
@@ -45,6 +47,7 @@ func main() {
 	carriersHandlers(carrieRepository, server)
 	productBatchesHandlers(batchesRepository, sectionRepository, productRepository, server)
 	productRecordsHandlers(productRecordsRepository, productRepository, server)
+	purchaseOrdersHandlers(purchaseOrdersRepository, server)
 
 	port := os.Getenv("MERCADO_FRESH_HOST_PORT")
 	server.Run(port)
@@ -155,6 +158,7 @@ func buyerHandlers(buyerRepository buyers.BuyerRepository, server *gin.Engine) {
 
 	buyerRoutes := server.Group("/api/v1/buyers")
 
+	buyerRoutes.GET("/reportPurchaseOrders", cBuyers.CountPurchaseOrdersByBuyers())
 	buyerRoutes.GET("/", cBuyers.GetAll())
 	buyerRoutes.GET("/:id", cBuyers.Get())
 	buyerRoutes.POST("/", cBuyers.Create())
@@ -196,8 +200,9 @@ func buildRepositories(storageDB *sql.DB) (
 	inboundorders.InboundOrderRepository,
 	localities.Repository,
 	carries.CarrierRepository,
+	batches.ProductBatchRepository,
 	productrecords.ProductRecordsRepository,
-	batches.ProductBatchRepository) {
+	purchaseOrders.PurchaseOrdersRepository) {
 
 	sellerRepository := sellers.NewRepository(storageDB)
 	warehouseRepository := warehouses.NewRepository(storageDB)
@@ -210,6 +215,17 @@ func buildRepositories(storageDB *sql.DB) (
 	carrieRepository := carries.NewCarrierRepository(storageDB)
 	productRecordsRepository := productrecords.NewProductRecordsRepository(storageDB)
 	productBatchesRepository := batches.NewProductBatchRepository(storageDB)
+	purchaseOrdersRepository := purchaseOrders.NewPurchaseOrdersRepository(storageDB)
 
-	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository, carrieRepository, productRecordsRepository, productBatchesRepository
+	return sellerRepository, warehouseRepository, sectionRepository, productRepository, buyerRepository, employeeRepository, inboundOrderRepository, localityRepository, carrieRepository, productBatchesRepository, productRecordsRepository, purchaseOrdersRepository
+}
+
+func purchaseOrdersHandlers(purchaseOrdersRepository purchaseOrders.PurchaseOrdersRepository, server *gin.Engine) {
+	purchaseOrderService := purchaseOrders.NewPurchaseOrdersService(purchaseOrdersRepository)
+	purchaseOrderHandler := controller.NewPurchaseOrderController(purchaseOrderService)
+
+	purchaseOrderRoutes := server.Group("/api/v1/")
+
+	purchaseOrderRoutes.POST("/purchaseOrders", purchaseOrderHandler.Create())
+
 }

@@ -92,6 +92,33 @@ func (c *buyerController) Get() gin.HandlerFunc {
 	}
 }
 
+func (c *buyerController) CountPurchaseOrdersByBuyers() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		id, ok := ctx.GetQuery("id")
+		if ok {
+			id, _ := strconv.ParseUint(id, 10, 64)
+			buyers, err := c.buyerService.CountPurchaseOrdersByBuyer(id)
+			if err != nil {
+				status := buyerErrorHandler(err)
+				ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+				return
+			}
+			ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, buyers, ""))
+		} else {
+
+			buyers, err := c.buyerService.CountPurchaseOrdersByBuyers()
+
+			if err != nil {
+				status := buyerErrorHandler(err)
+				ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+				return
+			}
+
+			ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, buyers, ""))
+		}
+	}
+}
+
 func (c *buyerController) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
@@ -144,7 +171,7 @@ func (c *buyerController) Update() gin.HandlerFunc {
 	}
 }
 
-func buyerErrorHandler(err error) (int) {
+func buyerErrorHandler(err error) int {
 	switch err {
 
 	case buyers.BuyerNotFoundError:

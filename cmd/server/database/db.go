@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -104,6 +103,14 @@ type Buyer struct {
 	LastName     string `json:"last_name"`
 }
 
+type CountBuyer struct {
+	Id                  uint64 `json:"id" binding:"required"`
+	CardNumberId        string `json:"card_number_id" binding:"required"`
+	FirstName           string `json:"first_name" binding:"required"`
+	LastName            string `json:"last_name" binding:"required"`
+	PurchaseOrdersCount uint64 `json:"purchase_orders_count" binding:"required"`
+}
+
 type Country struct {
 	Id   uint64 `json:"id"`
 	Name string `json:"country_name"`
@@ -178,13 +185,13 @@ type OrderStatus struct {
 }
 
 type PurchaseOrder struct {
-	Id              uint64    `json:"id"`
-	OrderNumber     string    `json:"order_number"`
-	OrderDate       time.Time `json:"order_date"`
-	TrackingCode    string    `json:"tracking_code"`
-	BuyerId         uint64    `json:"buyer_id"`
-	OrderStatusId   uint64    `json:"order_status_id"`
-	ProductRecordId uint64    `json:"product_record_id"`
+	Id              uint64 `json:"id"`
+	OrderNumber     string `json:"order_number"`
+	OrderDate       string `json:"order_date"`
+	TrackingCode    string `json:"tracking_code"`
+	BuyerId         uint64 `json:"buyer_id"`
+	OrderStatusId   uint64 `json:"order_status_id"`
+	ProductRecordId uint64 `json:"product_record_id"`
 }
 
 type OrderDetails struct {
