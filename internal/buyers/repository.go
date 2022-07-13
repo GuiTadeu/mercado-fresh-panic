@@ -10,6 +10,8 @@ type BuyerRepository interface {
 	Create(cardNumberId, firstName, lastName string) (models.Buyer, error)
 	Get(id uint64) (models.Buyer, error)
 	GetAll() ([]models.Buyer, error)
+	CountPurchaseOrdersByBuyer(id uint64) (models.CountBuyer, error)
+	CountPurchaseOrdersByBuyers() ([]models.CountBuyer, error)
 	Delete(id uint64) error
 	Update(updatedBuyer models.Buyer) (models.Buyer, error)
 	ExistsBuyerCardNumberId(cardNumberId string) (bool, error)
@@ -83,6 +85,74 @@ func (r *buyerRepository) GetAll() ([]models.Buyer, error) {
 			&buyer.LastName,
 		); err != nil {
 			log.Println(err)
+			return nil, err
+		}
+		buyers = append(buyers, buyer)
+	}
+	return buyers, nil
+}
+
+func (r *buyerRepository) CountPurchaseOrdersByBuyer(id uint64) (models.CountBuyer, error) {
+	var buyer models.CountBuyer
+
+	stmt := r.db.QueryRow(`
+	SELECT buyers.id, 
+	       id_card_number, 
+	       first_name, 
+	       last_name, 
+	COUNT(purchase_orders.id) AS purchase_orders_count
+	FROM buyers
+	LEFT JOIN purchase_orders
+	ON buyers.id = purchase_orders.buyer_id
+	WHERE buyers.id = ?
+	GROUP BY (buyers.id)
+	`, id)
+
+	err := stmt.Scan(
+		&buyer.Id,
+		&buyer.CardNumberId,
+		&buyer.FirstName,
+		&buyer.LastName,
+		&buyer.PurchaseOrdersCount,
+	)
+
+	if err != nil {
+		return models.CountBuyer{}, err
+	}
+
+	return buyer, nil
+}
+
+func (r *buyerRepository) CountPurchaseOrdersByBuyers() ([]models.CountBuyer, error) {
+	var buyers []models.CountBuyer
+
+	stmt, err := r.db.Query(`
+	SELECT buyers.id, 
+	       id_card_number, 
+	       first_name, 
+	       last_name, 
+	       COUNT(purchase_orders.id) AS purchase_orders_count
+	FROM buyers
+	LEFT JOIN purchase_orders
+	ON buyers.id = purchase_orders.buyer_id
+	GROUP BY (buyers.id)
+	`)
+
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	for stmt.Next() {
+		var buyer models.CountBuyer
+
+		if err = stmt.Scan(
+			&buyer.Id,
+			&buyer.CardNumberId,
+			&buyer.FirstName,
+			&buyer.LastName,
+			&buyer.PurchaseOrdersCount,
+		); err != nil {
 			return nil, err
 		}
 		buyers = append(buyers, buyer)

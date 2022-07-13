@@ -125,6 +125,49 @@ func Test_Buyer_GetAll_200(t *testing.T) {
 	assert.Equal(t, buyers, responseData)
 }
 
+func Test_Buyer_CountPurchaseOrdersByBuyers_200(t *testing.T) {
+	buyers := []db.CountBuyer{
+		{
+			Id:                  1,
+			CardNumberId:        "5",
+			FirstName:           "NameT1",
+			LastName:            "LastNameT1",
+			PurchaseOrdersCount: 1,
+		},
+		{
+			Id:                  2,
+			CardNumberId:        "10",
+			FirstName:           "NameT2",
+			LastName:            "LastNameT2",
+			PurchaseOrdersCount: 2,
+		},
+		{
+			Id:                  3,
+			CardNumberId:        "15",
+			FirstName:           "NameT3",
+			LastName:            "LastNameT3",
+			PurchaseOrdersCount: 3,
+		},
+	}
+
+	mockService := mockBuyerService{
+		result: buyers,
+		err:    nil,
+	}
+
+	router := setupBuyerRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/buyers/reportPurchaseOrders", nil)
+	router.ServeHTTP(response, request)
+
+	responseData := []db.CountBuyer{}
+	decodeBuyerWebResponse(response, &responseData)
+
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, buyers, responseData)
+}
+
 func Test_Buyer_Get_200(t *testing.T) {
 	buyer := db.Buyer{
 		Id:           1,
@@ -151,6 +194,33 @@ func Test_Buyer_Get_200(t *testing.T) {
 	assert.Equal(t, buyer, responseData)
 }
 
+func Test_Buyer_CountPurchaseOrdersByBuyer_200(t *testing.T) {
+	buyer := db.CountBuyer{
+		Id:                  1,
+		CardNumberId:        "5",
+		FirstName:           "NameT1",
+		LastName:            "LastNameT1",
+		PurchaseOrdersCount: 1,
+	}
+
+	mockService := mockBuyerService{
+		result: buyer,
+		err:    nil,
+	}
+
+	router := setupBuyerRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/buyers/reportPurchaseOrders?id=1", nil)
+	router.ServeHTTP(response, request)
+
+	responseData := db.CountBuyer{}
+	decodeBuyerWebResponse(response, &responseData)
+
+	assert.Equal(t, http.StatusOK, response.Code)
+	assert.Equal(t, buyer, responseData)
+}
+
 func Test_Buyer_Get_404(t *testing.T) {
 
 	mockService := mockBuyerService{
@@ -164,6 +234,28 @@ func Test_Buyer_Get_404(t *testing.T) {
 
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/api/v1/buyers/1", nil)
+	router.ServeHTTP(response, request)
+
+	responseStruct := web.Response{}
+	json.Unmarshal(response.Body.Bytes(), &responseStruct)
+
+	assert.Equal(t, http.StatusNotFound, response.Code)
+	assert.Equal(t, expectedError, responseStruct.Error)
+}
+
+func Test_Buyer_CountPurchaseOrdersByBuyer_404(t *testing.T) {
+
+	mockService := mockBuyerService{
+		result: db.Buyer{},
+		err:    buyers.BuyerNotFoundError,
+	}
+
+	expectedError := buyers.BuyerNotFoundError.Error()
+
+	router := setupBuyerRouter(mockService)
+
+	response := httptest.NewRecorder()
+	request, _ := http.NewRequest("GET", "/api/v1/buyers/reportPurchaseOrders?id=1", nil)
 	router.ServeHTTP(response, request)
 
 	responseStruct := web.Response{}
@@ -281,6 +373,7 @@ func setupBuyerRouter(mockService mockBuyerService) *gin.Engine {
 	router := gin.Default()
 	router.POST("/api/v1/buyers", controller.Create())
 	router.GET("/api/v1/buyers", controller.GetAll())
+	router.GET("/api/v1/buyers/reportPurchaseOrders", controller.CountPurchaseOrdersByBuyers())
 	router.GET("/api/v1/buyers/:id", controller.Get())
 	router.PATCH("/api/v1/buyers/:id", controller.Update())
 	router.DELETE("/api/v1/buyers/:id", controller.Delete())
