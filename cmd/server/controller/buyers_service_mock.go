@@ -30,6 +30,20 @@ func (m mockBuyerService) GetAll() ([]db.Buyer, error) {
 	return m.result.([]db.Buyer), nil
 }
 
+func (m mockBuyerService) CountPurchaseOrdersByBuyer(id uint64) (db.CountBuyer, error) {
+	if m.err != nil {
+		return db.CountBuyer{}, m.err
+	}
+	return m.result.(db.CountBuyer), nil
+}
+
+func (m mockBuyerService) CountPurchaseOrdersByBuyers() ([]db.CountBuyer, error) {
+	if m.err != nil {
+		return []db.CountBuyer{}, m.err
+	}
+	return m.result.([]db.CountBuyer), nil
+}
+
 func (m mockBuyerService) Update(
 	id uint64, cardNumberId, firstName, lastName string,
 ) (db.Buyer, error) {
