@@ -19,10 +19,10 @@ func Test_Create_ShouldReturnOK(t *testing.T) {
 		MinimumTemperature: 1.1,
 		LocalityID:         "1",
 	}
-	mockRepository := mockWarehouseRepository{
-		result:   expectedResult,
-		err:      nil,
-		findByCode: false,
+	mockRepository := MockWarehouseRepository{
+		Result:     expectedResult,
+		Err:        nil,
+		FindByCode: false,
 	}
 
 	service := NewService(mockRepository)
@@ -35,10 +35,10 @@ func Test_Create_ShouldReturnOK(t *testing.T) {
 func Test_Create_ShouldReturnError(t *testing.T) {
 	expectedError := ExistsWarehouseCodeError
 
-	mockRepository := mockWarehouseRepository{
-		result:   database.Warehouse{},
-		err:      expectedError,
-		findByCode: true,
+	mockRepository := MockWarehouseRepository{
+		Result:     database.Warehouse{},
+		Err:        expectedError,
+		FindByCode: true,
 	}
 	service := NewService(mockRepository)
 	_, err := service.Create("SC", "psn", "45674458", 5, 1.1, "1")
@@ -50,9 +50,9 @@ func Test_GetAll_ShouldReturnWarehouseList(t *testing.T) {
 
 	expectedResult := []database.Warehouse{{}, {}, {}}
 
-	mockRepository := mockWarehouseRepository{
-		result: expectedResult,
-		err:    nil,
+	mockRepository := MockWarehouseRepository{
+		Result: expectedResult,
+		Err:    nil,
 	}
 
 	service := NewService(mockRepository)
@@ -67,9 +67,9 @@ func Test_GetAll_ShouldReturnError(t *testing.T) {
 	expectedResult := []database.Warehouse{}
 	expectedError := errors.New("The bank went bad!")
 
-	mockRepository := mockWarehouseRepository{
-		result: expectedResult,
-		err:    expectedError,
+	mockRepository := MockWarehouseRepository{
+		Result: expectedResult,
+		Err:    expectedError,
 	}
 
 	service := NewService(mockRepository)
@@ -81,9 +81,9 @@ func Test_GetAll_ShouldReturnError(t *testing.T) {
 
 func Test_Delete_ShouldReturnOk(t *testing.T) {
 
-	mockRepository := mockWarehouseRepository{
-		result: database.Warehouse{},
-		err:    nil,
+	mockRepository := MockWarehouseRepository{
+		Result: database.Warehouse{},
+		Err:    nil,
 	}
 
 	service := NewService(mockRepository)
@@ -96,9 +96,9 @@ func Test_Delete_ShouldReturnError(t *testing.T) {
 
 	expectedError := errors.New("The bank went bad!")
 
-	mockRepository := mockWarehouseRepository{
-		result: database.Warehouse{},
-		err:    expectedError,
+	mockRepository := MockWarehouseRepository{
+		Result: database.Warehouse{},
+		Err:    expectedError,
 	}
 
 	service := NewService(mockRepository)
@@ -111,9 +111,9 @@ func Test_Get_ShouldReturnOK(t *testing.T) {
 
 	expectedResult := database.Warehouse{}
 
-	mockWarehouseRepository := mockWarehouseRepository{
-		result: expectedResult,
-		err:    nil,
+	mockWarehouseRepository := MockWarehouseRepository{
+		Result: expectedResult,
+		Err:    nil,
 	}
 
 	service := NewService(mockWarehouseRepository)
@@ -127,8 +127,8 @@ func Test_Get_ShouldReturnError(t *testing.T) {
 
 	expectedError := WarehouseNotFoundError
 
-	mockWarehouseRepository := mockWarehouseRepository{
-		err: expectedError,
+	mockWarehouseRepository := MockWarehouseRepository{
+		Err: expectedError,
 	}
 
 	service := NewService(mockWarehouseRepository)
@@ -158,11 +158,11 @@ func Test_Update_ShouldReturnOK(t *testing.T) {
 		MinimumTemperature: 1.2,
 	}
 
-	mockRepository := mockWarehouseRepository{
-		result:   expectedResult,
-		err:      nil,
-		findByCode: false,
-		getById:  getById,
+	mockRepository := MockWarehouseRepository{
+		Result:     expectedResult,
+		Err:        nil,
+		FindByCode: false,
+		GetById:    getById,
 	}
 
 	service := NewService(mockRepository)
@@ -175,10 +175,10 @@ func Test_Update_ShouldReturnError(t *testing.T) {
 
 	expectedError := WarehouseNotFoundError
 
-	mockWarehouseRepository := mockWarehouseRepository{
-		err:      expectedError,
-		getById:  database.Warehouse{},
-		findByCode: false,
+	mockWarehouseRepository := MockWarehouseRepository{
+		Err:        expectedError,
+		GetById:    database.Warehouse{},
+		FindByCode: false,
 	}
 
 	service := NewService(mockWarehouseRepository)
@@ -201,10 +201,10 @@ func Test_Update_ShouldReturnErrorExists(t *testing.T) {
 		MinimumTemperature: 1.1,
 	}
 
-	mockWarehouseRepository := mockWarehouseRepository{
-		err:      expectedError,
-		getById:  getById,
-		findByCode: true,
+	mockWarehouseRepository := MockWarehouseRepository{
+		Err:        expectedError,
+		GetById:    getById,
+		FindByCode: true,
 	}
 
 	service := NewService(mockWarehouseRepository)

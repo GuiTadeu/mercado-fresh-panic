@@ -102,37 +102,28 @@ func (c *productController) GetAll() gin.HandlerFunc {
 func (c *productController) GetAllReportRecords() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
-		products, err := c.productService.GetAllReportRecords()
-		if err != nil {
-			status := productErrorHandler(err)
-			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
-			return
+		id, ok := ctx.GetQuery("id")
+		if ok {
+			id, _ := strconv.ParseUint(id, 10, 64)
+			report, err := c.productService.GetReportRecords(id)
+			if err != nil {
+				status := productErrorHandler(err)
+				ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+				return
+			}
+
+			ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, report, ""))
+		} else {
+			reports, err := c.productService.GetAllReportRecords()
+			if err != nil {
+				status := productErrorHandler(err)
+				ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
+				return
+			}
+
+			ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, reports, ""))
 		}
 
-		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, products, ""))
-	}
-}
-
-func (c *productController) GetReportRecords() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-
-		id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
-		if err != nil {
-			ctx.JSON(http.StatusNotAcceptable, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-
-		product, err := c.productService.GetReportRecords(id)
-
-		if err != nil {
-			status := productErrorHandler(err)
-			ctx.JSON(status, web.NewResponse(status, nil, err.Error()))
-			return
-		}
-
-		ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, product, ""))
 	}
 }
 

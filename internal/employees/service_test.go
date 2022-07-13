@@ -2,9 +2,10 @@ package employees
 
 import (
 	"errors"
+	"testing"
+
 	db "github.com/GuiTadeu/mercado-fresh-panic/cmd/server/database"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_Create_Ok(t *testing.T) {
@@ -17,10 +18,10 @@ func Test_Create_Ok(t *testing.T) {
 		WarehouseId:  1,
 	}
 
-	mockRepository := mockEmployeeRepository{
-		result:             expectedResult,
-		err:                nil,
-		existsEmployeeCode: false,
+	mockRepository := MockEmployeeRepository{
+		Result:             expectedResult,
+		Err:                nil,
+		ExistsEmployeeCode: false,
 	}
 
 	service := NewEmployeeService(mockRepository)
@@ -34,10 +35,10 @@ func Test_Create_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 
 	expectedError := ExistsCardNumberIdError
 
-	mockRepository := mockEmployeeRepository{
-		result:             db.Employee{},
-		err:                expectedError,
-		existsEmployeeCode: true,
+	mockRepository := MockEmployeeRepository{
+		Result:             db.Employee{},
+		Err:                expectedError,
+		ExistsEmployeeCode: true,
 	}
 
 	service := NewEmployeeService(mockRepository)
@@ -49,9 +50,9 @@ func Test_Create_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 func Test_Get_OK(t *testing.T) {
 	expectedResult := db.Employee{}
 
-	mockRepository := mockEmployeeRepository{
-		getById: expectedResult,
-		err:     nil,
+	mockRepository := MockEmployeeRepository{
+		GetById: expectedResult,
+		Err:     nil,
 	}
 
 	service := NewEmployeeService(mockRepository)
@@ -64,8 +65,8 @@ func Test_Get_OK(t *testing.T) {
 func Test_Get_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 	expectedError := EmployeeNotFoundError
 
-	mockRepository := mockEmployeeRepository{
-		err: expectedError,
+	mockRepository := MockEmployeeRepository{
+		Err: expectedError,
 	}
 
 	service := NewEmployeeService(mockRepository)
@@ -78,9 +79,9 @@ func Test_GetAll_OK(t *testing.T) {
 
 	expectedResult := []db.Employee{{}, {}, {}}
 
-	mockRepository := mockEmployeeRepository{
-		result: expectedResult,
-		err:    nil,
+	mockRepository := MockEmployeeRepository{
+		Result: expectedResult,
+		Err:    nil,
 	}
 
 	service := NewEmployeeService(mockRepository)
@@ -95,9 +96,9 @@ func Test_GetAll_ShouldReturnErrorWhenDatabaseFails(t *testing.T) {
 	expectedResult := []db.Employee{}
 	expectedError := errors.New("Falha no banco!")
 
-	mockRepository := mockEmployeeRepository{
-		result: expectedResult,
-		err:    expectedError,
+	mockRepository := MockEmployeeRepository{
+		Result: expectedResult,
+		Err:    expectedError,
 	}
 
 	service := NewEmployeeService(mockRepository)
@@ -124,10 +125,10 @@ func Test_Update_OK(t *testing.T) {
 		WarehouseId: 3,
 	}
 
-	mockProductRepository := mockEmployeeRepository{
-		result:            expectedResult,
-		getById:           getById,
-		existsEmployeeCode: false,
+	mockProductRepository := MockEmployeeRepository{
+		Result:            expectedResult,
+		GetById:           getById,
+		ExistsEmployeeCode: false,
 	}
 
 	service := NewEmployeeService(mockProductRepository)
@@ -139,9 +140,9 @@ func Test_Update_OK(t *testing.T) {
 
 func Test_Update_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
-	mockProductRepository := mockEmployeeRepository{
-		existsEmployeeCode: false,
-		err: EmployeeNotFoundError,
+	mockProductRepository := MockEmployeeRepository{
+		ExistsEmployeeCode: false,
+		Err: EmployeeNotFoundError,
 	}
 
 	service := NewEmployeeService(mockProductRepository)
@@ -160,10 +161,10 @@ func Test_Update_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 		WarehouseId: 1,
 	}
 
-	mockProductRepository := mockEmployeeRepository{
-		existsEmployeeCode: true,
-		err: ExistsCardNumberIdError,
-		getById: getById,
+	mockProductRepository := MockEmployeeRepository{
+		ExistsEmployeeCode: true,
+		Err: ExistsCardNumberIdError,
+		GetById: getById,
 	}
 
 	service := NewEmployeeService(mockProductRepository)
@@ -175,9 +176,9 @@ func Test_Update_ShouldReturnErrorWhenCodeAlreadyExists(t *testing.T) {
 
 func Test_Delete_Ok(t *testing.T) {
 
-	mockRepository := mockEmployeeRepository{
-		result: db.Employee{},
-		err:    nil,
+	mockRepository := MockEmployeeRepository{
+		Result: db.Employee{},
+		Err:    nil,
 	}
 
 	service := NewEmployeeService(mockRepository)
@@ -190,13 +191,88 @@ func Test_Delete_ShouldReturnErrorWhenIdNotExists(t *testing.T) {
 
 	expectedError := EmployeeNotFoundError
 
-	mockRepository := mockEmployeeRepository{
-		result: db.Employee{},
-		err:    expectedError,
+	mockRepository := MockEmployeeRepository{
+		Result: db.Employee{},
+		Err:    expectedError,
 	}
 
 	service := NewEmployeeService(mockRepository)
 	err := service.Delete(1)
 
 	assert.Equal(t, expectedError, err)
+}
+
+func Test_Count_Inbound_Orders_By_Employee_Id_Ok(t *testing.T) {
+	
+	expectedResult := db.ReportInboundOrders{
+		Id:           1,
+		FirstName:    "testMock",
+		LastName:     "lastNameMock",
+		CardNumberId: "1000",
+		WarehouseId:  1,
+		InboundOrdersCount: 2,
+	}
+
+	mockRepository := MockEmployeeRepository{
+		Result: expectedResult,
+		ExistsEmployeeCode: true,
+	}
+
+	service := NewEmployeeService(mockRepository)
+	result, err := service.CountInboundOrdersByEmployeeId(1)
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResult, result)
+
+
+}
+
+func Test_Count_Inbound_Orders_Ok(t *testing.T) {
+	
+	expectedResult := []db.ReportInboundOrders{
+		{
+			Id:           1,
+			FirstName:    "testMock",
+			LastName:     "lastNameMock",
+			CardNumberId: "1000",
+			WarehouseId:  1,
+			InboundOrdersCount: 2,
+		},
+		{
+			Id:           2,
+			FirstName:    "testMock",
+			LastName:     "lastNameMock",
+			CardNumberId: "1000",
+			WarehouseId:  1,
+			InboundOrdersCount: 2,
+		},
+	}
+
+	mockRepository := MockEmployeeRepository{
+		Result: expectedResult,
+	}
+
+	service := NewEmployeeService(mockRepository)
+	result, err := service.CountInboundOrders()
+
+	assert.Nil(t, err)
+	assert.Equal(t, expectedResult, result)
+
+
+}
+
+func Test_Count_Inbound_Orders_By_Employee_Id_Not_Found(t *testing.T) {
+	expectedError := EmployeeNotFoundError
+	
+	mockRepository := MockEmployeeRepository{
+		ExistsEmployeeCode: false,
+	}
+
+	service := NewEmployeeService(mockRepository)
+	result, err := service.CountInboundOrdersByEmployeeId(1)
+
+	assert.Empty(t, result)
+	assert.Equal(t, expectedError, err)
+
+
 }

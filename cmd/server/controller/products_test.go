@@ -201,7 +201,7 @@ func Test_GetReportRecords_406(t *testing.T) {
 	router := setupRouter(mockService)
 
 	response := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "/api/v1/products/reportrecords/999", nil)
+	request, _ := http.NewRequest("GET", "/api/v1/products/reportrecords?id=999", nil)
 	router.ServeHTTP(response, request)
 
 	assert.Equal(t, http.StatusNotAcceptable, response.Code)
@@ -469,7 +469,6 @@ func setupRouter(mockService mockProductService) *gin.Engine {
 	router.PATCH("/api/v1/products/:id", controller.Update())
 	router.DELETE("/api/v1/products/:id", controller.Delete())
 	router.GET("/api/v1/products/reportrecords", controller.GetAllReportRecords())
-	router.GET("/api/v1/products/reportrecords/:id", controller.GetReportRecords())
 
 	return router
 }
