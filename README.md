@@ -1,4 +1,4 @@
-# mercado-fresh-panic
+# Supermarket
 
 Neste novo projeto deverá ser possível listar, criar, modificar e deletar os items de acordo com a rota desejada.</br>
 
